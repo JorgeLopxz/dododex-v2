@@ -34,8 +34,8 @@
 ## FASE 0 — Fundaciones ✅ = hecho · 🔄 = en curso
 
 - [x] Análisis de competencia y mecánicas (ANALISIS.md)
-- [x] Repo git local + GitHub (privado) + primer push
-- [ ] Scaffold Vite+React+TS, Tailwind, Vitest, estructura de carpetas
+- [x] Repo git local (GitHub remoto: pendiente de autorizar `gh` con device-code)
+- [x] Scaffold Vite+React+TS, Tailwind, Vitest, estructura de carpetas
 - [ ] CI mínima (GitHub Actions: typecheck + tests en push)
 
 ## FASE 1 — Datos de especies
@@ -48,13 +48,13 @@
 
 ## FASE 2 — Motor de cálculo (el corazón) 🔥
 
-- [ ] `engine/statFormula.ts` — fórmula forward: `V = (B(1+Lw·Iw·IwM)·TBHM·(1+IB·0.2·IBM)+Ta·TaM)(1+TE·Tm·TmM)(1+Ld·Id·IdM)`
-- [ ] `engine/wildExtractor.ts` — distribución de puntos de un dino salvaje (paridad Dododex)
-- [ ] `engine/tameBonus.ts` — TE, niveles bonus `floor(nivel·TE/2)`, decay de TE por comida
-- [ ] `engine/postTameExtractor.ts` — ⭐ resolver pares enteros (Lw,Ld) por stat desde los 7 valores + nivel + TE + imprint; enumerar TODAS las combinaciones válidas; restricción `ΣLw = puntos salvajes`
-- [ ] Reglas de versión: toggle ASA/ASE (Speed no-pool en ASA; imprint excl. Stamina/Oxígeno/Crafting)
-- [ ] Multiplicadores de servidor: `PerLevelStatsMultiplier_*`, `TamingSpeedMultiplier`, `bUseSingleplayerSettings` (multiplicadores ocultos extra)
-- [ ] Tests Vitest: casos oficiales + boosted + singleplayer + ambiguos (referencia cruzada con ASB)
+- [x] `engine/statFormula.ts` — fórmula forward completa (TBHM, imprint, Ta/Tm negativos, nerf oficial)
+- [x] `engine/extractor.ts` — extractor salvaje (paridad Dododex)
+- [x] Niveles bonus `floor(nivel·TE/2)` · [ ] decay de TE por comida (para la calc. de tameo, FASE 4)
+- [x] ⭐ `extractPostTame` — candidatos (Lw,Ld) por stat + DFS global con restricciones `ΣLw`/`ΣLd`
+- [x] Reglas de versión: toggle ASA/ASE (Speed no-pool en ASA; imprint excl. Stamina/Oxígeno)
+- [x] Estructura de multiplicadores `PerLevelStatsMultiplier_*` · [ ] `bUseSingleplayerSettings` + import .ini
+- [x] Tests Vitest (14, round-trip deterministas) · [ ] casos cruzados contra ASB con datos reales (FASE 1)
 - [ ] **Criterio de salida:** extraer correctamente un dino real del juego del usuario (validación manual)
 
 ## FASE 3 — Design system "Ámbar y hueso"
