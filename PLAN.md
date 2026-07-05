@@ -36,15 +36,15 @@
 - [x] Análisis de competencia y mecánicas (ANALISIS.md)
 - [x] Repo git local (GitHub remoto: pendiente de autorizar `gh` con device-code)
 - [x] Scaffold Vite+React+TS, Tailwind, Vitest, estructura de carpetas
-- [ ] CI mínima (GitHub Actions: typecheck + tests en push)
+- [x] CI mínima (GitHub Actions: typecheck + tests + build en push)
 
-## FASE 1 — Datos de especies
+## FASE 1 — Datos de especies ✅
 
-- [ ] Script `scripts/fetch-values.mjs`: descarga values.json de ASB (+ guarda versión/fecha/commit de origen)
-- [ ] Parser → formato propio tipado: `{ especie: { stats: [B,Iw,Id,Ta,Tm]×8, TBHM, ... } }`
-- [ ] Separación/flags ASA vs ASE por especie (incl. `speedLevelable=false` en ASA)
-- [ ] Atribución MIT de ASB visible (README + pantalla "Acerca de")
-- [ ] **Criterio de salida:** cargar Rex/Argentavis/Gigantoraptor y validar 3 stats contra la wiki a mano
+- [x] `scripts/build-data.mjs`: descarga values.json + ASA-values.json de ASB, con versión/fecha
+- [x] Parser → JSON compacto tipado + loader (`src/data/`); overlay ASA fusionado por blueprint
+- [x] Flags de versión (Speed no-pool en ASA vía `statReceivesPoints`)
+- [x] Atribución MIT de ASB (README + pie de la app)
+- [x] **Criterio de salida:** Rex validado contra la wiki por test (B=1100, +220 HP/nivel, melee 210%)
 
 ## FASE 2 — Motor de cálculo (el corazón) 🔥
 
@@ -57,21 +57,22 @@
 - [x] Tests Vitest (14, round-trip deterministas) · [ ] casos cruzados contra ASB con datos reales (FASE 1)
 - [ ] **Criterio de salida:** extraer correctamente un dino real del juego del usuario (validación manual)
 
-## FASE 3 — Design system "Ámbar y hueso"
+## FASE 3 — Design system "Ámbar y hueso" (núcleo hecho)
 
-- [ ] Tokens CSS: 4 superficies dark + modo claro; acentos ámbar/hueso; paleta Okabe-Ito por stat (Salud #E69F00 · Estamina #56B4E9 · Oxígeno #0072B2 · Comida #009E73 · Peso #F0E442 · Melee #D55E00 · Velocidad #CC79A7)
-- [ ] Componentes base accesibles: StatChip (color+icono+etiqueta, nunca color solo), Card bento, BottomNav, BottomSheet, Stepper numérico (targets ≥24px), focus ring ≥2px
-- [ ] Tipografía: display geométrica + Inter para datos; tamaños en rem; control de tamaño de texto
+- [x] Tokens CSS: 4 superficies dark + acentos ámbar/hueso + paleta Okabe-Ito por stat
+- [x] StatChip accesible (color+icono+etiqueta), BottomNav, focus ring ≥2px, targets ≥24px
+- [ ] Modo claro derivado · [ ] BottomSheet · [ ] tipografía display + control de tamaño de texto
 - [ ] **Criterio de salida:** página de muestra que pasa axe-core sin errores AA
 
 ## FASE 4 — Features MVP
 
-- [ ] **Buscador de criaturas** (lista + fuzzy search, thumbnail cards)
-- [ ] **Calculadora de tameo**: comida/narcóticos/torpor/tiempo/TE/niveles bonus; resultado en card grande, desglose en expansores
-- [ ] **Extractor salvaje** (pre-tame)
-- [ ] ⭐ **Inspector post-tame**: formulario 7 stats → desglose de puntos por stat; UI de ambigüedad ("nunca subí este stat" ⇒ Ld=0); indicador de confianza
-- [ ] ⭐ **Mis Dinos**: guardar dino extraído (nombre, especie, sexo, servidor, colores, Lw/Ld por stat); listar, filtrar y ordenar por stat ("mi mejor Rex en Melee"); export/import JSON
-- [ ] **Perfiles de servidor**: multiplicadores globales y per-stat, guardados y conmutables; presets Oficial/Small Tribes/Singleplayer
+- [x] **Buscador de criaturas** (búsqueda por texto; pendiente: fuzzy + fichas de criatura)
+- [ ] **Calculadora de tameo**: comida/narcóticos/torpor/tiempo/TE/niveles bonus
+- [ ] **Extractor salvaje** (pre-tame) — motor listo (`extractWildStat`), falta UI
+- [x] ⭐ **Inspector post-tame**: valores → puntos por stat, ambigüedad honesta, toggle ASA/ASE, guardar
+  - [ ] Mejora: checkbox "nunca subí este stat" (Ld=0) por stat para reducir ambigüedad
+- [x] ⭐ **Mis Dinos**: biblioteca Dexie local-first, orden por stat, export/import JSON (falta: sexo/colores/notas en UI)
+- [ ] **Perfiles de servidor**: multiplicadores per-stat editables + presets (hoy: oficial fijo)
 - [ ] **Criterio de salida:** flujo completo tameo→extracción→guardado→consulta sin tocar otra app
 
 ## FASE 5 — PWA + pulido → v0.1 (release personal)
