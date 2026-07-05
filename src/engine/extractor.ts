@@ -35,6 +35,8 @@ export interface ExtractionInput {
   displayPrecision?: number
   /** Overrides por stat (p.ej. melee: 0.001 porque in-game se muestra como % con 1 decimal) */
   displayPrecisionPerStat?: Partial<Record<PointStatKey, number>>
+  /** Hechos que el usuario conoce: "nunca subí este stat" ⇒ Ld=0 (reduce la ambigüedad) */
+  lockedLd0?: PointStatKey[]
   /** Cota superior de niveles salvajes por stat a explorar (por defecto 254) */
   maxLwPerStat?: number
   /** Cota superior de niveles domésticos por stat (por defecto 88 — cap práctico de ARK) */
@@ -130,7 +132,8 @@ export function extractPostTame(input: ExtractionInput): ExtractionResult {
   const {
     species, version, observed, ctx, mult,
     wildPoints, domPoints,
-    displayPrecision = 0.1, displayPrecisionPerStat = {}, maxLwPerStat = 254, maxLdPerStat = 88,
+    displayPrecision = 0.1, displayPrecisionPerStat = {}, lockedLd0 = [],
+    maxLwPerStat = 254, maxLdPerStat = 88,
   } = input
 
   const statsConsidered = POINT_STATS.filter(
@@ -139,11 +142,12 @@ export function extractPostTame(input: ExtractionInput): ExtractionResult {
 
   const perStat: ExtractionResult['perStat'] = {}
   for (const key of statsConsidered) {
-    const candidates = solvePostTameStat(key, species, observed[key]!, ctx, mult, {
+    let candidates = solvePostTameStat(key, species, observed[key]!, ctx, mult, {
       displayPrecision: displayPrecisionPerStat[key] ?? displayPrecision,
       maxLw: maxLwPerStat,
-      maxLd: maxLdPerStat,
+      maxLd: lockedLd0.includes(key) ? 0 : maxLdPerStat,
     })
+    if (lockedLd0.includes(key)) candidates = candidates.filter((c) => c.Ld === 0)
     perStat[key] = { candidates, ambiguous: candidates.length > 1 }
   }
 

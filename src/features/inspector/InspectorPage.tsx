@@ -26,6 +26,7 @@ export function InspectorPage() {
   const [level, setLevel] = useState('')
   const [postTameLevel, setPostTameLevel] = useState('')
   const [values, setValues] = useState<Partial<Record<PointStatKey, string>>>({})
+  const [locked, setLocked] = useState<Set<PointStatKey>>(new Set())
   const [dinoName, setDinoName] = useState('')
   const [saved, setSaved] = useState(false)
 
@@ -60,8 +61,9 @@ export function InspectorPage() {
       wildPoints: Number.isFinite(ptl) && ptl > 0 ? ptl - 1 : undefined,
       domPoints: Number.isFinite(ptl) && ptl > 0 && Number.isFinite(lvl) && lvl >= ptl ? lvl - ptl : undefined,
       displayPrecisionPerStat: precisions,
+      lockedLd0: [...locked],
     })
-  }, [species, version, relevantStats, values, bred, TE, IB, level, postTameLevel])
+  }, [species, version, relevantStats, values, bred, TE, IB, level, postTameLevel, locked])
 
   async function saveDino() {
     if (!species || !result || result.solutions.length !== 1) return
@@ -192,6 +194,22 @@ export function InspectorPage() {
                 className="w-full rounded-lg border-2 bg-surface-1 px-3 py-2 tabular-nums"
                 style={{ borderColor: values[k] ? meta.color : 'var(--color-surface-3)' }}
               />
+              <label className="mt-1 flex items-center gap-1.5 text-xs text-bone-faint">
+                <input
+                  type="checkbox"
+                  checked={locked.has(k)}
+                  onChange={(e) =>
+                    setLocked((prev) => {
+                      const next = new Set(prev)
+                      if (e.target.checked) next.add(k)
+                      else next.delete(k)
+                      return next
+                    })
+                  }
+                  className="size-4"
+                />
+                nunca lo subí
+              </label>
             </label>
           )
         })}
