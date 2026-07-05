@@ -44,6 +44,7 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
       const inherited = fallbackStatsByBp.get(bpKey)
       if (!inherited) continue
       sp.fullStatsRaw = inherited.fullStatsRaw
+      sp.name ??= inherited.name
       sp.TamedBaseHealthMultiplier ??= inherited.TBHM
       sp.displayedStats ??= inherited.ds
     }
@@ -63,8 +64,10 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
     })
     const tbhm = sp.TamedBaseHealthMultiplier ?? 1
     const ds = sp.displayedStats ?? 0
-    const baseName = sp.name ?? id
-    const name = sp.variants?.length ? `${baseName} (${sp.variants.join(', ')})` : baseName
+    if (!sp.name) continue // entradas internas (misiones, summoned, STA) sin nombre real
+    const baseName = sp.name
+    const extraVariants = (sp.variants ?? []).filter((v) => !baseName.toLowerCase().includes(v.toLowerCase()))
+    const name = extraVariants.length ? `${baseName} (${extraVariants.join(', ')})` : baseName
     out.push([id, name, tbhm, ds, stats])
   }
   console.log(`${label}: ${out.length} especies`)
@@ -78,7 +81,7 @@ const aseByBp = new Map(
     .filter((sp) => sp.fullStatsRaw)
     .map((sp) => [
       (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, ''),
-      { fullStatsRaw: sp.fullStatsRaw, TBHM: sp.TamedBaseHealthMultiplier ?? 1, ds: sp.displayedStats ?? 0 },
+      { fullStatsRaw: sp.fullStatsRaw, name: sp.name, TBHM: sp.TamedBaseHealthMultiplier ?? 1, ds: sp.displayedStats ?? 0 },
     ]),
 )
 const asa = transform(await ensureRaw(FILES.asa), 'ASA', aseByBp)

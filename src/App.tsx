@@ -1,122 +1,80 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { CreaturesPage } from './features/creatures/CreaturesPage'
+import { InspectorPage } from './features/inspector/InspectorPage'
+import { LibraryPage } from './features/library/LibraryPage'
+import { useSettings } from './store/settings'
+import { getDataInfo } from './data'
 
-function App() {
-  const [count, setCount] = useState(0)
+const NAV = [
+  { to: '/criaturas', icon: '🦖', label: 'Criaturas' },
+  { to: '/inspector', icon: '🔍', label: 'Inspector' },
+  { to: '/dinos', icon: '📚', label: 'Mis Dinos' },
+]
+
+export default function App() {
+  const { version, setVersion } = useSettings()
+  const info = getDataInfo(version)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
+      <header className="flex items-center justify-between gap-2 px-4 py-3">
+        <h1 className="text-lg font-bold tracking-wide text-amber">
+          🦴 DODODEX <span className="text-bone-dim">V2</span>
+        </h1>
+        {/* Toggle ASA/ASE: cambia constantes Y reglas del motor (Speed, caps…) */}
+        <div role="group" aria-label="Versión del juego" className="flex rounded-lg bg-surface-1 p-1">
+          {(['ASA', 'ASE'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setVersion(v)}
+              aria-pressed={version === v}
+              className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
+                version === v ? 'bg-amber-deep text-surface-0' : 'text-bone-dim hover:text-bone'
+              }`}
+            >
+              {v}
+            </button>
+          ))}
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main className="flex-1 px-4 pb-24">
+        <Routes>
+          <Route path="/" element={<Navigate to="/criaturas" replace />} />
+          <Route path="/criaturas" element={<CreaturesPage />} />
+          <Route path="/inspector/:speciesId?" element={<InspectorPage />} />
+          <Route path="/dinos" element={<LibraryPage />} />
+        </Routes>
+        <p className="mt-8 text-center text-xs text-bone-faint">
+          Datos v{info.version} · {new Date(info.generated).toLocaleDateString()} · derivados de ARK Smart Breeding
+          (MIT, © cadon) · App no oficial, sin afiliación con Studio Wildcard
+        </p>
+      </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* Navegación inferior: zona de alcance del pulgar (ver ANALISIS.md §6.2) */}
+      <nav
+        aria-label="Navegación principal"
+        className="fixed inset-x-0 bottom-0 border-t border-surface-3 bg-surface-1/95 backdrop-blur"
+      >
+        <div className="mx-auto flex max-w-3xl">
+          {NAV.map((n) => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              className={({ isActive }) =>
+                `flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-medium ${
+                  isActive ? 'text-amber' : 'text-bone-dim'
+                }`
+              }
+            >
+              <span aria-hidden="true" className="text-xl">
+                {n.icon}
+              </span>
+              {n.label}
+            </NavLink>
+          ))}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      </nav>
+    </div>
   )
 }
-
-export default App

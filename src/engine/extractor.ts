@@ -33,6 +33,8 @@ export interface ExtractionInput {
    * El solver acepta candidatos cuyo valor calculado redondee al observado.
    */
   displayPrecision?: number
+  /** Overrides por stat (p.ej. melee: 0.001 porque in-game se muestra como % con 1 decimal) */
+  displayPrecisionPerStat?: Partial<Record<PointStatKey, number>>
   /** Cota superior de niveles salvajes por stat a explorar (por defecto 254) */
   maxLwPerStat?: number
   /** Cota superior de niveles domésticos por stat (por defecto 88 — cap práctico de ARK) */
@@ -128,7 +130,7 @@ export function extractPostTame(input: ExtractionInput): ExtractionResult {
   const {
     species, version, observed, ctx, mult,
     wildPoints, domPoints,
-    displayPrecision = 0.1, maxLwPerStat = 254, maxLdPerStat = 88,
+    displayPrecision = 0.1, displayPrecisionPerStat = {}, maxLwPerStat = 254, maxLdPerStat = 88,
   } = input
 
   const statsConsidered = POINT_STATS.filter(
@@ -138,7 +140,7 @@ export function extractPostTame(input: ExtractionInput): ExtractionResult {
   const perStat: ExtractionResult['perStat'] = {}
   for (const key of statsConsidered) {
     const candidates = solvePostTameStat(key, species, observed[key]!, ctx, mult, {
-      displayPrecision,
+      displayPrecision: displayPrecisionPerStat[key] ?? displayPrecision,
       maxLw: maxLwPerStat,
       maxLd: maxLdPerStat,
     })
