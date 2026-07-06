@@ -4,14 +4,13 @@ import { extractPostTame, statReceivesPoints } from '../../engine/extractor'
 import { OFFICIAL_MULTIPLIERS, POINT_STATS, type PointStatKey } from '../../engine/types'
 import { findSpecies, getSpecies } from '../../data'
 import { STAT_META } from '../../ui/statMeta'
-import { StatChip } from '../../ui/StatChip'
+import { StatBar } from '../../ui/StatBar'
 import { useSettings } from '../../store/settings'
 import { db } from '../../store/db'
 
 /**
  * ⭐ Inspector post-tame: la función que Dododex no tiene.
- * Introduce los stats de tu dino YA DOMADO y descubre cuántos puntos
- * cayeron en cada stat (salvajes + gastados por ti).
+ * Flujo guiado en 3 pasos: dino → contexto → stats. Resultado visual con barras.
  */
 export function InspectorPage() {
   const { speciesId } = useParams()
@@ -90,181 +89,212 @@ export function InspectorPage() {
     setTimeout(() => navigate('/dinos'), 600)
   }
 
+  /* ——— Paso 1: elegir especie ——— */
   if (!species) {
     return (
-      <section>
-        <h2 className="mb-2 text-xl font-bold">Inspector post-tame</h2>
-        <p className="mb-4 text-bone-dim">Elige una especie para empezar:</p>
-        <select
-          aria-label="Especie"
-          className="w-full rounded-xl border border-surface-3 bg-surface-1 px-4 py-3"
-          defaultValue=""
-          onChange={(e) => e.target.value && navigate(`/inspector/${encodeURIComponent(e.target.value)}`)}
-        >
-          <option value="" disabled>
-            — especie —
-          </option>
-          {getSpecies(version).map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
+      <section className="mx-auto max-w-lg">
+        <h2 className="display mb-1 text-2xl font-bold">Inspector post-tame</h2>
+        <p className="mb-6 text-sm text-bone-dim">
+          Descubre cuántos puntos cayeron en cada stat de tu dino <strong className="text-bone">ya domado</strong> —
+          lo que ninguna otra app puede decirte.
+        </p>
+        <div className="panel p-5">
+          <div className="mb-3 flex items-center gap-2.5">
+            <span className="step-badge">1</span>
+            <h3 className="display font-semibold">¿Qué criatura es?</h3>
+          </div>
+          <select
+            aria-label="Especie"
+            className="input-field"
+            defaultValue=""
+            onChange={(e) => e.target.value && navigate(`/inspector/${encodeURIComponent(e.target.value)}`)}
+          >
+            <option value="" disabled>
+              Elige especie ({getSpecies(version).length} · {version})
             </option>
-          ))}
-        </select>
+            {getSpecies(version).map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+          <p className="mt-3 text-xs text-bone-faint">
+            Consejo: también puedes llegar aquí desde la pestaña <strong>Criaturas</strong>.
+          </p>
+        </div>
       </section>
     )
   }
 
   const uniqueSolution = result?.solutions.length === 1 ? result.solutions[0] : null
+  const barMax = Math.max(30, ...result ? result.statsConsidered.map((k) => {
+    const c = (uniqueSolution?.[k] ?? result.perStat[k]?.candidates[0])
+    return c ? c.Lw + c.Ld : 0
+  }) : [0]) * 1.15
 
   return (
-    <section aria-label={`Inspector de ${species.name}`}>
-      <h2 className="mb-1 text-xl font-bold">{species.name}</h2>
-      <p className="mb-4 text-sm text-bone-dim">
-        Introduce los valores que ves in-game en tu dino <strong>ya domado</strong>. Te diré cuántos puntos cayeron en
-        cada stat.
-      </p>
+    <section aria-label={`Inspector de ${species.name}`} className="space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h2 className="display text-2xl font-bold">{species.name}</h2>
+          <p className="text-xs text-bone-faint">Inspector post-tame · {version}</p>
+        </div>
+        <button onClick={() => navigate('/inspector')} className="btn-ghost text-sm">
+          Cambiar
+        </button>
+      </div>
 
-      {/* Contexto del dino */}
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <label className="text-sm">
-          <span className="mb-1 block text-bone-dim">Nivel actual</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            value={level}
-            onChange={(e) => setLevel(e.target.value)}
-            className="w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 tabular-nums"
-          />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-bone-dim">Nivel tras domar</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            value={postTameLevel}
-            onChange={(e) => setPostTameLevel(e.target.value)}
-            placeholder="opcional"
-            className="w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 tabular-nums"
-          />
-        </label>
-        {!bred && (
+      {/* Paso 2: contexto */}
+      <div className="panel p-5">
+        <div className="mb-4 flex items-center gap-2.5">
+          <span className="step-badge">2</span>
+          <h3 className="display font-semibold">Cuéntame de tu dino</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <label className="text-sm">
-            <span className="mb-1 block text-bone-dim">Efectividad %</span>
+            <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel actual</span>
+            <input type="number" inputMode="numeric" value={level} onChange={(e) => setLevel(e.target.value)} className="input-field" />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel tras domar</span>
             <input
               type="number"
-              inputMode="decimal"
-              value={TE}
-              onChange={(e) => setTE(e.target.value)}
-              className="w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 tabular-nums"
+              inputMode="numeric"
+              value={postTameLevel}
+              onChange={(e) => setPostTameLevel(e.target.value)}
+              placeholder="opcional"
+              className="input-field"
             />
           </label>
-        )}
-        <label className="text-sm">
-          <span className="mb-1 block text-bone-dim">Imprint %</span>
-          <input
-            type="number"
-            inputMode="decimal"
-            value={IB}
-            onChange={(e) => setIB(e.target.value)}
-            className="w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 tabular-nums"
-          />
-        </label>
-      </div>
-      <label className="mb-4 flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-5" />
-        Es un dino criado (bred) — TE se asume 100%
-      </label>
-
-      {/* Valores por stat */}
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {relevantStats.map((k) => {
-          const meta = STAT_META[k]
-          return (
-            <label key={k} className="text-sm">
-              <span className="mb-1 flex items-center gap-1.5 text-bone-dim">
-                <span aria-hidden="true">{meta.icon}</span>
-                {meta.label}
-                {meta.percent && ' (%)'}
-              </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={values[k] ?? ''}
-                onChange={(e) => setValues((v) => ({ ...v, [k]: e.target.value }))}
-                className="w-full rounded-lg border-2 bg-surface-1 px-3 py-2 tabular-nums"
-                style={{ borderColor: values[k] ? meta.color : 'var(--color-surface-3)' }}
-              />
-              <label className="mt-1 flex items-center gap-1.5 text-xs text-bone-faint">
-                <input
-                  type="checkbox"
-                  checked={locked.has(k)}
-                  onChange={(e) =>
-                    setLocked((prev) => {
-                      const next = new Set(prev)
-                      if (e.target.checked) next.add(k)
-                      else next.delete(k)
-                      return next
-                    })
-                  }
-                  className="size-4"
-                />
-                nunca lo subí
-              </label>
+          {!bred && (
+            <label className="text-sm">
+              <span className="mb-1 block text-xs font-medium text-bone-dim">Efectividad %</span>
+              <input type="number" inputMode="decimal" value={TE} onChange={(e) => setTE(e.target.value)} className="input-field" />
             </label>
-          )
-        })}
+          )}
+          <label className="text-sm">
+            <span className="mb-1 block text-xs font-medium text-bone-dim">Imprint %</span>
+            <input type="number" inputMode="decimal" value={IB} onChange={(e) => setIB(e.target.value)} className="input-field" />
+          </label>
+        </div>
+        <label className="mt-3 flex items-center gap-2 text-sm text-bone-dim">
+          <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-4 accent-(--color-amber-deep)" />
+          Es un dino criado — la efectividad se asume 100%
+        </label>
+        <p className="mt-2 text-xs text-bone-faint">
+          💡 El «nivel tras domar» (antes de gastar puntos) convierte varias posibilidades en una respuesta exacta.
+        </p>
+      </div>
+
+      {/* Paso 3: stats */}
+      <div className="panel p-5">
+        <div className="mb-4 flex items-center gap-2.5">
+          <span className="step-badge">3</span>
+          <h3 className="display font-semibold">Copia los valores que ves in-game</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
+          {relevantStats.map((k) => {
+            const meta = STAT_META[k]
+            return (
+              <div key={k}>
+                <label className="text-sm">
+                  <span className="mb-1 flex items-center gap-1.5 text-xs font-medium text-bone-dim">
+                    <span aria-hidden="true" style={{ color: meta.color }}>{meta.icon}</span>
+                    {meta.label}
+                    {meta.percent && ' (%)'}
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={values[k] ?? ''}
+                    onChange={(e) => setValues((v) => ({ ...v, [k]: e.target.value }))}
+                    className="input-field"
+                    style={values[k] ? { borderColor: meta.color, boxShadow: `0 0 0 3px color-mix(in srgb, ${meta.color} 18%, transparent)` } : undefined}
+                  />
+                </label>
+                <label className="mt-1.5 flex items-center gap-1.5 text-[11px] text-bone-faint">
+                  <input
+                    type="checkbox"
+                    checked={locked.has(k)}
+                    onChange={(e) =>
+                      setLocked((prev) => {
+                        const next = new Set(prev)
+                        if (e.target.checked) next.add(k)
+                        else next.delete(k)
+                        return next
+                      })
+                    }
+                    className="size-3.5 accent-(--color-amber-deep)"
+                  />
+                  nunca subí este stat
+                </label>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Resultado */}
       {result && (
-        <div className="rounded-xl bg-surface-1 p-4">
-          <h3 className="mb-3 font-bold">
-            {result.solutions.length === 1 && '✅ Solución única'}
-            {result.solutions.length > 1 && `⚠️ ${result.solutions.length} combinaciones posibles`}
-            {result.solutions.length === 0 && '❌ Sin solución con estos datos'}
+        <div
+          className="panel p-5"
+          style={
+            uniqueSolution
+              ? { borderColor: 'color-mix(in srgb, var(--color-ok) 45%, transparent)' }
+              : undefined
+          }
+        >
+          <h3 className="display mb-1 font-semibold">
+            {result.solutions.length === 1 && <span className="text-ok">✓ Puntos descifrados</span>}
+            {result.solutions.length > 1 && <span className="text-warn">{result.solutions.length} combinaciones posibles</span>}
+            {result.solutions.length === 0 && <span className="text-danger">Los datos no cuadran</span>}
           </h3>
           {result.solutions.length === 0 && (
-            <p className="text-sm text-bone-dim">
-              Revisa: ¿efectividad correcta? ¿multiplicadores del servidor? ¿valores bien copiados? Añadir el «nivel
-              tras domar» suele resolver la ambigüedad.
+            <p className="mb-2 text-sm text-bone-dim">
+              Revisa la efectividad, los valores copiados o los multiplicadores del servidor. El «nivel tras domar»
+              suele arreglarlo.
             </p>
           )}
-          <div className="flex flex-wrap gap-2">
+          {result.solutions.length > 1 && (
+            <p className="mb-3 text-sm text-bone-dim">
+              Marca «nunca subí este stat» donde aplique o añade el <strong>nivel tras domar</strong> para llegar a la
+              respuesta exacta.
+            </p>
+          )}
+
+          <div className="mt-3 grid gap-3.5">
             {result.statsConsidered.map((k) => {
               const ex = result.perStat[k]!
               const c = uniqueSolution?.[k] ?? ex.candidates[0]
               if (!c) return null
               return (
-                <StatChip key={k} stat={k}>
-                  {c.Lw} salvajes{c.Ld > 0 && ` +${c.Ld} tuyos`}
-                  {ex.ambiguous && !uniqueSolution && ' (?)'}
-                </StatChip>
+                <StatBar
+                  key={k}
+                  stat={k}
+                  wild={c.Lw}
+                  dom={c.Ld}
+                  max={barMax}
+                  ambiguous={ex.ambiguous && !uniqueSolution}
+                />
               )
             })}
           </div>
-          {result.solutions.length > 1 && (
-            <p className="mt-3 text-sm text-bone-dim">
-              Para reducir a una única solución: indica el <strong>nivel justo tras domar</strong> (sin puntos tuyos) o
-              marca stats que nunca subiste.
-            </p>
-          )}
+          <p className="mt-3 text-[11px] text-bone-faint">
+            Barra sólida = puntos salvajes (heredables al criar) · rayada = niveles que subiste tú
+          </p>
 
           {uniqueSolution && (
-            <div className="mt-4 flex gap-2 border-t border-surface-3 pt-4">
+            <div className="mt-4 flex flex-col gap-2 border-t border-surface-3 pt-4 sm:flex-row">
               <input
                 type="text"
                 value={dinoName}
                 onChange={(e) => setDinoName(e.target.value)}
-                placeholder="Nombre del dino"
+                placeholder="Ponle nombre (Rexy, Machacadora…)"
                 aria-label="Nombre del dino"
-                className="flex-1 rounded-lg border border-surface-3 bg-surface-0 px-3 py-2"
+                className="input-field flex-1"
               />
-              <button
-                onClick={saveDino}
-                disabled={saved}
-                className="rounded-lg bg-amber-deep px-4 py-2 font-semibold text-surface-0 hover:bg-amber disabled:opacity-60"
-              >
-                {saved ? '✓ Guardado' : 'Guardar en Mis Dinos'}
+              <button onClick={saveDino} disabled={saved} className="btn-primary">
+                {saved ? '✓ Guardado' : '💾 Guardar en Mis Dinos'}
               </button>
             </div>
           )}

@@ -1,40 +1,44 @@
 @import 'tailwindcss';
 
 /*
- * Design system "Ámbar y hueso" — dark-first (ver ANALISIS.md §6).
- * 4 superficies oscuras cálidas + acento ámbar/resina + neutros hueso.
- * Colores de stat: paleta Okabe-Ito (segura para daltonismo, distinguible en grises).
+ * Design system "Ámbar y hueso" v2 — dark-first con carácter ARK.
+ * Superficies cálidas con profundidad, acento ámbar/resina con glow,
+ * tipografía display Chakra Petch, stats en paleta Okabe-Ito (CVD-safe).
  */
 @theme {
+  --font-display: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
   /* Superficies (dark-first, tono cálido piedra) */
-  --color-surface-0: #17130d;
-  --color-surface-1: #211b12;
-  --color-surface-2: #2c2517;
-  --color-surface-3: #3a301d;
+  --color-surface-0: #120e08;
+  --color-surface-1: #1c1610;
+  --color-surface-2: #282017;
+  --color-surface-3: #382d1e;
 
   /* Neutros hueso */
-  --color-bone: #ece3d0;
+  --color-bone: #f0e7d5;
   --color-bone-dim: #b5a98e;
-  --color-bone-faint: #7d7460;
+  --color-bone-faint: #837a66;
 
   /* Acento ámbar/resina */
-  --color-amber: #f0b354;
+  --color-amber: #f5b855;
   --color-amber-deep: #c8821e;
+  --color-amber-dark: #8a5a12;
 
   /* Paleta Okabe-Ito por stat (nunca color solo: siempre con icono + etiqueta) */
   --color-stat-health: #e69f00;
   --color-stat-stamina: #56b4e9;
-  --color-stat-oxygen: #0072b2;
-  --color-stat-food: #009e73;
-  --color-stat-weight: #f0e442;
-  --color-stat-melee: #d55e00;
+  --color-stat-oxygen: #4d9fd6;
+  --color-stat-food: #00a97b;
+  --color-stat-weight: #e8dc4e;
+  --color-stat-melee: #e0652a;
   --color-stat-speed: #cc79a7;
   --color-stat-torpor: #9a9a9a;
 
   /* Semánticos */
-  --color-ok: #009e73;
+  --color-ok: #00a97b;
   --color-warn: #e69f00;
-  --color-danger: #d55e00;
+  --color-danger: #e0652a;
 }
 
 html {
@@ -43,10 +47,122 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-surface-0);
   color: var(--color-bone);
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(90rem 40rem at 50% -20rem, rgba(200, 130, 30, 0.14), transparent 60%),
+    radial-gradient(50rem 30rem at 110% 110%, rgba(200, 130, 30, 0.06), transparent 60%),
+    var(--color-surface-0);
+  background-attachment: fixed;
+}
+
+/* ——— Componentes base ——— */
+@layer components {
+  .display {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+
+  /* Panel/card con profundidad y borde ámbar sutil */
+  .panel {
+    background: linear-gradient(160deg, rgba(240, 179, 84, 0.05), rgba(240, 179, 84, 0) 45%),
+      var(--color-surface-1);
+    border: 1px solid rgba(240, 179, 84, 0.12);
+    border-radius: 1rem;
+    box-shadow: 0 1px 0 rgba(240, 231, 213, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  .panel-hover {
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .panel-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(240, 179, 84, 0.35);
+    box-shadow: 0 1px 0 rgba(240, 231, 213, 0.05) inset, 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .btn-primary {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: #1c1207;
+    background: linear-gradient(135deg, var(--color-amber), var(--color-amber-deep));
+    border-radius: 0.75rem;
+    padding: 0.625rem 1.25rem;
+    box-shadow: 0 2px 12px rgba(200, 130, 30, 0.35);
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  .btn-primary:hover {
+    filter: brightness(1.1);
+  }
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+  .btn-primary:disabled {
+    opacity: 0.55;
+    filter: none;
+  }
+
+  .btn-ghost {
+    border: 1px solid rgba(240, 179, 84, 0.2);
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
+    color: var(--color-bone-dim);
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+  .btn-ghost:hover {
+    border-color: rgba(240, 179, 84, 0.45);
+    color: var(--color-bone);
+    background: rgba(240, 179, 84, 0.06);
+  }
+
+  .input-field {
+    width: 100%;
+    background: var(--color-surface-0);
+    border: 1px solid var(--color-surface-3);
+    border-radius: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    color: var(--color-bone);
+    font-variant-numeric: tabular-nums;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .input-field::placeholder {
+    color: var(--color-bone-faint);
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: var(--color-amber-deep);
+    box-shadow: 0 0 0 3px rgba(200, 130, 30, 0.22);
+  }
+
+  /* Cabecera de paso numerado del flujo del Inspector */
+  .step-badge {
+    font-family: var(--font-display);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, var(--color-amber), var(--color-amber-deep));
+    color: #1c1207;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(200, 130, 30, 0.4);
+  }
+
+  /* Divisor "zarpazo": tres trazos diagonales ámbar */
+  .claw-divider {
+    height: 14px;
+    background-image: repeating-linear-gradient(
+      -60deg,
+      transparent 0 6px,
+      rgba(240, 179, 84, 0.35) 6px 8px,
+      transparent 8px 26px
+    );
+    background-size: 78px 14px;
+    background-repeat: repeat-x;
+    background-position: center;
+  }
 }
 
 /* Foco visible accesible: ≥2px y contraste ≥3:1 (WCAG 2.4.7) */
@@ -56,11 +172,14 @@ body {
   border-radius: 4px;
 }
 
-/* Targets táctiles mínimos (WCAG 2.5.8) */
 button,
 a,
 input,
 select {
   min-height: 24px;
   min-width: 24px;
+}
+
+::selection {
+  background: rgba(200, 130, 30, 0.4);
 }

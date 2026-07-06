@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { liveQuery } from 'dexie'
 import { db, exportLibrary, importLibrary, type SavedDino } from '../../store/db'
 import { POINT_STATS, type PointStatKey } from '../../engine/types'
 import { STAT_META } from '../../ui/statMeta'
-import { StatChip } from '../../ui/StatChip'
+import { StatBar } from '../../ui/StatBar'
+import { IconScan } from '../../ui/icons'
 
 type SortKey = 'createdAt' | PointStatKey
 
@@ -41,23 +43,22 @@ export function LibraryPage() {
       const n = await importLibrary(await file.text())
       setMsg(`✓ ${n} dinos importados`)
     } catch (e) {
-      setMsg(`❌ ${e instanceof Error ? e.message : 'Error al importar'}`)
+      setMsg(`✕ ${e instanceof Error ? e.message : 'Error al importar'}`)
     }
   }
 
   return (
     <section aria-label="Mis dinos guardados">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">Mis Dinos ({dinos.length})</h2>
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="display text-2xl font-bold">
+          Mis Dinos <span className="text-base font-semibold text-bone-faint">({dinos.length})</span>
+        </h2>
         <div className="flex gap-2">
-          <button onClick={onExport} className="rounded-lg bg-surface-2 px-3 py-2 text-sm font-medium hover:bg-surface-3">
-            Exportar
+          <button onClick={onExport} className="btn-ghost text-sm">
+            ⬇ Exportar
           </button>
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="rounded-lg bg-surface-2 px-3 py-2 text-sm font-medium hover:bg-surface-3"
-          >
-            Importar
+          <button onClick={() => fileRef.current?.click()} className="btn-ghost text-sm">
+            ⬆ Importar
           </button>
           <input
             ref={fileRef}
@@ -69,59 +70,73 @@ export function LibraryPage() {
           />
         </div>
       </div>
+      <p className="mb-4 text-sm text-bone-dim">Tu colección, con los puntos de cada stat al descubierto.</p>
       {msg && <p className="mb-3 text-sm text-bone-dim">{msg}</p>}
 
-      <label className="mb-4 block text-sm">
-        <span className="mb-1 block text-bone-dim">Ordenar por</span>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortKey)}
-          className="rounded-lg border border-surface-3 bg-surface-1 px-3 py-2"
-        >
-          <option value="createdAt">Más recientes</option>
-          {POINT_STATS.map((k) => (
-            <option key={k} value={k}>
-              Mejor {STAT_META[k].label} (puntos)
-            </option>
-          ))}
-        </select>
-      </label>
+      {sorted.length > 0 && (
+        <label className="mb-4 block text-sm">
+          <span className="mb-1 block text-xs font-medium text-bone-dim">Ordenar por</span>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="input-field max-w-60">
+            <option value="createdAt">Más recientes</option>
+            {POINT_STATS.map((k) => (
+              <option key={k} value={k}>
+                Mejor {STAT_META[k].label} (puntos)
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {sorted.length === 0 ? (
-        <p className="rounded-xl bg-surface-1 p-6 text-center text-bone-dim">
-          Aún no hay dinos guardados. Usa el <strong>Inspector</strong> para extraer los stats de un tame y guardarlo
-          aquí. 🦖
-        </p>
+        <div className="panel p-8 text-center">
+          <p className="mb-4 text-bone-dim">
+            Aún no hay dinos guardados.
+            <br />
+            Analiza tu primer tame con el Inspector. 🦖
+          </p>
+          <Link to="/inspector" className="btn-primary inline-flex items-center gap-2">
+            <IconScan size={18} /> Abrir Inspector
+          </Link>
+        </div>
       ) : (
         <ul className="grid gap-3">
-          {sorted.map((d) => (
-            <li key={d.id} className="rounded-xl bg-surface-1 p-4">
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-bold">{d.name}</h3>
-                  <p className="text-xs text-bone-dim">
-                    {d.speciesName} · Nv {d.level} · {d.version} · TE {(d.TE * 100).toFixed(0)}%
-                    {d.IB > 0 && ` · Imprint ${(d.IB * 100).toFixed(0)}%`}
-                  </p>
+          {sorted.map((d) => {
+            const entries = POINT_STATS.filter((k) => d.stats[k])
+            const max = Math.max(30, ...entries.map((k) => d.stats[k]!.Lw + d.stats[k]!.Ld)) * 1.15
+            return (
+              <li key={d.id} className="panel p-4">
+                <div className="mb-3 flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="display grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-amber"
+                    >
+                      {d.name.slice(0, 2).toUpperCase()}
+                    </span>
+                    <div>
+                      <h3 className="display font-bold">{d.name}</h3>
+                      <p className="text-xs text-bone-faint">
+                        {d.speciesName} · Nv {d.level} · {d.version} · TE {(d.TE * 100).toFixed(0)}%
+                        {d.IB > 0 && ` · Imprint ${(d.IB * 100).toFixed(0)}%`}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => db.dinos.delete(d.id!)}
+                    aria-label={`Eliminar ${d.name}`}
+                    className="rounded-lg px-2 py-1 text-bone-faint transition-colors hover:bg-surface-2 hover:text-danger"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <button
-                  onClick={() => db.dinos.delete(d.id!)}
-                  aria-label={`Eliminar ${d.name}`}
-                  className="rounded-lg px-2 py-1 text-bone-faint hover:bg-surface-2 hover:text-danger"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {POINT_STATS.filter((k) => d.stats[k]).map((k) => (
-                  <StatChip key={k} stat={k}>
-                    {d.stats[k]!.Lw}
-                    {d.stats[k]!.Ld > 0 && `+${d.stats[k]!.Ld}`}
-                  </StatChip>
-                ))}
-              </div>
-            </li>
-          ))}
+                <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-x-6">
+                  {entries.map((k) => (
+                    <StatBar key={k} stat={k} wild={d.stats[k]!.Lw} dom={d.stats[k]!.Ld} max={max} />
+                  ))}
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
     </section>
