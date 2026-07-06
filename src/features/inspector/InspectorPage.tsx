@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { extractPostTame, statReceivesPoints } from '../../engine/extractor'
+import { tameBonusLevels } from '../../engine/statFormula'
 import { OFFICIAL_MULTIPLIERS, POINT_STATS, type PointStatKey } from '../../engine/types'
 import { findSpecies, getSpecies } from '../../data'
 import { STAT_META } from '../../ui/statMeta'
@@ -19,6 +20,8 @@ export function InspectorPage() {
 
   const species = speciesId ? findSpecies(version, decodeURIComponent(speciesId)) : undefined
 
+  /** 'fresh' = recién domado (Ld=0 en todo — el caso más común); 'leveled' = ya le subí niveles */
+  const [mode, setMode] = useState<'fresh' | 'leveled'>('fresh')
   const [bred, setBred] = useState(false)
   const [TE, setTE] = useState('100')
   const [IB, setIB] = useState('0')
@@ -49,7 +52,9 @@ export function InspectorPage() {
     }
     if (Object.keys(observed).length === 0) return null
 
-    const ptl = Number(postTameLevel)
+    // Modo "recién domado": el nivel actual ES el nivel tras domar y nadie gastó puntos aún
+    const fresh = mode === 'fresh'
+    const ptl = Number(fresh ? level : postTameLevel)
     const lvl = Number(level)
     return extractPostTame({
       species,
@@ -58,11 +63,15 @@ export function InspectorPage() {
       ctx: { tamed: true, bred, TE: bred ? 1 : Number(TE) / 100, IB: Number(IB) / 100 },
       mult: OFFICIAL_MULTIPLIERS,
       wildPoints: Number.isFinite(ptl) && ptl > 0 ? ptl - 1 : undefined,
-      domPoints: Number.isFinite(ptl) && ptl > 0 && Number.isFinite(lvl) && lvl >= ptl ? lvl - ptl : undefined,
+      domPoints: fresh
+        ? 0
+        : Number.isFinite(ptl) && ptl > 0 && Number.isFinite(lvl) && lvl >= ptl
+          ? lvl - ptl
+          : undefined,
       displayPrecisionPerStat: precisions,
-      lockedLd0: [...locked],
+      lockedLd0: fresh ? [...relevantStats] : [...locked],
     })
-  }, [species, version, relevantStats, values, bred, TE, IB, level, postTameLevel, locked])
+  }, [species, version, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked])
 
   async function saveDino() {
     if (!species || !result || result.solutions.length !== 1) return
@@ -150,22 +159,43 @@ export function InspectorPage() {
           <span className="step-badge">2</span>
           <h3 className="display font-semibold">Cuéntame de tu dino</h3>
         </div>
+
+        {/* Selector de situación: el caso típico es "recién domado" */}
+        <div role="group" aria-label="Situación del dino" className="mb-4 flex gap-2 rounded-lg bg-surface-0/60 p-1.5">
+          <button onClick={() => setMode('fresh')} aria-pressed={mode === 'fresh'} className="mode-tab">
+            ⚡ Recién domado
+          </button>
+          <button onClick={() => setMode('leveled')} aria-pressed={mode === 'leveled'} className="mode-tab">
+            Ya le subí niveles
+          </button>
+        </div>
+        {mode === 'fresh' && (
+          <p className="mb-4 text-xs text-bone-dim">
+            Acabas de domarlo y no has gastado ningún punto → te digo <strong className="text-tek">exactamente</strong>{' '}
+            dónde cayeron los puntos salvajes (los que se heredan al criar).
+          </p>
+        )}
+
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <label className="text-sm">
-            <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel actual</span>
+            <span className="mb-1 block text-xs font-medium text-bone-dim">
+              {mode === 'fresh' ? 'Nivel (tras domar)' : 'Nivel actual'}
+            </span>
             <input type="number" inputMode="numeric" value={level} onChange={(e) => setLevel(e.target.value)} className="input-field" />
           </label>
-          <label className="text-sm">
-            <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel tras domar</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={postTameLevel}
-              onChange={(e) => setPostTameLevel(e.target.value)}
-              placeholder="opcional"
-              className="input-field"
-            />
-          </label>
+          {mode === 'leveled' && (
+            <label className="text-sm">
+              <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel tras domar</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={postTameLevel}
+                onChange={(e) => setPostTameLevel(e.target.value)}
+                placeholder="opcional"
+                className="input-field"
+              />
+            </label>
+          )}
           {!bred && (
             <label className="text-sm">
               <span className="mb-1 block text-xs font-medium text-bone-dim">Efectividad %</span>
@@ -178,12 +208,14 @@ export function InspectorPage() {
           </label>
         </div>
         <label className="mt-3 flex items-center gap-2 text-sm text-bone-dim">
-          <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-4 accent-(--color-amber-deep)" />
+          <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-4 accent-(--color-tek-deep)" />
           Es un dino criado — la efectividad se asume 100%
         </label>
-        <p className="mt-2 text-xs text-bone-faint">
-          💡 El «nivel tras domar» (antes de gastar puntos) convierte varias posibilidades en una respuesta exacta.
-        </p>
+        {mode === 'leveled' && (
+          <p className="mt-2 text-xs text-bone-faint">
+            💡 El «nivel tras domar» (antes de gastar puntos) convierte varias posibilidades en una respuesta exacta.
+          </p>
+        )}
       </div>
 
       {/* Paso 3: stats */}
@@ -212,6 +244,7 @@ export function InspectorPage() {
                     style={values[k] ? { borderColor: meta.color, boxShadow: `0 0 0 3px color-mix(in srgb, ${meta.color} 18%, transparent)` } : undefined}
                   />
                 </label>
+                {mode === 'leveled' && (
                 <label className="mt-1.5 flex items-center gap-1.5 text-[11px] text-bone-faint">
                   <input
                     type="checkbox"
@@ -224,10 +257,11 @@ export function InspectorPage() {
                         return next
                       })
                     }
-                    className="size-3.5 accent-(--color-amber-deep)"
+                    className="size-3.5 accent-(--color-tek-deep)"
                   />
                   nunca subí este stat
                 </label>
+                )}
               </div>
             )
           })}
@@ -282,6 +316,34 @@ export function InspectorPage() {
           <p className="mt-3 text-[11px] text-bone-faint">
             Barra sólida = puntos salvajes (heredables al criar) · rayada = niveles que subiste tú
           </p>
+
+          {/* Comparación salvaje → domado: nivel original y niveles bonus por TE */}
+          {uniqueSolution && !bred && (() => {
+            const ptl = Number(mode === 'fresh' ? level : postTameLevel)
+            if (!Number.isFinite(ptl) || ptl <= 0) return null
+            const te = Number(TE) / 100
+            // busca el nivel salvaje wl tal que wl + floor(wl·TE/2) = nivel tras domar
+            let wildLevel: number | null = null
+            for (let wl = Math.floor(ptl / (1 + te / 2)) - 2; wl <= ptl; wl++) {
+              if (wl > 0 && wl + tameBonusLevels(wl, te) === ptl) { wildLevel = wl; break }
+            }
+            if (!wildLevel) return null
+            const bonus = ptl - wildLevel
+            return (
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-tek-dark/40 bg-surface-0/50 px-3 py-2 text-sm">
+                <span className="text-bone-dim">Salvaje era</span>
+                <span className="display font-bold text-bone">Nv {wildLevel}</span>
+                <span className="text-tek" aria-hidden="true">→</span>
+                <span className="text-bone-dim">domado</span>
+                <span className="display font-bold text-tek">Nv {ptl}</span>
+                {bonus > 0 && (
+                  <span className="text-xs text-bone-dim">
+                    (+{bonus} niveles bonus por {TE}% de efectividad, repartidos como salvajes)
+                  </span>
+                )}
+              </div>
+            )
+          })()}
 
           {uniqueSolution && (
             <div className="mt-4 flex flex-col gap-2 border-t border-surface-3 pt-4 sm:flex-row">

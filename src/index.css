@@ -1,44 +1,44 @@
 @import 'tailwindcss';
 
 /*
- * Design system "Ámbar y hueso" v2 — dark-first con carácter ARK.
- * Superficies cálidas con profundidad, acento ámbar/resina con glow,
- * tipografía display Chakra Petch, stats en paleta Okabe-Ito (CVD-safe).
+ * Design system "Tek HUD" — inspirado en el HUD de ARK y la estética Tek tier:
+ * paneles holográficos translúcidos azul-cian, brackets angulares en las esquinas,
+ * glow eléctrico. Stats en paleta Okabe-Ito (segura para daltonismo).
  */
 @theme {
   --font-display: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-  /* Superficies (dark-first, tono cálido piedra) */
-  --color-surface-0: #120e08;
-  --color-surface-1: #1c1610;
-  --color-surface-2: #282017;
-  --color-surface-3: #382d1e;
+  /* Superficies (azul-negro profundo, frío) */
+  --color-surface-0: #060b10;
+  --color-surface-1: #0b141c;
+  --color-surface-2: #122230;
+  --color-surface-3: #1b3447;
 
-  /* Neutros hueso */
-  --color-bone: #f0e7d5;
-  --color-bone-dim: #b5a98e;
-  --color-bone-faint: #837a66;
+  /* Neutros hielo (nombres 'bone' conservados como API) */
+  --color-bone: #dcedf2;
+  --color-bone-dim: #93b2bd;
+  --color-bone-faint: #5d7884;
 
-  /* Acento ámbar/resina */
-  --color-amber: #f5b855;
-  --color-amber-deep: #c8821e;
-  --color-amber-dark: #8a5a12;
+  /* Acento Tek: cian eléctrico */
+  --color-tek: #39e6e0;
+  --color-tek-deep: #14a8b8;
+  --color-tek-dark: #0b6572;
 
   /* Paleta Okabe-Ito por stat (nunca color solo: siempre con icono + etiqueta) */
   --color-stat-health: #e69f00;
   --color-stat-stamina: #56b4e9;
   --color-stat-oxygen: #4d9fd6;
-  --color-stat-food: #00a97b;
+  --color-stat-food: #00c98d;
   --color-stat-weight: #e8dc4e;
-  --color-stat-melee: #e0652a;
+  --color-stat-melee: #ef6c2e;
   --color-stat-speed: #cc79a7;
   --color-stat-torpor: #9a9a9a;
 
   /* Semánticos */
-  --color-ok: #00a97b;
+  --color-ok: #00c98d;
   --color-warn: #e69f00;
-  --color-danger: #e0652a;
+  --color-danger: #ef6c2e;
 }
 
 html {
@@ -51,8 +51,11 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   background:
-    radial-gradient(90rem 40rem at 50% -20rem, rgba(200, 130, 30, 0.14), transparent 60%),
-    radial-gradient(50rem 30rem at 110% 110%, rgba(200, 130, 30, 0.06), transparent 60%),
+    /* glow superior cian tipo HUD */
+    radial-gradient(90rem 42rem at 50% -22rem, rgba(20, 168, 184, 0.16), transparent 62%),
+    radial-gradient(46rem 30rem at 108% 112%, rgba(20, 168, 184, 0.07), transparent 60%),
+    /* retícula hex sutil */
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(57, 230, 224, 0.012) 2px 4px),
     var(--color-surface-0);
   background-attachment: fixed;
 }
@@ -61,38 +64,71 @@ body {
 @layer components {
   .display {
     font-family: var(--font-display);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.03em;
   }
 
-  /* Panel/card con profundidad y borde ámbar sutil */
+  /* Panel holográfico HUD: translúcido, borde cian, brackets en esquinas */
   .panel {
-    background: linear-gradient(160deg, rgba(240, 179, 84, 0.05), rgba(240, 179, 84, 0) 45%),
-      var(--color-surface-1);
-    border: 1px solid rgba(240, 179, 84, 0.12);
-    border-radius: 1rem;
-    box-shadow: 0 1px 0 rgba(240, 231, 213, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+    position: relative;
+    background: linear-gradient(165deg, rgba(57, 230, 224, 0.055), rgba(57, 230, 224, 0.012) 40%),
+      color-mix(in srgb, var(--color-surface-1) 88%, transparent);
+    border: 1px solid rgba(57, 230, 224, 0.16);
+    border-radius: 0.625rem;
+    box-shadow:
+      inset 0 1px 0 rgba(220, 237, 242, 0.05),
+      0 0 22px rgba(20, 168, 184, 0.07),
+      0 8px 26px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
   }
+  /* Brackets angulares tipo HUD en esquinas opuestas */
+  .panel::before,
+  .panel::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: rgba(57, 230, 224, 0.55);
+    border-style: solid;
+    pointer-events: none;
+  }
+  .panel::before {
+    top: -1px;
+    left: -1px;
+    border-width: 2px 0 0 2px;
+    border-top-left-radius: 0.625rem;
+  }
+  .panel::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 2px 2px 0;
+    border-bottom-right-radius: 0.625rem;
+  }
+
   .panel-hover {
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .panel-hover:hover {
     transform: translateY(-2px);
-    border-color: rgba(240, 179, 84, 0.35);
-    box-shadow: 0 1px 0 rgba(240, 231, 213, 0.05) inset, 0 12px 32px rgba(0, 0, 0, 0.5);
+    border-color: rgba(57, 230, 224, 0.45);
+    box-shadow:
+      inset 0 1px 0 rgba(220, 237, 242, 0.06),
+      0 0 30px rgba(20, 168, 184, 0.16),
+      0 12px 32px rgba(0, 0, 0, 0.55);
   }
 
   .btn-primary {
     font-family: var(--font-display);
     font-weight: 600;
-    color: #1c1207;
-    background: linear-gradient(135deg, var(--color-amber), var(--color-amber-deep));
-    border-radius: 0.75rem;
+    color: #04181a;
+    background: linear-gradient(135deg, var(--color-tek), var(--color-tek-deep));
+    border-radius: 0.5rem;
     padding: 0.625rem 1.25rem;
-    box-shadow: 0 2px 12px rgba(200, 130, 30, 0.35);
-    transition: filter 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 0 16px rgba(57, 230, 224, 0.35), 0 2px 10px rgba(0, 0, 0, 0.4);
+    transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   }
   .btn-primary:hover {
-    filter: brightness(1.1);
+    filter: brightness(1.12);
+    box-shadow: 0 0 24px rgba(57, 230, 224, 0.5), 0 2px 10px rgba(0, 0, 0, 0.4);
   }
   .btn-primary:active {
     transform: scale(0.98);
@@ -103,23 +139,24 @@ body {
   }
 
   .btn-ghost {
-    border: 1px solid rgba(240, 179, 84, 0.2);
-    border-radius: 0.75rem;
+    border: 1px solid rgba(57, 230, 224, 0.22);
+    border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     color: var(--color-bone-dim);
-    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   }
   .btn-ghost:hover {
-    border-color: rgba(240, 179, 84, 0.45);
+    border-color: rgba(57, 230, 224, 0.5);
     color: var(--color-bone);
-    background: rgba(240, 179, 84, 0.06);
+    background: rgba(57, 230, 224, 0.07);
+    box-shadow: 0 0 14px rgba(20, 168, 184, 0.15);
   }
 
   .input-field {
     width: 100%;
-    background: var(--color-surface-0);
+    background: rgba(6, 11, 16, 0.75);
     border: 1px solid var(--color-surface-3);
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     padding: 0.625rem 0.875rem;
     color: var(--color-bone);
     font-variant-numeric: tabular-nums;
@@ -130,8 +167,8 @@ body {
   }
   .input-field:focus {
     outline: none;
-    border-color: var(--color-amber-deep);
-    box-shadow: 0 0 0 3px rgba(200, 130, 30, 0.22);
+    border-color: var(--color-tek-deep);
+    box-shadow: 0 0 0 3px rgba(20, 168, 184, 0.22), 0 0 12px rgba(57, 230, 224, 0.18);
   }
 
   /* Cabecera de paso numerado del flujo del Inspector */
@@ -142,32 +179,52 @@ body {
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
-    border-radius: 9999px;
-    background: linear-gradient(135deg, var(--color-amber), var(--color-amber-deep));
-    color: #1c1207;
+    border-radius: 0.375rem;
+    background: linear-gradient(135deg, var(--color-tek), var(--color-tek-deep));
+    color: #04181a;
     font-weight: 700;
     font-size: 0.9rem;
-    box-shadow: 0 2px 8px rgba(200, 130, 30, 0.4);
+    box-shadow: 0 0 12px rgba(57, 230, 224, 0.45);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
   }
 
-  /* Divisor "zarpazo": tres trazos diagonales ámbar */
+  /* Divisor de energía Tek: línea con pulso central */
   .claw-divider {
-    height: 14px;
-    background-image: repeating-linear-gradient(
-      -60deg,
-      transparent 0 6px,
-      rgba(240, 179, 84, 0.35) 6px 8px,
-      transparent 8px 26px
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(57, 230, 224, 0.6) 30%,
+      var(--color-tek) 50%,
+      rgba(57, 230, 224, 0.6) 70%,
+      transparent
     );
-    background-size: 78px 14px;
-    background-repeat: repeat-x;
-    background-position: center;
+    box-shadow: 0 0 12px rgba(57, 230, 224, 0.5);
+    border-radius: 999px;
+  }
+
+  /* Selector de modo tipo segmented-control HUD */
+  .mode-tab {
+    font-family: var(--font-display);
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-bone-dim);
+    transition: all 0.15s ease;
+  }
+  .mode-tab[aria-pressed='true'] {
+    background: linear-gradient(135deg, rgba(57, 230, 224, 0.2), rgba(20, 168, 184, 0.12));
+    color: var(--color-tek);
+    border: 1px solid rgba(57, 230, 224, 0.4);
+    box-shadow: 0 0 12px rgba(20, 168, 184, 0.18);
   }
 }
 
 /* Foco visible accesible: ≥2px y contraste ≥3:1 (WCAG 2.4.7) */
 :focus-visible {
-  outline: 2px solid var(--color-amber);
+  outline: 2px solid var(--color-tek);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -181,5 +238,5 @@ select {
 }
 
 ::selection {
-  background: rgba(200, 130, 30, 0.4);
+  background: rgba(20, 168, 184, 0.45);
 }

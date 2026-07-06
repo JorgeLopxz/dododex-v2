@@ -18,7 +18,7 @@ export function HomePage() {
       {/* Hero */}
       <section className="pt-4 text-center">
         <h2 className="display text-3xl font-bold leading-tight sm:text-4xl">
-          Tu manada, <span className="text-amber">bajo control</span>
+          Tu manada, <span className="text-tek">bajo control</span>
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-bone-dim">
           El companion de ARK que une lo mejor de Dododex y Wikily — y hace lo que ninguno:
@@ -30,12 +30,12 @@ export function HomePage() {
       {/* Acciones principales */}
       <section className="grid gap-3 sm:grid-cols-3" aria-label="Herramientas">
         <Link to="/inspector" className="panel panel-hover flex flex-col gap-2 p-5 sm:col-span-3 sm:flex-row sm:items-center sm:gap-4">
-          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-amber-deep/20 text-amber">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-tek-deep/20 text-tek">
             <IconScan size={26} />
           </span>
           <span className="flex-1">
             <span className="display block text-lg font-semibold">
-              Inspector post-tame <span className="rounded-md bg-amber-deep/25 px-1.5 py-0.5 text-xs font-bold text-amber">EXCLUSIVO</span>
+              Inspector post-tame <span className="rounded-md bg-tek-deep/25 px-1.5 py-0.5 text-xs font-bold text-tek">EXCLUSIVO</span>
             </span>
             <span className="text-sm text-bone-dim">
               ¿Cuántos puntos cayeron en cada stat de tu tame? Dododex no puede decírtelo. Nosotros sí.

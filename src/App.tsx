@@ -24,7 +24,7 @@ export default function App() {
         <NavLink to="/" className="flex items-center gap-2.5">
           <DinoFootprint size={30} />
           <span className="display text-xl font-bold tracking-wide">
-            DODODEX <span className="text-amber">V2</span>
+            DODODEX <span className="text-tek">V2</span>
           </span>
         </NavLink>
         {/* Toggle ASA/ASE: cambia constantes Y reglas del motor (Speed, caps…) */}
@@ -40,7 +40,7 @@ export default function App() {
               aria-pressed={version === v}
               className={`display rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ${
                 version === v
-                  ? 'bg-gradient-to-br from-amber to-amber-deep text-surface-0 shadow-lg shadow-amber-deep/30'
+                  ? 'bg-gradient-to-br from-tek to-tek-deep text-surface-0 shadow-lg shadow-tek-deep/30'
                   : 'text-bone-dim hover:text-bone'
               }`}
             >
@@ -68,7 +68,7 @@ export default function App() {
       {/* Navegación inferior: zona de alcance del pulgar */}
       <nav
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-10 border-t border-amber-deep/15 bg-surface-1/90 backdrop-blur-lg"
+        className="fixed inset-x-0 bottom-0 z-10 border-t border-tek-deep/15 bg-surface-1/90 backdrop-blur-lg"
       >
         <div className="mx-auto flex max-w-3xl">
           {NAV.map(({ to, icon: Icon, label, end }) => (
@@ -78,14 +78,14 @@ export default function App() {
               end={end}
               className={({ isActive }) =>
                 `relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-amber' : 'text-bone-faint hover:text-bone-dim'
+                  isActive ? 'text-tek' : 'text-bone-faint hover:text-bone-dim'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <span className="absolute -top-px h-0.5 w-10 rounded-full bg-gradient-to-r from-amber to-amber-deep" />
+                    <span className="absolute -top-px h-0.5 w-10 rounded-full bg-gradient-to-r from-tek to-tek-deep" />
                   )}
                   <Icon />
                   {label}

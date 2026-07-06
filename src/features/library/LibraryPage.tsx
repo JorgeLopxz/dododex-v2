@@ -109,7 +109,7 @@ export function LibraryPage() {
                   <div className="flex items-center gap-3">
                     <span
                       aria-hidden="true"
-                      className="display grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-amber"
+                      className="display grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-tek"
                     >
                       {d.name.slice(0, 2).toUpperCase()}
                     </span>
