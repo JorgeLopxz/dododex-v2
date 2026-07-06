@@ -11,6 +11,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 const RAW_DIR = 'data-raw'
 const OUT_DIR = 'src/data'
 const BASE = 'https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json/values'
+const BASE_JSON = 'https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json'
 const FILES = { ase: 'values.json', asa: 'ASA-values.json' }
 
 // fullStatsRaw de ASB usa 12 índices; mapeamos a nuestros 8
@@ -45,6 +46,7 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
       if (!inherited) continue
       sp.fullStatsRaw = inherited.fullStatsRaw
       sp.name ??= inherited.name
+      sp.taming ??= inherited.taming
       sp.TamedBaseHealthMultiplier ??= inherited.TBHM
       sp.displayedStats ??= inherited.ds
     }
@@ -64,11 +66,19 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
     })
     const tbhm = sp.TamedBaseHealthMultiplier ?? 1
     const ds = sp.displayedStats ?? 0
+    // datos de tameo (fórmulas verificadas en ASB Taming.cs):
+    // [affinityNeeded0, affinityIncreasePL, ineffectiveness, foodConsBase, foodConsMult, torporDeplPS0, nonViolent, wakeAffinityMult, wakeFoodDeplMult]
+    const t = sp.taming
+    const taming = t && t.affinityNeeded0 > 0
+      ? [t.affinityNeeded0, t.affinityIncreasePL ?? 0, t.tamingIneffectiveness ?? 0,
+         t.foodConsumptionBase ?? 0, t.foodConsumptionMult ?? 0, t.torporDepletionPS0 ?? 0,
+         t.nonViolent ? 1 : 0, t.wakeAffinityMult ?? 1, t.wakeFoodDeplMult ?? 1]
+      : null
     if (!sp.name) continue // entradas internas (misiones, summoned, STA) sin nombre real
     const baseName = sp.name
     const extraVariants = (sp.variants ?? []).filter((v) => !baseName.toLowerCase().includes(v.toLowerCase()))
     const name = extraVariants.length ? `${baseName} (${extraVariants.join(', ')})` : baseName
-    out.push([id, name, tbhm, ds, stats])
+    out.push([id, name, tbhm, ds, stats, taming])
   }
   console.log(`${label}: ${out.length} especies`)
   return { version: raw.version, source: 'cadon/ARKStatsExtractor (MIT)', generated: new Date().toISOString(), species: out }
@@ -81,10 +91,34 @@ const aseByBp = new Map(
     .filter((sp) => sp.fullStatsRaw)
     .map((sp) => [
       (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, ''),
-      { fullStatsRaw: sp.fullStatsRaw, name: sp.name, TBHM: sp.TamedBaseHealthMultiplier ?? 1, ds: sp.displayedStats ?? 0 },
+      { fullStatsRaw: sp.fullStatsRaw, name: sp.name, TBHM: sp.TamedBaseHealthMultiplier ?? 1, ds: sp.displayedStats ?? 0, taming: sp.taming },
     ]),
 )
 const asa = transform(await ensureRaw(FILES.asa), 'ASA', aseByBp)
 writeFileSync(`${OUT_DIR}/species-ase.json`, JSON.stringify(ase))
 writeFileSync(`${OUT_DIR}/species-asa.json`, JSON.stringify(asa))
-console.log(`OK → ${OUT_DIR}/species-{ase,asa}.json (v ASE ${ase.version} / ASA ${asa.version})`)
+
+// ——— Comidas de tameo (tamingFoodData.json de ASB: dietas por especie + valores f/a) ———
+async function ensureRawJson(name) {
+  const path = `${RAW_DIR}/${name}`
+  if (!existsSync(path)) {
+    if (offline) throw new Error(`Falta ${path} y estamos en --offline`)
+    console.log(`Descargando ${name}…`)
+    const res = await fetch(`${BASE_JSON}/${name}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status} al bajar ${name}`)
+    writeFileSync(path, await res.text())
+  }
+  return JSON.parse(readFileSync(path, 'utf8'))
+}
+const tfd = await ensureRawJson('tamingFoodData.json')
+const defaults = tfd.tamingFoodData.default.specialFoodValues
+const perSpecies = {}
+for (const [name, entry] of Object.entries(tfd.tamingFoodData)) {
+  if (name === 'default' || !entry.eats) continue
+  perSpecies[name] = { eats: entry.eats, overrides: entry.specialFoodValues ?? {} }
+}
+writeFileSync(
+  `${OUT_DIR}/taming-foods.json`,
+  JSON.stringify({ version: tfd.version, source: 'cadon/ARKStatsExtractor (MIT)', foods: defaults, perSpecies }),
+)
+console.log(`OK → ${OUT_DIR}/species-{ase,asa}.json (v ASE ${ase.version} / ASA ${asa.version}) + taming-foods.json (${Object.keys(perSpecies).length} especies)`)

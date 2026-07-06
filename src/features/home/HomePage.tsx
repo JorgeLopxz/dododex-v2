@@ -64,13 +64,13 @@ export function HomePage() {
           </span>
         </Link>
 
-        <div className="panel flex items-center gap-3 p-4 opacity-80">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-3 text-bone-faint">🧬</span>
+        <Link to="/tameo" className="panel panel-hover flex items-center gap-3 p-4">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-3 text-bone-dim" aria-hidden="true">🧮</span>
           <span>
-            <span className="display block font-semibold text-bone-dim">Cría y mutaciones</span>
-            <span className="text-xs text-bone-faint">próximamente</span>
+            <span className="display block font-semibold">Tameo</span>
+            <span className="text-xs text-bone-dim">comida, TE, narcóticos</span>
           </span>
-        </div>
+        </Link>
       </section>
 
       {/* Roadmap: la visión completa */}
@@ -80,12 +80,12 @@ export function HomePage() {
         </h3>
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
           {[
-            ['🧮 Calculadora de tameo', 'comida, narcóticos, torpor'],
-            ['📱 PWA instalable', 'offline total, como app'],
             ['🧬 Cría y mutaciones', 'árbol genealógico, planificador'],
+            ['⏰ Scheduler de imprint', 'cuddles y alarmas'],
+            ['🥩 Calculadora de trough', 'comida para criar'],
             ['🗺️ Mapas interactivos', 'recursos, spawns, cuevas'],
             ['🎁 Tablas de loot', 'con simulador de cajas'],
-            ['⏰ Scheduler de imprint', 'cuddles y alarmas'],
+            ['📤 Import Game.ini', 'multiplicadores automáticos'],
           ].map(([title, desc]) => (
             <div key={title} className="rounded-xl border border-surface-3/60 bg-surface-1/50 px-3 py-2.5">
               <span className="block font-medium text-bone-dim">{title}</span>

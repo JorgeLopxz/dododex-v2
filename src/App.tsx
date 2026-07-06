@@ -4,6 +4,7 @@ import { CreaturesPage } from './features/creatures/CreaturesPage'
 import { InspectorPage } from './features/inspector/InspectorPage'
 import { LibraryPage } from './features/library/LibraryPage'
 import { SettingsPage } from './features/settings/SettingsPage'
+import { TamingPage } from './features/taming/TamingPage'
 import { useSettings } from './store/settings'
 import { getDataInfo } from './data'
 import { DinoFootprint, IconDino, IconHome, IconLibrary, IconScan } from './ui/icons'
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="/criaturas" element={<CreaturesPage />} />
           <Route path="/inspector/:speciesId?" element={<InspectorPage />} />
           <Route path="/dinos" element={<LibraryPage />} />
+          <Route path="/tameo/:speciesId?" element={<TamingPage />} />
           <Route path="/ajustes" element={<SettingsPage />} />
         </Routes>
         <p className="mt-10 text-center text-[11px] leading-relaxed text-bone-faint">

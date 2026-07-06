@@ -4,11 +4,21 @@
  */
 import type { GameVersion, Species, StatConstants, StatKey } from '../engine/types'
 import { STAT_KEYS } from '../engine/types'
+import type { SpeciesTaming, TamingFood } from '../engine/taming'
 import aseJson from './species-ase.json'
 import asaJson from './species-asa.json'
+import tamingFoodsJson from './taming-foods.json'
 
-/** Formato compacto: [id, nombre, tbhm, displayedStats, stats[8]] */
-type CompactSpecies = [string, string, number, number, ([number, number, number, number, number] | null)[]]
+/** Formato compacto: [id, nombre, tbhm, displayedStats, stats[8], taming[9]|null] */
+type CompactTaming = [number, number, number, number, number, number, number, number, number]
+type CompactSpecies = [
+  string,
+  string,
+  number,
+  number,
+  ([number, number, number, number, number] | null)[],
+  CompactTaming | null,
+]
 interface DataFile {
   version: string
   source: string
@@ -31,10 +41,12 @@ const DS_BIT: Record<StatKey, number> = {
 export interface SpeciesEntry extends Species {
   /** ¿Se muestra este stat in-game para la especie? (para la UI) */
   displayed: Record<StatKey, boolean>
+  /** Datos de tameo (null si la especie no es domable por afinidad) */
+  taming: SpeciesTaming | null
 }
 
 function toSpecies(c: CompactSpecies): SpeciesEntry {
-  const [id, name, TBHM, ds, stats] = c
+  const [id, name, TBHM, ds, stats, t] = c
   const rec = {} as Record<StatKey, StatConstants | null>
   const displayed = {} as Record<StatKey, boolean>
   STAT_KEYS.forEach((key, i) => {
@@ -42,7 +54,55 @@ function toSpecies(c: CompactSpecies): SpeciesEntry {
     rec[key] = s ? { B: s[0], Iw: s[1], Id: s[2], Ta: s[3], Tm: s[4] } : null
     displayed[key] = (ds & DS_BIT[key]) !== 0 && s !== null
   })
-  return { id, name, stats: rec, TBHM, displayed }
+  const taming: SpeciesTaming | null = t
+    ? {
+        affinityNeeded0: t[0],
+        affinityIncreasePL: t[1],
+        ineffectiveness: t[2],
+        foodConsumptionBase: t[3],
+        foodConsumptionMult: t[4],
+        torporDepletionPS0: t[5],
+        nonViolent: t[6] === 1,
+        wakeAffinityMult: t[7],
+        wakeFoodDeplMult: t[8],
+      }
+    : null
+  return { id, name, stats: rec, TBHM, displayed, taming }
+}
+
+/* ——— Comidas de tameo (tamingFoodData.json de ASB) ——— */
+
+interface TamingFoodsFile {
+  version: string
+  foods: Record<string, { f: number; a: number; u?: boolean }>
+  perSpecies: Record<string, { eats: string[]; overrides: Record<string, { f?: number; a?: number }> }>
+}
+const foodsFile = tamingFoodsJson as TamingFoodsFile
+
+/**
+ * Dieta de una especie, en orden de preferencia (mejor comida primero).
+ * Resuelve variantes (Aberrant/Tek/X-/R-) contra la especie base. null ⇒ sin datos de dieta.
+ */
+export function getTamingFoods(speciesName: string): TamingFood[] | null {
+  const clean = speciesName.replace(/\s*\(.*\)$/, '').trim()
+  const candidates = [
+    speciesName,
+    clean,
+    clean.replace(/^(Aberrant|Tek|Corrupted)\s+/, ''),
+    clean.replace(/^[XR]-/, ''),
+  ]
+  const entry = candidates.map((n) => foodsFile.perSpecies[n]).find(Boolean)
+  if (!entry) return null
+  const foods: TamingFood[] = []
+  for (const name of entry.eats) {
+    const base = foodsFile.foods[name]
+    const ov = entry.overrides[name]
+    const f = ov?.f ?? base?.f
+    const a = ov?.a ?? base?.a
+    if (f === undefined || a === undefined || a <= 0) continue
+    foods.push({ name, f, a })
+  }
+  return foods.length > 0 ? foods : null
 }
 
 const cache = new Map<GameVersion, SpeciesEntry[]>()

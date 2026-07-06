@@ -50,7 +50,7 @@
 
 - [x] `engine/statFormula.ts` — fórmula forward completa (TBHM, imprint, Ta/Tm negativos, nerf oficial)
 - [x] `engine/extractor.ts` — extractor salvaje (paridad Dododex)
-- [x] Niveles bonus `floor(nivel·TE/2)` · [ ] decay de TE por comida (para la calc. de tameo, FASE 4)
+- [x] Niveles bonus `floor(nivel·TE/2)` · [x] modelo TE por comida (engine/taming.ts, verificado vs ASB)
 - [x] ⭐ `extractPostTame` — candidatos (Lw,Ld) por stat + DFS global con restricciones `ΣLw`/`ΣLd`
 - [x] Reglas de versión: toggle ASA/ASE (Speed no-pool en ASA; imprint excl. Stamina/Oxígeno)
 - [x] Estructura de multiplicadores `PerLevelStatsMultiplier_*` · [ ] `bUseSingleplayerSettings` + import .ini
@@ -67,14 +67,14 @@
 ## FASE 4 — Features MVP
 
 - [x] **Buscador de criaturas** (búsqueda por texto; pendiente: fuzzy + fichas de criatura)
-- [ ] **Calculadora de tameo**: comida/narcóticos/torpor/tiempo/TE/niveles bonus
-  - ⚠️ Hallazgo (07-2026): el values.json actual de ASB YA NO trae `eats`/`specialFoodValues` (0 entradas) — solo affinity/ineffectiveness/foodConsumption (+torporDepletionPS0 en ~199 especies). Requiere: tabla propia de comidas (wiki) + fórmula de decay de TE verificada (ASB TamingFunction.cs / ark.wiki.gg) vía investigación web ANTES de implementar. No improvisar constantes.
+- [x] **Calculadora de tameo**: dieta por especie, piezas/TE/niveles bonus/tiempo/narcóticos, TSM/FoodDrain/Sanguine (página /tameo)
+  - Datos: tamingFoodData.json de ASB (dietas de 159 especies + valores f/a). Fórmulas verificadas contra Taming.cs (TE = 1/(1+TI·piezas/afinidad), torpor crumplecorn). Validado: Rex 150 = 17 kibble / 98.7% / +74 = Dododex.
 - [x] **Extractor salvaje** (pre-tame) — modo 🌿 Salvaje en el Inspector, con puntos ocultos
 - [x] ⭐ **Inspector post-tame**: valores → puntos por stat, ambigüedad honesta, toggle ASA/ASE, guardar
   - [ ] Mejora: checkbox "nunca subí este stat" (Ld=0) por stat para reducir ambigüedad
 - [x] ⭐ **Mis Dinos**: biblioteca Dexie local-first, orden por stat, export/import JSON (falta: sexo/colores/notas en UI)
 - [x] **Perfiles de servidor**: presets Oficial/Vanilla/Custom + PerLevelStatsMultiplier per-stat (página Ajustes)
-- [ ] **Criterio de salida:** flujo completo tameo→extracción→guardado→consulta sin tocar otra app
+- [x] **Criterio de salida:** flujo completo tameo→extracción→guardado→consulta sin tocar otra app ✅ MVP FUNCIONAL
 
 ## FASE 5 — PWA + pulido → v0.1 (release personal)
 
