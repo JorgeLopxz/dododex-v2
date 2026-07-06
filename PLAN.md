@@ -34,7 +34,7 @@
 ## FASE 0 — Fundaciones ✅ = hecho · 🔄 = en curso
 
 - [x] Análisis de competencia y mecánicas (ANALISIS.md)
-- [x] Repo git local (GitHub remoto: pendiente de autorizar `gh` con device-code)
+- [x] Repo git local + GitHub privado (JorgeLopxz/dododex-v2) con push
 - [x] Scaffold Vite+React+TS, Tailwind, Vitest, estructura de carpetas
 - [x] CI mínima (GitHub Actions: typecheck + tests + build en push)
 
@@ -68,11 +68,11 @@
 
 - [x] **Buscador de criaturas** (búsqueda por texto; pendiente: fuzzy + fichas de criatura)
 - [ ] **Calculadora de tameo**: comida/narcóticos/torpor/tiempo/TE/niveles bonus
-- [ ] **Extractor salvaje** (pre-tame) — motor listo (`extractWildStat`), falta UI
+- [x] **Extractor salvaje** (pre-tame) — modo 🌿 Salvaje en el Inspector, con puntos ocultos
 - [x] ⭐ **Inspector post-tame**: valores → puntos por stat, ambigüedad honesta, toggle ASA/ASE, guardar
   - [ ] Mejora: checkbox "nunca subí este stat" (Ld=0) por stat para reducir ambigüedad
 - [x] ⭐ **Mis Dinos**: biblioteca Dexie local-first, orden por stat, export/import JSON (falta: sexo/colores/notas en UI)
-- [ ] **Perfiles de servidor**: multiplicadores per-stat editables + presets (hoy: oficial fijo)
+- [x] **Perfiles de servidor**: presets Oficial/Vanilla/Custom + PerLevelStatsMultiplier per-stat (página Ajustes)
 - [ ] **Criterio de salida:** flujo completo tameo→extracción→guardado→consulta sin tocar otra app
 
 ## FASE 5 — PWA + pulido → v0.1 (release personal)

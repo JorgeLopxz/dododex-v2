@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { extractPostTame, statReceivesPoints } from '../../engine/extractor'
+import { extractPostTame, extractWildStat, statReceivesPoints, type ExtractionResult } from '../../engine/extractor'
 import { tameBonusLevels } from '../../engine/statFormula'
-import { OFFICIAL_MULTIPLIERS, POINT_STATS, type PointStatKey } from '../../engine/types'
+import { POINT_STATS, type PointStatKey } from '../../engine/types'
 import { findSpecies, getSpecies } from '../../data'
 import { STAT_META } from '../../ui/statMeta'
 import { StatBar } from '../../ui/StatBar'
-import { useSettings } from '../../store/settings'
+import { getMultipliers, useSettings } from '../../store/settings'
 import { db } from '../../store/db'
 
 /**
@@ -20,8 +20,8 @@ export function InspectorPage() {
 
   const species = speciesId ? findSpecies(version, decodeURIComponent(speciesId)) : undefined
 
-  /** 'fresh' = recién domado (Ld=0 en todo — el caso más común); 'leveled' = ya le subí niveles */
-  const [mode, setMode] = useState<'fresh' | 'leveled'>('fresh')
+  /** 'fresh' = recién domado (Ld=0 — el caso común); 'leveled' = con niveles gastados; 'wild' = sin domar */
+  const [mode, setMode] = useState<'fresh' | 'leveled' | 'wild'>('fresh')
   const [bred, setBred] = useState(false)
   const [TE, setTE] = useState('100')
   const [IB, setIB] = useState('0')
@@ -32,10 +32,15 @@ export function InspectorPage() {
   const [dinoName, setDinoName] = useState('')
   const [saved, setSaved] = useState(false)
 
-  const relevantStats = useMemo(
-    () => (species ? POINT_STATS.filter((k) => statReceivesPoints(k, species, version) && species.displayed[k]) : []),
-    [species, version],
-  )
+  const settings = useSettings()
+  const mult = useMemo(() => getMultipliers(settings), [settings])
+
+  const relevantStats = useMemo(() => {
+    if (!species) return []
+    const base = POINT_STATS.filter((k) => statReceivesPoints(k, species, version) && species.displayed[k])
+    // en modo salvaje solo tienen sentido los stats con crecimiento salvaje (Iw > 0)
+    return mode === 'wild' ? base.filter((k) => (species.stats[k]?.Iw ?? 0) > 0) : base
+  }, [species, version, mode])
 
   const result = useMemo(() => {
     if (!species) return null
@@ -52,6 +57,25 @@ export function InspectorPage() {
     }
     if (Object.keys(observed).length === 0) return null
 
+    // Modo "salvaje": extracción directa Lw = (V/B − 1)/(Iw·IwM), sin términos de tameo
+    if (mode === 'wild') {
+      const perStat: ExtractionResult['perStat'] = {}
+      const sol: Partial<Record<PointStatKey, { Lw: number; Ld: number }>> = {}
+      let ok = true
+      const keys = Object.keys(observed) as PointStatKey[]
+      for (const k of keys) {
+        const Lw = extractWildStat(k, species, observed[k]!, mult, precisions[k])
+        if (Lw === null) {
+          perStat[k] = { candidates: [], ambiguous: false }
+          ok = false
+        } else {
+          perStat[k] = { candidates: [{ Lw, Ld: 0 }], ambiguous: false }
+          sol[k] = { Lw, Ld: 0 }
+        }
+      }
+      return { perStat, solutions: ok ? [sol] : [], statsConsidered: keys } satisfies ExtractionResult
+    }
+
     // Modo "recién domado": el nivel actual ES el nivel tras domar y nadie gastó puntos aún
     const fresh = mode === 'fresh'
     const ptl = Number(fresh ? level : postTameLevel)
@@ -61,7 +85,7 @@ export function InspectorPage() {
       version,
       observed,
       ctx: { tamed: true, bred, TE: bred ? 1 : Number(TE) / 100, IB: Number(IB) / 100 },
-      mult: OFFICIAL_MULTIPLIERS,
+      mult,
       wildPoints: Number.isFinite(ptl) && ptl > 0 ? ptl - 1 : undefined,
       domPoints: fresh
         ? 0
@@ -71,7 +95,7 @@ export function InspectorPage() {
       displayPrecisionPerStat: precisions,
       lockedLd0: fresh ? [...relevantStats] : [...locked],
     })
-  }, [species, version, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked])
+  }, [species, version, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked, mult])
 
   async function saveDino() {
     if (!species || !result || result.solutions.length !== 1) return
@@ -89,8 +113,8 @@ export function InspectorPage() {
       speciesName: species.name,
       version,
       level: Number(level) || 0,
-      TE: bred ? 1 : Number(TE) / 100,
-      IB: Number(IB) / 100,
+      TE: mode === 'wild' ? 0 : bred ? 1 : Number(TE) / 100,
+      IB: mode === 'wild' ? 0 : Number(IB) / 100,
       stats,
       createdAt: Date.now(),
     })
@@ -168,6 +192,9 @@ export function InspectorPage() {
           <button onClick={() => setMode('leveled')} aria-pressed={mode === 'leveled'} className="mode-tab">
             Ya le subí niveles
           </button>
+          <button onClick={() => setMode('wild')} aria-pressed={mode === 'wild'} className="mode-tab">
+            🌿 Salvaje
+          </button>
         </div>
         {mode === 'fresh' && (
           <p className="mb-4 text-xs text-bone-dim">
@@ -175,11 +202,16 @@ export function InspectorPage() {
             dónde cayeron los puntos salvajes (los que se heredan al criar).
           </p>
         )}
+        {mode === 'wild' && (
+          <p className="mb-4 text-xs text-bone-dim">
+            Aún no lo has domado → mira dónde tiene los puntos y decide si <strong className="text-tek">merece la pena</strong> el tameo.
+          </p>
+        )}
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <label className="text-sm">
             <span className="mb-1 block text-xs font-medium text-bone-dim">
-              {mode === 'fresh' ? 'Nivel (tras domar)' : 'Nivel actual'}
+              {mode === 'fresh' ? 'Nivel (tras domar)' : mode === 'wild' ? 'Nivel salvaje' : 'Nivel actual'}
             </span>
             <input type="number" inputMode="numeric" value={level} onChange={(e) => setLevel(e.target.value)} className="input-field" />
           </label>
@@ -196,21 +228,25 @@ export function InspectorPage() {
               />
             </label>
           )}
-          {!bred && (
+          {!bred && mode !== 'wild' && (
             <label className="text-sm">
               <span className="mb-1 block text-xs font-medium text-bone-dim">Efectividad %</span>
               <input type="number" inputMode="decimal" value={TE} onChange={(e) => setTE(e.target.value)} className="input-field" />
             </label>
           )}
-          <label className="text-sm">
-            <span className="mb-1 block text-xs font-medium text-bone-dim">Imprint %</span>
-            <input type="number" inputMode="decimal" value={IB} onChange={(e) => setIB(e.target.value)} className="input-field" />
-          </label>
+          {mode !== 'wild' && (
+            <label className="text-sm">
+              <span className="mb-1 block text-xs font-medium text-bone-dim">Imprint %</span>
+              <input type="number" inputMode="decimal" value={IB} onChange={(e) => setIB(e.target.value)} className="input-field" />
+            </label>
+          )}
         </div>
-        <label className="mt-3 flex items-center gap-2 text-sm text-bone-dim">
-          <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-4 accent-(--color-tek-deep)" />
-          Es un dino criado — la efectividad se asume 100%
-        </label>
+        {mode !== 'wild' && (
+          <label className="mt-3 flex items-center gap-2 text-sm text-bone-dim">
+            <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-4 accent-(--color-tek-deep)" />
+            Es un dino criado — la efectividad se asume 100%
+          </label>
+        )}
         {mode === 'leveled' && (
           <p className="mt-2 text-xs text-bone-faint">
             💡 El «nivel tras domar» (antes de gastar puntos) convierte varias posibilidades en una respuesta exacta.
@@ -314,8 +350,24 @@ export function InspectorPage() {
             })}
           </div>
           <p className="mt-3 text-[11px] text-bone-faint">
-            Barra sólida = puntos salvajes (heredables al criar) · rayada = niveles que subiste tú
+            {mode === 'wild'
+              ? 'Puntos salvajes por stat — se heredan al criar tras el tameo'
+              : 'Barra sólida = puntos salvajes (heredables al criar) · rayada = niveles que subiste tú'}
           </p>
+
+          {/* Modo salvaje: puntos que fueron a stats ocultos (velocidad, etc.) */}
+          {mode === 'wild' && uniqueSolution && Number(level) > 1 && (() => {
+            const assigned = result.statsConsidered.reduce((acc, k) => acc + (uniqueSolution[k]?.Lw ?? 0), 0)
+            const hidden = Number(level) - 1 - assigned
+            if (hidden < 0) return null
+            return (
+              <p className="mt-2 rounded-lg border border-tek-dark/40 bg-surface-0/50 px-3 py-2 text-sm text-bone-dim">
+                <span className="display font-bold text-bone">{assigned}</span> puntos visibles ·{' '}
+                <span className="display font-bold text-bone-faint">{hidden}</span> en stats ocultos
+                {version === 'ASA' ? ' (velocidad y similares — desperdiciados)' : ' (velocidad, etc.)'}
+              </p>
+            )
+          })()}
 
           {/* Comparación salvaje → domado: nivel original y niveles bonus por TE */}
           {uniqueSolution && !bred && (() => {

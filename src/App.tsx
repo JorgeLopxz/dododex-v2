@@ -3,6 +3,7 @@ import { HomePage } from './features/home/HomePage'
 import { CreaturesPage } from './features/creatures/CreaturesPage'
 import { InspectorPage } from './features/inspector/InspectorPage'
 import { LibraryPage } from './features/library/LibraryPage'
+import { SettingsPage } from './features/settings/SettingsPage'
 import { useSettings } from './store/settings'
 import { getDataInfo } from './data'
 import { DinoFootprint, IconDino, IconHome, IconLibrary, IconScan } from './ui/icons'
@@ -48,6 +49,20 @@ export default function App() {
             </button>
           ))}
         </div>
+        <NavLink
+          to="/ajustes"
+          aria-label="Ajustes del servidor"
+          className={({ isActive }) =>
+            `grid size-9 place-items-center rounded-lg border border-surface-3 transition-colors ${
+              isActive ? 'border-tek-deep/50 text-tek' : 'text-bone-dim hover:text-bone'
+            }`
+          }
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3.2" />
+            <path d="M12 2.8v3M12 18.2v3M21.2 12h-3M5.8 12h-3M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1M18.5 18.5l-2.1-2.1M7.6 7.6 5.5 5.5" />
+          </svg>
+        </NavLink>
       </header>
 
       <main className="flex-1 px-4 pb-28">
@@ -56,6 +71,7 @@ export default function App() {
           <Route path="/criaturas" element={<CreaturesPage />} />
           <Route path="/inspector/:speciesId?" element={<InspectorPage />} />
           <Route path="/dinos" element={<LibraryPage />} />
+          <Route path="/ajustes" element={<SettingsPage />} />
         </Routes>
         <p className="mt-10 text-center text-[11px] leading-relaxed text-bone-faint">
           Datos v{info.version} · {new Date(info.generated).toLocaleDateString()} · derivados de ARK Smart Breeding

@@ -81,8 +81,8 @@ export function HomePage() {
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
           {[
             ['🧮 Calculadora de tameo', 'comida, narcóticos, torpor'],
-            ['🌋 Extractor salvaje', '¿merece la pena este tame?'],
-            ['⚙️ Perfiles de servidor', 'multiplicadores per-stat'],
+            ['📱 PWA instalable', 'offline total, como app'],
+            ['🧬 Cría y mutaciones', 'árbol genealógico, planificador'],
             ['🗺️ Mapas interactivos', 'recursos, spawns, cuevas'],
             ['🎁 Tablas de loot', 'con simulador de cajas'],
             ['⏰ Scheduler de imprint', 'cuddles y alarmas'],
