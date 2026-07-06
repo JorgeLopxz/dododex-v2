@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { HomePage } from './features/home/HomePage'
 import { CreaturesPage } from './features/creatures/CreaturesPage'
+import { CreatureDetailPage } from './features/creatures/CreatureDetailPage'
 import { InspectorPage } from './features/inspector/InspectorPage'
 import { LibraryPage } from './features/library/LibraryPage'
 import { SettingsPage } from './features/settings/SettingsPage'
@@ -70,6 +71,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/criaturas" element={<CreaturesPage />} />
+          <Route path="/criaturas/:speciesId" element={<CreatureDetailPage />} />
           <Route path="/inspector/:speciesId?" element={<InspectorPage />} />
           <Route path="/dinos" element={<LibraryPage />} />
           <Route path="/tameo/:speciesId?" element={<TamingPage />} />

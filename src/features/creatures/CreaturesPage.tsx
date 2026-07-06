@@ -42,7 +42,7 @@ export function CreaturesPage() {
           return (
             <li key={s.id}>
               <Link
-                to={`/inspector/${encodeURIComponent(s.id)}`}
+                to={`/criaturas/${encodeURIComponent(s.id)}`}
                 className="panel panel-hover group flex items-center gap-3 p-3.5"
               >
                 {/* Avatar monograma con gradiente ámbar */}
