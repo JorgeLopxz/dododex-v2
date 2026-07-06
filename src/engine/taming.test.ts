@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { calcTaming, formatDuration, torporDepletionPS } from './taming'
+import { calcTaming, calcTamingPlan, formatDuration, torporDepletionPS } from './taming'
+import { WEAPONS, hitsToKnockout, wildTorpor } from './knockout'
 import { findSpecies, getTamingFoods } from '../data'
 
 describe('calcTaming — validado contra Dododex/ASB (Rex 150 oficial)', () => {
@@ -72,5 +73,64 @@ describe('calcTaming — validado contra Dododex/ASB (Rex 150 oficial)', () => {
   it('formatDuration legible', () => {
     expect(formatDuration(3479)).toBe('57m 59s')
     expect(formatDuration(7261)).toBe('2h 01m')
+  })
+
+  it('plan de una sola comida ≡ calcTaming', () => {
+    const single = calcTaming(rex.taming!, kibble, 150)!
+    const plan = calcTamingPlan(rex.taming!, [{ food: kibble, pieces: 999 }], 150)
+    expect(plan.enough).toBe(true)
+    expect(plan.used[0].pieces).toBe(single.pieces)
+    expect(plan.te).toBeCloseTo(single.te, 9)
+    expect(plan.seconds).toBe(single.seconds)
+  })
+
+  it('plan combinado: 10 kibble + resto carne cruda (TE intermedia, réplica de ASB)', () => {
+    const plan = calcTamingPlan(
+      rex.taming!,
+      [
+        { food: kibble, pieces: 10 },
+        { food: rawMeat, pieces: 999 },
+      ],
+      150,
+    )
+    // 25950 − 10·1600 = 9950 → 50 piezas de carne (fa=200)
+    expect(plan.enough).toBe(true)
+    expect(plan.used).toEqual([
+      { food: kibble, pieces: 10 },
+      { food: rawMeat, pieces: 50 },
+    ])
+    expect(plan.te).toBeCloseTo(1 / (1 + 1.25 * (10 / 1600 + 50 / 200)), 6) // ≈ 0.757
+    expect(plan.te).toBeGreaterThan(0.55) // mejor que solo carne
+    expect(plan.te).toBeLessThan(0.987) // peor que solo kibble
+  })
+
+  it('plan insuficiente: avisa honestamente (enough=false, afinidad restante)', () => {
+    const plan = calcTamingPlan(rex.taming!, [{ food: kibble, pieces: 5 }], 150)
+    expect(plan.enough).toBe(false)
+    expect(plan.affinityLeft).toBeCloseTo(25950 - 5 * 1600, 3)
+    expect(plan.bonusLevels).toBe(0)
+  })
+})
+
+describe('knockout — validado contra Dododex (Rex 150: 98 flechas ballesta / 70 dardos / 35 shock)', () => {
+  const rex = findSpecies('ASE', 'Rex_Character_BP')!
+  const torpor = wildTorpor({ B: rex.stats.torpor!.B, Iw: rex.stats.torpor!.Iw }, 150)
+
+  it('torpor total Rex 150 = 15.407', () => {
+    expect(torpor).toBeCloseTo(15407, 0)
+  })
+
+  it('golpes al 100% por arma (números de Dododex)', () => {
+    const by = (id: string) => WEAPONS.find((w) => w.id === id)!
+    expect(hitsToKnockout(torpor, by('crossbow'))).toBe(98)
+    expect(hitsToKnockout(torpor, by('dart'))).toBe(70)
+    expect(hitsToKnockout(torpor, by('shockdart'))).toBe(35)
+    expect(hitsToKnockout(torpor, by('bow'))).toBe(172)
+  })
+
+  it('la calidad del arma reduce golpes linealmente', () => {
+    const crossbow = WEAPONS.find((w) => w.id === 'crossbow')!
+    expect(hitsToKnockout(torpor, crossbow, 200)).toBe(49) // 200% daño → mitad
+    expect(hitsToKnockout(torpor, crossbow, 150)).toBe(66)
   })
 })

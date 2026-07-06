@@ -5,6 +5,7 @@ import { STAT_META } from '../../ui/statMeta'
 import { useSettings } from '../../store/settings'
 import type { StatKey } from '../../engine/types'
 import { IconScan } from '../../ui/icons'
+import { CreatureImage } from '../../ui/GameImage'
 
 const PREVIEW_STATS: StatKey[] = ['health', 'stamina', 'weight', 'melee']
 
@@ -38,20 +39,13 @@ export function CreaturesPage() {
 
       <ul className="grid gap-2.5 sm:grid-cols-2">
         {results.map((s) => {
-          const initials = s.name.replace(/\(.*\)/, '').trim().slice(0, 2).toUpperCase()
           return (
             <li key={s.id}>
               <Link
                 to={`/criaturas/${encodeURIComponent(s.id)}`}
                 className="panel panel-hover group flex items-center gap-3 p-3.5"
               >
-                {/* Avatar monograma con gradiente ámbar */}
-                <span
-                  aria-hidden="true"
-                  className="display grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-tek"
-                >
-                  {initials}
-                </span>
+                <CreatureImage name={s.name} size={44} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{s.name}</span>
                   <span className="mt-0.5 flex gap-3 text-[11px] text-bone-faint">

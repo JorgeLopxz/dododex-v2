@@ -67,7 +67,7 @@
 ## FASE 4 — Features MVP
 
 - [x] **Buscador de criaturas** (búsqueda por texto; pendiente: fuzzy + fichas de criatura)
-- [x] **Calculadora de tameo**: dieta por especie, piezas/TE/niveles bonus/tiempo/narcóticos, TSM/FoodDrain/Sanguine (página /tameo)
+- [x] **Calculadora de tameo v2 (paridad Dododex)**: presets Oficial/Small Tribes/ARKpocalypse/Conquest/SP, top-6 comidas + ver más, planes combinados con narcóticos, noqueo por arma/calidad (98/70/35 Rex 150 = Dododex), fotos de dinos e items con fallback
   - Datos: tamingFoodData.json de ASB (dietas de 159 especies + valores f/a). Fórmulas verificadas contra Taming.cs (TE = 1/(1+TI·piezas/afinidad), torpor crumplecorn). Validado: Rex 150 = 17 kibble / 98.7% / +74 = Dododex.
 - [x] **Extractor salvaje** (pre-tame) — modo 🌿 Salvaje en el Inspector, con puntos ocultos
 - [x] ⭐ **Inspector post-tame**: valores → puntos por stat, ambigüedad honesta, toggle ASA/ASE, guardar

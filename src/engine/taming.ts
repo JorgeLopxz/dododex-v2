@@ -42,6 +42,15 @@ export interface TamingServerMults {
 
 export const OFFICIAL_TAMING: TamingServerMults = { tamingSpeed: 1, foodDrain: 1, wildTorporDrain: 1 }
 
+/** Presets de servidor verificados contra serverMultipliers.json de ASB */
+export const TAMING_PRESETS = [
+  { id: 'official', label: 'Oficial', tsm: 1 },
+  { id: 'smalltribes', label: 'Small Tribes', tsm: 3 },
+  { id: 'arkpocalypse', label: 'ARKpocalypse', tsm: 3 },
+  { id: 'conquest', label: 'Conquest', tsm: 2 },
+  { id: 'singleplayer', label: 'Un jugador', tsm: 2.5 },
+] as const
+
 /** Multiplicador fijo del juego (HardCodedTamingMultiplier en ASB) */
 const HARDCODED_TAMING_MULT = 4
 
@@ -115,6 +124,94 @@ export function calcTaming(
   }
 
   return { food, pieces, te, bonusLevels, seconds, torpor }
+}
+
+/* ——— Plan combinado de comidas (réplica del bucle de ASB Taming.cs) ——— */
+
+export interface PlanItem {
+  food: TamingFood
+  /** piezas que el jugador aportará de esta comida */
+  pieces: number
+}
+
+export interface TamingPlanResult {
+  /** piezas realmente consumidas por comida (en orden del plan) */
+  used: { food: TamingFood; pieces: number }[]
+  affinityNeeded: number
+  /** afinidad aún sin cubrir (>0 ⇒ el plan no llega) */
+  affinityLeft: number
+  enough: boolean
+  te: number
+  bonusLevels: number
+  seconds: number
+  torpor: TamingResult['torpor']
+}
+
+/**
+ * Calcula un tameo alimentando con VARIAS comidas en el orden dado
+ * (p.ej. 10 kibbles + el resto carne cruda). Mismo algoritmo que ASB.
+ */
+export function calcTamingPlan(
+  t: SpeciesTaming,
+  plan: PlanItem[],
+  level: number,
+  opts: {
+    mults?: TamingServerMults
+    torporStat?: { B: number; Iw: number }
+    sanguineElixir?: boolean
+  } = {},
+): TamingPlanResult {
+  const { mults = OFFICIAL_TAMING, torporStat, sanguineElixir = false } = opts
+  const affinityNeeded = (t.affinityNeeded0 + t.affinityIncreasePL * level) * (sanguineElixir ? 0.7 : 1)
+  let remaining = affinityNeeded
+  let foodByAffinity = 0
+  let totalSeconds = 0
+  let torporNeededAcc = 0
+  const drainPS = t.foodConsumptionBase * t.foodConsumptionMult * mults.foodDrain
+  const tds = !t.nonViolent && t.torporDepletionPS0 > 0 ? torporDepletionPS(t.torporDepletionPS0, level, mults.wildTorporDrain) : 0
+  const used: TamingPlanResult['used'] = []
+
+  for (const item of plan) {
+    if (item.pieces <= 0 || remaining <= 0) continue
+    let fa = item.food.a
+    let fv = item.food.f
+    if (t.nonViolent) {
+      fa *= t.wakeAffinityMult
+      fv *= t.wakeFoodDeplMult
+    }
+    fa *= mults.tamingSpeed * HARDCODED_TAMING_MULT
+    if (fa <= 0 || fv <= 0) continue
+
+    let pieces = Math.ceil(remaining / fa)
+    if (pieces > item.pieces) pieces = item.pieces
+    const seconds = drainPS > 0 ? Math.ceil((pieces * fv) / drainPS) : 0
+
+    remaining -= pieces * fa
+    foodByAffinity += pieces / fa
+    torporNeededAcc += tds * seconds
+    totalSeconds += seconds
+    used.push({ food: item.food, pieces })
+  }
+
+  const enough = remaining <= 0
+  const te = 1 / (1 + t.ineffectiveness * foodByAffinity)
+  const bonusLevels = enough ? Math.floor((level * te) / 2) : 0
+
+  let torpor: TamingResult['torpor'] = null
+  if (tds > 0 && torporStat) {
+    const total = torporStat.B * (1 + torporStat.Iw * (level - 1))
+    const needed = Math.max(0, torporNeededAcc - total)
+    torpor = {
+      total,
+      depletionPS: tds,
+      narcotics: Math.ceil(needed / (40 + 8 * tds)),
+      bioToxins: Math.ceil(needed / (80 + 16 * tds)),
+      narcoberries: Math.ceil(needed / (7.5 + 3 * tds)),
+      ascerbicMushrooms: Math.ceil(needed / (25 + 3 * tds)),
+    }
+  }
+
+  return { used, affinityNeeded, affinityLeft: Math.max(0, remaining), enough, te, bonusLevels, seconds: totalSeconds, torpor }
 }
 
 /** Formatea segundos como "1h 23m" / "4m 05s" */

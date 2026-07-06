@@ -6,6 +6,7 @@ import { STAT_KEYS } from '../../engine/types'
 import { STAT_META } from '../../ui/statMeta'
 import { useSettings } from '../../store/settings'
 import { IconScan } from '../../ui/icons'
+import { CreatureImage } from '../../ui/GameImage'
 
 /** Ficha de criatura: stats base + tameo de un vistazo + accesos directos (estilo Wikily unificado). */
 export function CreatureDetailPage() {
@@ -37,12 +38,7 @@ export function CreatureDetailPage() {
     <section aria-label={`Ficha de ${species.name}`} className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="display grid size-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-lg font-bold text-tek"
-          >
-            {species.name.replace(/\(.*\)/, '').trim().slice(0, 2).toUpperCase()}
-          </span>
+          <CreatureImage name={species.name} size={56} />
           <div>
             <h2 className="display text-2xl font-bold leading-tight">{species.name}</h2>
             <p className="text-xs text-bone-faint">
