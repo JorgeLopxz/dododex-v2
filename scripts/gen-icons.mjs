@@ -1,4 +1,8 @@
-<svg width="512" height="512" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+/** Genera los iconos PWA (PNG 192/512 + favicon SVG) desde la huella Tek de la marca. */
+import sharp from 'sharp'
+import { writeFileSync } from 'node:fs'
+
+const SVG = `<svg width="512" height="512" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#39e6e0"/><stop offset="1" stop-color="#14a8b8"/>
@@ -9,4 +13,10 @@
   <ellipse cx="7.5" cy="11.5" rx="2.6" ry="5" transform="rotate(-24 7.5 11.5)" fill="url(#g)"/>
   <ellipse cx="16" cy="8.5" rx="2.7" ry="5.6" fill="url(#g)"/>
   <ellipse cx="24.5" cy="11.5" rx="2.6" ry="5" transform="rotate(24 24.5 11.5)" fill="url(#g)"/>
-</svg>
+</svg>`
+
+writeFileSync('public/favicon.svg', SVG)
+for (const size of [192, 512]) {
+  await sharp(Buffer.from(SVG)).resize(size, size).png().toFile(`public/pwa-${size}.png`)
+}
+console.log('OK: public/favicon.svg + pwa-192.png + pwa-512.png')

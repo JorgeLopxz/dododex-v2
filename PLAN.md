@@ -68,6 +68,7 @@
 
 - [x] **Buscador de criaturas** (búsqueda por texto; pendiente: fuzzy + fichas de criatura)
 - [ ] **Calculadora de tameo**: comida/narcóticos/torpor/tiempo/TE/niveles bonus
+  - ⚠️ Hallazgo (07-2026): el values.json actual de ASB YA NO trae `eats`/`specialFoodValues` (0 entradas) — solo affinity/ineffectiveness/foodConsumption (+torporDepletionPS0 en ~199 especies). Requiere: tabla propia de comidas (wiki) + fórmula de decay de TE verificada (ASB TamingFunction.cs / ark.wiki.gg) vía investigación web ANTES de implementar. No improvisar constantes.
 - [x] **Extractor salvaje** (pre-tame) — modo 🌿 Salvaje en el Inspector, con puntos ocultos
 - [x] ⭐ **Inspector post-tame**: valores → puntos por stat, ambigüedad honesta, toggle ASA/ASE, guardar
   - [ ] Mejora: checkbox "nunca subí este stat" (Ld=0) por stat para reducir ambigüedad
@@ -77,10 +78,10 @@
 
 ## FASE 5 — PWA + pulido → v0.1 (release personal)
 
-- [ ] PWA offline (precache datos especies), instalable en móvil
-- [ ] Indicador de versión de datos + fecha en cada página
+- [x] PWA offline (precache app + datos, 800 KiB), instalable en móvil (vite-plugin-pwa, iconos generados)
+- [x] Indicador de versión de datos + fecha (pie de la app)
 - [ ] Revisión a11y completa (teclado, 200% zoom, contraste) + Lighthouse ≥90 a11y
-- [ ] Tag `v0.1.0` en GitHub
+- [x] Tag `v0.1.0` en GitHub
 
 ## FASE 6 — v1: Cría a fondo
 
