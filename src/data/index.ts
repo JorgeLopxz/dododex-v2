@@ -95,6 +95,8 @@ export function getTamingFoods(speciesName: string): TamingFood[] | null {
   if (!entry) return null
   const foods: TamingFood[] = []
   for (const name of entry.eats) {
+    // los kibbles "Augmented" son del sistema Homestead/ARK Mobile — no existen en ASA/ASE estándar
+    if (name.includes('Augmented')) continue
     const base = foodsFile.foods[name]
     const ov = entry.overrides[name]
     const f = ov?.f ?? base?.f

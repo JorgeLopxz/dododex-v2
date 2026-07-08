@@ -19,6 +19,16 @@ const FILES = { ase: 'values.json', asa: 'ASA-values.json' }
 const ASB_INDEX = { health: 0, stamina: 1, oxygen: 3, food: 4, weight: 7, melee: 8, speed: 9, torpor: 2 }
 const OUR_ORDER = ['health', 'stamina', 'oxygen', 'food', 'weight', 'melee', 'speed', 'torpor']
 
+/**
+ * BUGFIX tiempos absurdos (p.ej. Ankylo 473h): el values.json moderno de ASB trae
+ * foodConsumption placeholder (0.01×0.05) en ~321 especies. La revisión v298 (jun-2021,
+ * SHA fijado) aún tiene los datos reales (Ankylo 0.003156×176 → ~3h con bayas ✓,
+ * Dodo 0.000868×2880 → ~96s ✓). Backfill desde ahí para las especies clásicas.
+ */
+const OLD_VALUES_URL =
+  'https://raw.githubusercontent.com/cadon/ARKStatsExtractor/a7b0571214fd645930c1d65413a1fecf1e8ed978/ARKBreedingStats/json/values/values.json'
+const isPlaceholderFc = (t) => t?.foodConsumptionBase === 0.01 && t?.foodConsumptionMult === 0.05
+
 const offline = process.argv.includes('--offline')
 mkdirSync(RAW_DIR, { recursive: true })
 mkdirSync(OUT_DIR, { recursive: true })
@@ -39,6 +49,9 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
   const seen = new Map()
   const out = []
   for (const sp of raw.species) {
+    // fuera clones de misión/evento (Genesis STA, Gauntlet, Summoned…): no son domables y
+    // duplican nombres con datos placeholder (causa del bug "Ankylo 473h")
+    if (/Missions\/|Gauntlet|_STA\b|TameSTA|Summoned|_Retrieve/i.test(sp.blueprintPath ?? '')) continue
     // ASA-values.json es un overlay: si la especie no trae stats, hereda de la base ASE (match por blueprint)
     const bpKey = (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, '')
     if (!sp.fullStatsRaw) {
@@ -85,6 +98,52 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
 }
 
 const aseRaw = await ensureRaw(FILES.ase)
+
+// ——— Backfill de taming desde v298 (datos reales de consumo/torpor) ———
+{
+  const oldPath = `${RAW_DIR}/values-old.json`
+  if (!existsSync(oldPath)) {
+    if (offline) throw new Error(`Falta ${oldPath} y estamos en --offline`)
+    console.log('Descargando values.json v298 (backfill de taming)…')
+    const res = await fetch(OLD_VALUES_URL)
+    if (!res.ok) throw new Error(`HTTP ${res.status} al bajar values-old`)
+    writeFileSync(oldPath, await res.text())
+  }
+  const oldRaw = JSON.parse(readFileSync(oldPath, 'utf8'))
+  const oldByBp = new Map(
+    oldRaw.species
+      .filter((sp) => sp.taming)
+      .map((sp) => [(sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, ''), sp.taming]),
+  )
+  let fcFixed = 0
+  let tdpsFixed = 0
+  for (const sp of aseRaw.species) {
+    if (!sp.taming?.affinityNeeded0) continue
+    const bpKey = (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, '')
+    const old = oldByBp.get(bpKey)
+    if (!old) continue
+    if (isPlaceholderFc(sp.taming) && !isPlaceholderFc(old) && old.foodConsumptionMult > 0) {
+      sp.taming.foodConsumptionBase = old.foodConsumptionBase
+      sp.taming.foodConsumptionMult = old.foodConsumptionMult
+      fcFixed++
+    }
+    if (!sp.taming.torporDepletionPS0 && old.torporDepletionPS0 > 0) {
+      sp.taming.torporDepletionPS0 = old.torporDepletionPS0
+      tdpsFixed++
+    }
+  }
+  // las que siguen con placeholder no tienen dato fiable → 0 (la UI muestra "—", nunca 473h)
+  let zeroed = 0
+  for (const sp of aseRaw.species) {
+    if (sp.taming && isPlaceholderFc(sp.taming)) {
+      sp.taming.foodConsumptionBase = 0
+      sp.taming.foodConsumptionMult = 0
+      zeroed++
+    }
+  }
+  console.log(`Backfill v298: ${fcFixed} consumos reales, ${tdpsFixed} torpor; ${zeroed} sin dato (tiempo oculto)`)
+}
+
 const ase = transform(aseRaw, 'ASE')
 const aseByBp = new Map(
   aseRaw.species

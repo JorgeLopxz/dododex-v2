@@ -150,6 +150,9 @@ export function TamingPage() {
             />
           )}
         </div>
+        <p className="mt-2 text-[11px] text-bone-faint">
+          ⚠️ Las rates oficiales fluctúan con eventos de Wildcard — si tu servidor va boosted, usa Evento o Custom.
+        </p>
       </div>
 
       {!species.taming || !foods ? (
@@ -194,7 +197,7 @@ export function TamingPage() {
                     → Nv <strong className="display text-tek">{lvl + plan.bonusLevels}</strong>
                     <span className="text-xs"> (+{plan.bonusLevels})</span>
                   </span>
-                  <span>⏱ {formatDuration(plan.seconds)}</span>
+                  {plan.seconds > 0 && <span>⏱ {formatDuration(plan.seconds)}</span>}
                 </div>
               )}
               {plan.enough && plan.torpor && (
@@ -229,7 +232,9 @@ export function TamingPage() {
                 >
                   {(r.te * 100).toFixed(0)}%
                 </span>
-                <span className="text-right text-xs tabular-nums text-bone-dim">{formatDuration(r.seconds)}</span>
+                <span className="text-right text-xs tabular-nums text-bone-dim">
+                  {r.seconds > 0 ? formatDuration(r.seconds) : '—'}
+                </span>
                 <span className="flex items-center justify-center gap-1">
                   <button
                     aria-label={`Quitar ${r.food.name} del plan`}
@@ -281,8 +286,9 @@ export function TamingPage() {
                   <span className="mb-1 block text-xs font-medium text-bone-dim">Calidad (daño %)</span>
                   <input type="number" step="1" min="100" inputMode="numeric" value={quality} onChange={(e) => setQuality(e.target.value)} className="input-field w-24" />
                 </label>
-                <p className="pb-1 text-lg">
-                  <ItemImage name={weapon.itemImage.replace(/_/g, ' ')} size={26} fallback="🏹" />{' '}
+                <p className="flex items-center gap-2 pb-1 text-lg">
+                  <ItemImage name={weapon.weaponImage} size={30} fallback="🏹" />
+                  <ItemImage name={weapon.itemImage} size={26} fallback="➶" />
                   <strong className="display text-2xl text-tek">{hitsToKnockout(torporTotal, weapon, qualityNum)}</strong>{' '}
                   <span className="text-sm text-bone-dim">{weapon.ammo}</span>
                 </p>
@@ -292,10 +298,13 @@ export function TamingPage() {
                   <button
                     key={w.id}
                     onClick={() => setWeaponId(w.id)}
-                    className="flex items-center justify-between rounded-lg border border-surface-3/60 bg-surface-0/40 px-2.5 py-1.5 text-left hover:border-tek-dark"
+                    className="flex items-center justify-between gap-1.5 rounded-lg border border-surface-3/60 bg-surface-0/40 px-2.5 py-1.5 text-left hover:border-tek-dark"
                   >
-                    <span className="truncate text-xs text-bone-dim">{w.label}</span>
-                    <span className="display ml-2 tabular-nums">{hitsToKnockout(torporTotal, w, qualityNum)}</span>
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <ItemImage name={w.weaponImage} size={22} fallback="🏹" />
+                      <span className="truncate text-xs text-bone-dim">{w.label}</span>
+                    </span>
+                    <span className="display ml-1 tabular-nums">{hitsToKnockout(torporTotal, w, qualityNum)}</span>
                   </button>
                 ))}
               </div>

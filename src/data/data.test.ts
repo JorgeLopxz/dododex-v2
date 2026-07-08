@@ -5,9 +5,12 @@ import { calcStat, calcWildStat } from '../engine/statFormula'
 const NO_MULT = { IwM: {}, IdM: {}, TaM: {}, TmM: {}, IBM: 1 }
 
 describe('FASE 1 — datos reales de especies (criterio de salida)', () => {
-  it('carga ambas versiones con cobertura completa', () => {
-    expect(getSpecies('ASE').length).toBeGreaterThan(1000)
-    expect(getSpecies('ASA').length).toBeGreaterThan(800)
+  it('carga ambas versiones con cobertura completa (sin clones de misión/STA)', () => {
+    // ~450 clones de misión (Genesis STA, Gauntlet, Summoned) se filtran en build-data
+    expect(getSpecies('ASE').length).toBeGreaterThan(550)
+    expect(getSpecies('ASA').length).toBeGreaterThan(550)
+    // sin duplicados trampa: un único Ankylosaurus
+    expect(getSpecies('ASE').filter((s) => s.name === 'Ankylosaurus')).toHaveLength(1)
   })
 
   it('Rex ASE coincide con la wiki (ark.wiki.gg/wiki/Rex)', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { calcTaming, calcTamingPlan, formatDuration, torporDepletionPS } from './taming'
+import { TAMING_PRESETS, calcTaming, calcTamingPlan, formatDuration, torporDepletionPS } from './taming'
 import { WEAPONS, hitsToKnockout, wildTorpor } from './knockout'
-import { findSpecies, getTamingFoods } from '../data'
+import { findSpecies, getSpecies, getTamingFoods } from '../data'
 
 describe('calcTaming — validado contra Dododex/ASB (Rex 150 oficial)', () => {
   const rex = findSpecies('ASE', 'Rex_Character_BP')!
@@ -109,6 +109,48 @@ describe('calcTaming — validado contra Dododex/ASB (Rex 150 oficial)', () => {
     expect(plan.enough).toBe(false)
     expect(plan.affinityLeft).toBeCloseTo(25950 - 5 * 1600, 3)
     expect(plan.bonusLevels).toBe(0)
+  })
+})
+
+describe('regresiones de bugs reportados (07-2026)', () => {
+  it('Ankylo 150 con bayas ≈ 3h, no 473h (bug de clones STA con placeholder)', () => {
+    const anky = getSpecies('ASE').find((s) => s.name === 'Ankylosaurus')!
+    const foods = getTamingFoods('Ankylosaurus')!
+    const berries = foods.find((f) => f.name === 'Berries')!
+    const r = calcTaming(anky.taming!, berries, 150, {
+      torporStat: { B: anky.stats.torpor!.B, Iw: anky.stats.torpor!.Iw },
+    })!
+    expect(r.seconds).toBeGreaterThan(8000) // > 2h13m
+    expect(r.seconds).toBeLessThan(16000) // < 4h27m — jamás 473h
+    expect(r.torpor).not.toBeNull() // tdps 0.3 real
+  })
+
+  it('Dodo 150 con bayas se doma en minutos, no horas', () => {
+    const dodo = getSpecies('ASE').find((s) => s.name === 'Dodo')!
+    const foods = getTamingFoods('Dodo')!
+    const berries = foods.find((f) => f.name === 'Berries') ?? foods[foods.length - 1]
+    const r = calcTaming(dodo.taming!, berries, 150)!
+    expect(r.seconds).toBeGreaterThan(0)
+    expect(r.seconds).toBeLessThan(1800) // < 30 min
+  })
+
+  it('sin kibbles "Augmented" (son de ARK Mobile/Homestead, no del juego estándar)', () => {
+    expect(getTamingFoods('Rex')!.some((f) => f.name.includes('Augmented'))).toBe(false)
+  })
+
+  it('presets con las rates correctas (arkstatus jul-2026): Small Tribes ×2.5, Evento ×4.5', () => {
+    const by = (id: string) => TAMING_PRESETS.find((p) => p.id === id)!
+    expect(by('smalltribes').tsm).toBe(2.5)
+    expect(by('event').tsm).toBe(4.5)
+    expect(by('arkpocalypse').tsm).toBe(3)
+    expect(by('conquest').tsm).toBe(5)
+  })
+
+  it('los aberrantes comparten dieta y requisitos con la especie base', () => {
+    const base = getSpecies('ASE').find((s) => s.name === 'Megalosaurus')!
+    const ab = getSpecies('ASE').find((s) => s.name.startsWith('Aberrant Megalosaurus'))!
+    expect(ab.taming!.affinityNeeded0).toBe(base.taming!.affinityNeeded0)
+    expect(getTamingFoods(ab.name)).toEqual(getTamingFoods(base.name))
   })
 })
 

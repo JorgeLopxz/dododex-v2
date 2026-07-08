@@ -42,12 +42,17 @@ export interface TamingServerMults {
 
 export const OFFICIAL_TAMING: TamingServerMults = { tamingSpeed: 1, foodDrain: 1, wildTorporDrain: 1 }
 
-/** Presets de servidor verificados contra serverMultipliers.json de ASB */
+/**
+ * Presets de servidor — verificados contra arkstatus.com (jul-2026).
+ * Ojo: las rates OFICIALES fluctúan con eventos (la Estándar iba ×2 el 03-07-2026);
+ * por eso existe el preset Evento y el modo Custom.
+ */
 export const TAMING_PRESETS = [
   { id: 'official', label: 'Oficial', tsm: 1 },
-  { id: 'smalltribes', label: 'Small Tribes', tsm: 3 },
+  { id: 'event', label: 'Evento', tsm: 4.5 },
+  { id: 'smalltribes', label: 'Small Tribes', tsm: 2.5 },
   { id: 'arkpocalypse', label: 'ARKpocalypse', tsm: 3 },
-  { id: 'conquest', label: 'Conquest', tsm: 2 },
+  { id: 'conquest', label: 'Conquest', tsm: 5 },
   { id: 'singleplayer', label: 'Un jugador', tsm: 2.5 },
 ] as const
 
