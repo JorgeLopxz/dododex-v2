@@ -168,9 +168,18 @@ export function InspectorPage() {
   return (
     <section aria-label={`Inspector de ${species.name}`} className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <div>
-          <h2 className="display text-2xl font-bold">{species.name}</h2>
-          <p className="text-xs text-bone-faint">Inspector post-tame · {version}</p>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/inspector'))}
+            aria-label="Volver"
+            className="btn-ghost px-2.5 py-1.5 text-lg leading-none"
+          >
+            ←
+          </button>
+          <div>
+            <h2 className="display text-2xl font-bold">{species.name}</h2>
+            <p className="text-xs text-bone-faint">Inspector post-tame · {version}</p>
+          </div>
         </div>
         <button onClick={() => navigate('/inspector')} className="btn-ghost text-sm">
           Cambiar

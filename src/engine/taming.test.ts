@@ -146,11 +146,18 @@ describe('regresiones de bugs reportados (07-2026)', () => {
     expect(by('conquest').tsm).toBe(5)
   })
 
-  it('los aberrantes comparten dieta y requisitos con la especie base', () => {
-    const base = getSpecies('ASE').find((s) => s.name === 'Megalosaurus')!
-    const ab = getSpecies('ASE').find((s) => s.name.startsWith('Aberrant Megalosaurus'))!
-    expect(ab.taming!.affinityNeeded0).toBe(base.taming!.affinityNeeded0)
-    expect(getTamingFoods(ab.name)).toEqual(getTamingFoods(base.name))
+  it('aberrantes duplicados (stats+tameo idénticos a la base) eliminados; los distintos se conservan', () => {
+    const names = getSpecies('ASE').map((s) => s.name)
+    expect(names.some((n) => n.startsWith('Aberrant Megalosaurus'))).toBe(false) // idéntico → fuera
+    expect(names.some((n) => n.startsWith('Aberrant Dimorphodon'))).toBe(true) // stats propios → se queda
+  })
+
+  it('solo se muestra EL kibble adecuado: Rex→Exceptional, Ankylo→Regular (tier más bajo con afinidad completa)', () => {
+    const rexKibbles = getTamingFoods('Rex')!.filter((f) => f.name.endsWith('Kibble'))
+    expect(rexKibbles.map((k) => k.name)).toEqual(['Exceptional Kibble'])
+    const ankyKibbles = getTamingFoods('Ankylosaurus')!.filter((f) => f.name.endsWith('Kibble'))
+    expect(ankyKibbles.map((k) => k.name)).toEqual(['Regular Kibble'])
+    expect(ankyKibbles[0].a).toBe(400)
   })
 })
 

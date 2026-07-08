@@ -48,10 +48,24 @@ async function ensureRaw(name) {
 function transform(raw, label, fallbackStatsByBp = new Map()) {
   const seen = new Map()
   const out = []
+  const isMission = (sp) => /Missions\/|Gauntlet|_STA\b|TameSTA|Summoned|_Retrieve/i.test(sp.blueprintPath ?? '')
+  // Aberrantes duplicados: si existe la especie base con stats y tameo idénticos, se omite
+  // el aberrante (mismo dino, otro color). Se conservan los ~3 con stats propios.
+  const byName = new Map(raw.species.filter((s) => !isMission(s) && s.name).map((s) => [s.name, s]))
+  const isDupAberrant = (sp) => {
+    if (!sp.name?.startsWith('Aberrant ')) return false
+    const base = byName.get(sp.name.slice(9))
+    return (
+      !!base &&
+      JSON.stringify(sp.fullStatsRaw) === JSON.stringify(base.fullStatsRaw) &&
+      JSON.stringify(sp.taming ?? null) === JSON.stringify(base.taming ?? null)
+    )
+  }
   for (const sp of raw.species) {
     // fuera clones de misión/evento (Genesis STA, Gauntlet, Summoned…): no son domables y
     // duplican nombres con datos placeholder (causa del bug "Ankylo 473h")
-    if (/Missions\/|Gauntlet|_STA\b|TameSTA|Summoned|_Retrieve/i.test(sp.blueprintPath ?? '')) continue
+    if (isMission(sp)) continue
+    if (isDupAberrant(sp)) continue
     // ASA-values.json es un overlay: si la especie no trae stats, hereda de la base ASE (match por blueprint)
     const bpKey = (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, '')
     if (!sp.fullStatsRaw) {

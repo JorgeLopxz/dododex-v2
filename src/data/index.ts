@@ -104,7 +104,37 @@ export function getTamingFoods(speciesName: string): TamingFood[] | null {
     if (f === undefined || a === undefined || a <= 0) continue
     foods.push({ name, f, a })
   }
-  return foods.length > 0 ? foods : null
+  return foods.length > 0 ? dedupeKibbles(foods) : null
+}
+
+const KIBBLE_TIERS = ['Basic', 'Simple', 'Regular', 'Superior', 'Exceptional', 'Extraordinary']
+
+/**
+ * De todos los kibbles que come la especie, deja solo EL ADECUADO: el tier más bajo
+ * con afinidad completa (los superiores sirven igual — se sobreentiende; los inferiores
+ * vienen con afinidad ~16 y son basura). El genérico "Kibble" (legacy) también se omite.
+ */
+function dedupeKibbles(foods: TamingFood[]): TamingFood[] {
+  const kibbles = foods.filter((x) => x.name.endsWith('Kibble'))
+  if (kibbles.length <= 1) return foods
+  const maxA = Math.max(...kibbles.map((k) => k.a))
+  const preferred = kibbles
+    .filter((k) => k.a === maxA && k.name !== 'Kibble')
+    .sort((x, y) => KIBBLE_TIERS.findIndex((t) => x.name.startsWith(t)) - KIBBLE_TIERS.findIndex((t) => y.name.startsWith(t)))[0]
+  const keep = preferred ?? kibbles.find((k) => k.a === maxA)!
+  let placed = false
+  const out: TamingFood[] = []
+  for (const x of foods) {
+    if (!x.name.endsWith('Kibble')) {
+      out.push(x)
+      continue
+    }
+    if (!placed) {
+      out.push(keep)
+      placed = true
+    }
+  }
+  return out
 }
 
 const cache = new Map<GameVersion, SpeciesEntry[]>()

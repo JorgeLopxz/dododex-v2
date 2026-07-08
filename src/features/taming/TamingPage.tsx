@@ -103,7 +103,14 @@ export function TamingPage() {
   return (
     <section aria-label={`Tameo de ${species.name}`} className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/tameo'))}
+            aria-label="Volver"
+            className="btn-ghost px-2.5 py-1.5 text-lg leading-none"
+          >
+            ←
+          </button>
           <CreatureImage name={species.name} size={52} />
           <div>
             <h2 className="display text-2xl font-bold leading-tight">{species.name}</h2>
@@ -223,7 +230,12 @@ export function TamingPage() {
               <div key={r.food.name} className="grid grid-cols-[1fr_4.5rem_3.5rem_4.5rem_5.5rem] items-center gap-1 rounded-lg px-2 py-1.5 odd:bg-surface-0/40">
                 <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
                   <ItemImage name={r.food.name} size={26} />
-                  <span className="truncate">{r.food.name}</span>
+                  <span className="truncate">
+                    {r.food.name}
+                    {r.food.name.endsWith('Kibble') && (
+                      <span className="text-[10px] font-normal text-bone-faint"> (o superior)</span>
+                    )}
+                  </span>
                 </span>
                 <span className="display text-right text-sm tabular-nums">{r.pieces}</span>
                 <span
