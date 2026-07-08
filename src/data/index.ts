@@ -9,8 +9,9 @@ import aseJson from './species-ase.json'
 import asaJson from './species-asa.json'
 import tamingFoodsJson from './taming-foods.json'
 
-/** Formato compacto: [id, nombre, tbhm, displayedStats, stats[8], taming[9]|null] */
+/** Formato compacto: [id, nombre, tbhm, displayedStats, stats[8], taming[9]|null, breeding[5]|null] */
 type CompactTaming = [number, number, number, number, number, number, number, number, number]
+type CompactBreeding = [number, number, number, number, number]
 type CompactSpecies = [
   string,
   string,
@@ -18,7 +19,19 @@ type CompactSpecies = [
   number,
   ([number, number, number, number, number] | null)[],
   CompactTaming | null,
+  CompactBreeding | null,
 ]
+
+export interface SpeciesBreeding {
+  /** segundos de incubación de huevo (0 si es gestación) */
+  incubation: number
+  /** segundos de gestación (mamíferos) */
+  gestation: number
+  /** segundos hasta adulto */
+  maturation: number
+  eggTempMin: number
+  eggTempMax: number
+}
 interface DataFile {
   version: string
   source: string
@@ -43,10 +56,12 @@ export interface SpeciesEntry extends Species {
   displayed: Record<StatKey, boolean>
   /** Datos de tameo (null si la especie no es domable por afinidad) */
   taming: SpeciesTaming | null
+  /** Datos de cría (null si no se reproduce) */
+  breeding: SpeciesBreeding | null
 }
 
 function toSpecies(c: CompactSpecies): SpeciesEntry {
-  const [id, name, TBHM, ds, stats, t] = c
+  const [id, name, TBHM, ds, stats, t, b] = c
   const rec = {} as Record<StatKey, StatConstants | null>
   const displayed = {} as Record<StatKey, boolean>
   STAT_KEYS.forEach((key, i) => {
@@ -67,7 +82,10 @@ function toSpecies(c: CompactSpecies): SpeciesEntry {
         wakeFoodDeplMult: t[8],
       }
     : null
-  return { id, name, stats: rec, TBHM, displayed, taming }
+  const breeding: SpeciesBreeding | null = b
+    ? { incubation: b[0], gestation: b[1], maturation: b[2], eggTempMin: b[3], eggTempMax: b[4] }
+    : null
+  return { id, name, stats: rec, TBHM, displayed, taming, breeding }
 }
 
 /* ——— Comidas de tameo (tamingFoodData.json de ASB) ——— */

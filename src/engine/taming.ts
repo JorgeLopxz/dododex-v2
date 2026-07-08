@@ -219,11 +219,13 @@ export function calcTamingPlan(
   return { used, affinityNeeded, affinityLeft: Math.max(0, remaining), enough, te, bonusLevels, seconds: totalSeconds, torpor }
 }
 
-/** Formatea segundos como "1h 23m" / "4m 05s" */
+/** Formatea segundos como "3d 20h" / "1h 23m" / "4m 05s" */
 export function formatDuration(seconds: number): string {
-  const h = Math.floor(seconds / 3600)
+  const d = Math.floor(seconds / 86400)
+  const h = Math.floor((seconds % 86400) / 3600)
   const m = Math.floor((seconds % 3600) / 60)
   const s = Math.floor(seconds % 60)
+  if (d > 0) return `${d}d ${h}h`
   if (h > 0) return `${h}h ${m.toString().padStart(2, '0')}m`
   if (m > 0) return `${m}m ${s.toString().padStart(2, '0')}s`
   return `${s}s`

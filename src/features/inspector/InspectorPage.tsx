@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { extractPostTame, extractWildStat, statReceivesPoints, type ExtractionResult } from '../../engine/extractor'
 import { tameBonusLevels } from '../../engine/statFormula'
 import { POINT_STATS, type PointStatKey } from '../../engine/types'
@@ -20,8 +20,13 @@ export function InspectorPage() {
 
   const species = speciesId ? findSpecies(version, decodeURIComponent(speciesId)) : undefined
 
-  /** 'fresh' = recién domado (Ld=0 — el caso común); 'leveled' = con niveles gastados; 'wild' = sin domar */
-  const [mode, setMode] = useState<'fresh' | 'leveled' | 'wild'>('fresh')
+  /** 'fresh' = recién domado (Ld=0 — el caso común); 'leveled' = con niveles gastados; 'wild' = sin domar.
+   *  Preseleccionable desde la ficha de criatura vía ?m= */
+  const [searchParams] = useSearchParams()
+  const [mode, setMode] = useState<'fresh' | 'leveled' | 'wild'>(() => {
+    const m = searchParams.get('m')
+    return m === 'wild' || m === 'leveled' || m === 'fresh' ? m : 'fresh'
+  })
   const [bred, setBred] = useState(false)
   const [TE, setTE] = useState('100')
   const [IB, setIB] = useState('0')

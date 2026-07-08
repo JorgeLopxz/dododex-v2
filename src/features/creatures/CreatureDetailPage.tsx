@@ -51,16 +51,22 @@ export function CreatureDetailPage() {
         <button onClick={() => navigate('/criaturas')} className="btn-ghost text-sm">←</button>
       </div>
 
-      {/* Acciones */}
-      <div className="grid grid-cols-2 gap-2">
-        <Link to={`/tameo/${encodeURIComponent(species.id)}`} className="btn-primary text-center text-sm">
+      {/* Acciones: todo lo que puedes hacer con este dino, desde su ficha */}
+      <div className="grid grid-cols-3 gap-2">
+        <Link to={`/tameo/${encodeURIComponent(species.id)}`} className="btn-primary text-center text-xs sm:text-sm">
           🧮 Calcular tameo
         </Link>
         <Link
-          to={`/inspector/${encodeURIComponent(species.id)}`}
-          className="btn-ghost inline-flex items-center justify-center gap-2 text-center text-sm"
+          to={`/inspector/${encodeURIComponent(species.id)}?m=wild`}
+          className="btn-ghost inline-flex items-center justify-center gap-1.5 text-center text-xs sm:text-sm"
         >
-          <IconScan size={16} /> Inspeccionar stats
+          🌿 Stats salvaje
+        </Link>
+        <Link
+          to={`/inspector/${encodeURIComponent(species.id)}?m=fresh`}
+          className="btn-ghost inline-flex items-center justify-center gap-1.5 text-center text-xs sm:text-sm"
+        >
+          <IconScan size={15} /> Stats post-tame
         </Link>
       </div>
 
@@ -80,6 +86,49 @@ export function CreatureDetailPage() {
           </p>
         </div>
       )}
+
+      {/* Cría: incubación, maduración, cuddles e imprint — compacto como Dododex */}
+      {species.breeding && (() => {
+        const b = species.breeding
+        const CUDDLE = 28800 // 8h oficial
+        const cuddles = b.maturation > 0 ? Math.floor(b.maturation / CUDDLE) : 0
+        const perCuddle = cuddles > 0 ? Math.min(100, 100 / cuddles) : 0
+        const babyFoods = getTamingFoods(species.name)?.filter((f) => !f.name.endsWith('Kibble')).slice(0, 3)
+        return (
+          <div className="panel p-4">
+            <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-tek">Cría · rates oficiales</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-4">
+              <div>
+                <span className="block text-[11px] text-bone-faint">{b.gestation > 0 ? '🤰 Gestación' : '🥚 Incubación'}</span>
+                <span className="display font-semibold">{formatDuration(b.gestation > 0 ? b.gestation : b.incubation)}</span>
+                {b.incubation > 0 && b.eggTempMax > 0 && (
+                  <span className="block text-[11px] text-bone-dim">{b.eggTempMin}–{b.eggTempMax} °C</span>
+                )}
+              </div>
+              <div>
+                <span className="block text-[11px] text-bone-faint">🐣 Maduración</span>
+                <span className="display font-semibold">{formatDuration(b.maturation)}</span>
+                <span className="block text-[11px] text-bone-dim">bebé {formatDuration(b.maturation * 0.1)} · juvenil hasta {formatDuration(b.maturation * 0.5)}</span>
+              </div>
+              <div>
+                <span className="block text-[11px] text-bone-faint">🤗 Imprint (cuddle cada 8h)</span>
+                <span className="display font-semibold">{cuddles > 0 ? `${cuddles} cuddles · ${perCuddle.toFixed(1)}%/ud` : '—'}</span>
+                <span className="block text-[11px] text-bone-dim">100%: +20% stats (no estamina/oxígeno)</span>
+              </div>
+              <div>
+                <span className="block text-[11px] text-bone-faint">🍖 Comen de crías</span>
+                <span className="text-xs text-bone-dim">
+                  {babyFoods?.length ? babyFoods.map((f) => f.name).join(', ') : 'dieta del adulto'}
+                </span>
+                <span className="block text-[11px] text-bone-faint">(sin kibble; a mano hasta juvenil)</span>
+              </div>
+            </div>
+            <p className="mt-2 border-t border-surface-3 pt-2 text-[11px] text-bone-faint">
+              Montado por quien lo imprintó: +30% daño y −30% daño recibido adicionales.
+            </p>
+          </div>
+        )
+      })()}
 
       {/* Stats base */}
       <div className="panel overflow-x-auto p-2">

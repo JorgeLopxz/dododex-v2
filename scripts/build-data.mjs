@@ -49,23 +49,26 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
   const seen = new Map()
   const out = []
   const isMission = (sp) => /Missions\/|Gauntlet|_STA\b|TameSTA|Summoned|_Retrieve/i.test(sp.blueprintPath ?? '')
-  // Aberrantes duplicados: si existe la especie base con stats y tameo idénticos, se omite
-  // el aberrante (mismo dino, otro color). Se conservan los ~3 con stats propios.
-  const byName = new Map(raw.species.filter((s) => !isMission(s) && s.name).map((s) => [s.name, s]))
+  // Aberrantes: mismo dino con otro color → si existe la base, FUERA (petición del usuario).
+  // Ojo: en el overlay ASA el nombre puede venir heredado de la base ASE → resolverlo en el prepass.
+  const bpKeyOf = (sp) => (sp.blueprintPath ?? sp.name ?? '').split('/').pop().split('.').pop().replace(/["']/g, '')
+  const nameOf = (sp) => sp.name ?? fallbackStatsByBp.get(bpKeyOf(sp))?.name
+  const names = new Set(raw.species.filter((s) => !isMission(s)).map(nameOf).filter(Boolean))
   const isDupAberrant = (sp) => {
-    if (!sp.name?.startsWith('Aberrant ')) return false
-    const base = byName.get(sp.name.slice(9))
-    return (
-      !!base &&
-      JSON.stringify(sp.fullStatsRaw) === JSON.stringify(base.fullStatsRaw) &&
-      JSON.stringify(sp.taming ?? null) === JSON.stringify(base.taming ?? null)
-    )
+    const n = nameOf(sp)
+    return n?.startsWith('Aberrant ') && names.has(n.slice(9))
   }
+  // No domables: Alphas, bosses, esqueléticos, zombies, eerie (mobile), VR…
+  const UNTAMEABLE_NAME = /^(Alpha |Corrupted |Skeletal |Zombie |Eerie |Enraged |Malfunctioned |VR |Bone )/
+  const UNTAMEABLE_BOSS = /Boss|Overseer|KingKaiju|MegaMek|Rockwell_Character|Dragon_Character|Gorilla_Character|Spider_Character|BossSpider|Manticore_Character|Moeder|MasterController/i
+  const isUntameable = (sp) =>
+    UNTAMEABLE_NAME.test(nameOf(sp) ?? '') || UNTAMEABLE_BOSS.test(sp.blueprintPath ?? '')
   for (const sp of raw.species) {
     // fuera clones de misión/evento (Genesis STA, Gauntlet, Summoned…): no son domables y
     // duplican nombres con datos placeholder (causa del bug "Ankylo 473h")
     if (isMission(sp)) continue
     if (isDupAberrant(sp)) continue
+    if (isUntameable(sp)) continue
     // ASA-values.json es un overlay: si la especie no trae stats, hereda de la base ASE (match por blueprint)
     const bpKey = (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, '')
     if (!sp.fullStatsRaw) {
@@ -74,6 +77,7 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
       sp.fullStatsRaw = inherited.fullStatsRaw
       sp.name ??= inherited.name
       sp.taming ??= inherited.taming
+      sp.breeding ??= inherited.breeding
       sp.TamedBaseHealthMultiplier ??= inherited.TBHM
       sp.displayedStats ??= inherited.ds
     }
@@ -101,11 +105,17 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
          t.foodConsumptionBase ?? 0, t.foodConsumptionMult ?? 0, t.torporDepletionPS0 ?? 0,
          t.nonViolent ? 1 : 0, t.wakeAffinityMult ?? 1, t.wakeFoodDeplMult ?? 1]
       : null
+    // datos de cría: [incubación, gestación, maduración, tempMin, tempMax] (segundos/°C)
+    const b = sp.breeding
+    const breeding =
+      b && (b.incubationTime > 0 || b.gestationTime > 0)
+        ? [b.incubationTime ?? 0, b.gestationTime ?? 0, b.maturationTime ?? 0, b.eggTempMin ?? 0, b.eggTempMax ?? 0]
+        : null
     if (!sp.name) continue // entradas internas (misiones, summoned, STA) sin nombre real
     const baseName = sp.name
     const extraVariants = (sp.variants ?? []).filter((v) => !baseName.toLowerCase().includes(v.toLowerCase()))
     const name = extraVariants.length ? `${baseName} (${extraVariants.join(', ')})` : baseName
-    out.push([id, name, tbhm, ds, stats, taming])
+    out.push([id, name, tbhm, ds, stats, taming, breeding])
   }
   console.log(`${label}: ${out.length} especies`)
   return { version: raw.version, source: 'cadon/ARKStatsExtractor (MIT)', generated: new Date().toISOString(), species: out }
@@ -164,7 +174,7 @@ const aseByBp = new Map(
     .filter((sp) => sp.fullStatsRaw)
     .map((sp) => [
       (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, ''),
-      { fullStatsRaw: sp.fullStatsRaw, name: sp.name, TBHM: sp.TamedBaseHealthMultiplier ?? 1, ds: sp.displayedStats ?? 0, taming: sp.taming },
+      { fullStatsRaw: sp.fullStatsRaw, name: sp.name, TBHM: sp.TamedBaseHealthMultiplier ?? 1, ds: sp.displayedStats ?? 0, taming: sp.taming, breeding: sp.breeding },
     ]),
 )
 const asa = transform(await ensureRaw(FILES.asa), 'ASA', aseByBp)

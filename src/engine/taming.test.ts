@@ -146,10 +146,24 @@ describe('regresiones de bugs reportados (07-2026)', () => {
     expect(by('conquest').tsm).toBe(5)
   })
 
-  it('aberrantes duplicados (stats+tameo idénticos a la base) eliminados; los distintos se conservan', () => {
-    const names = getSpecies('ASE').map((s) => s.name)
-    expect(names.some((n) => n.startsWith('Aberrant Megalosaurus'))).toBe(false) // idéntico → fuera
-    expect(names.some((n) => n.startsWith('Aberrant Dimorphodon'))).toBe(true) // stats propios → se queda
+  it('aberrantes con base eliminados en AMBAS versiones; Alphas/bosses/Eerie fuera', () => {
+    for (const v of ['ASE', 'ASA'] as const) {
+      const names = getSpecies(v).map((s) => s.name)
+      const aberrants = names.filter((n) => n.startsWith('Aberrant '))
+      expect(aberrants).toEqual(['Aberrant Salmon']) // único sin base con ese nombre
+      expect(names.some((n) => n.startsWith('Alpha '))).toBe(false)
+      expect(names.some((n) => n.startsWith('Eerie '))).toBe(false)
+    }
+  })
+
+  it('breeding: Rex incuba 5h a 32-34°C y madura en ~3d21h (datos ASB)', () => {
+    const rex = getSpecies('ASE').find((s) => s.name === 'Rex')!
+    expect(rex.breeding).not.toBeNull()
+    expect(rex.breeding!.incubation).toBeCloseTo(17998.56, 1)
+    expect(rex.breeding!.maturation).toBeCloseTo(333333.333, 1)
+    expect(rex.breeding!.eggTempMin).toBe(32)
+    expect(rex.breeding!.eggTempMax).toBe(34)
+    expect(rex.breeding!.gestation).toBe(0)
   })
 
   it('solo se muestra EL kibble adecuado: Rex→Exceptional, Ankylo→Regular (tier más bajo con afinidad completa)', () => {
