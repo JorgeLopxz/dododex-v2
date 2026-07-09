@@ -4,7 +4,6 @@ import { findSpecies, getTamingFoods } from '../../data'
 import { calcTaming, formatDuration } from '../../engine/taming'
 import { STAT_KEYS } from '../../engine/types'
 import { STAT_META } from '../../ui/statMeta'
-import { useSettings } from '../../store/settings'
 import { IconScan } from '../../ui/icons'
 import { CreatureImage } from '../../ui/GameImage'
 
@@ -12,11 +11,10 @@ import { CreatureImage } from '../../ui/GameImage'
 export function CreatureDetailPage() {
   const { speciesId } = useParams()
   const navigate = useNavigate()
-  const { version } = useSettings()
-  const species = speciesId ? findSpecies(version, decodeURIComponent(speciesId)) : undefined
+  const species = speciesId ? findSpecies(decodeURIComponent(speciesId)) : undefined
 
   const quickTame = useMemo(() => {
-    if (!species?.taming) return null
+    if (!species) return null
     const foods = getTamingFoods(species.name)
     if (!foods?.length) return null
     return calcTaming(species.taming, foods[0], 150, {
@@ -27,7 +25,7 @@ export function CreatureDetailPage() {
   if (!species) {
     return (
       <p className="panel p-6 text-center text-bone-dim">
-        Especie no encontrada en {version}. <Link to="/criaturas" className="text-tek underline">Volver</Link>
+        Especie no encontrada. <Link to="/" className="text-tek underline">Volver al buscador</Link>
       </p>
     )
   }
@@ -42,13 +40,17 @@ export function CreatureDetailPage() {
           <div>
             <h2 className="display text-2xl font-bold leading-tight">{species.name}</h2>
             <p className="text-xs text-bone-faint">
-              {version}
-              {species.taming?.nonViolent && ' · tameo pasivo'}
-              {!species.taming && ' · no domable por afinidad'}
+              {species.taming.nonViolent ? 'Tameo pasivo' : 'Tameo por noqueo'}
             </p>
           </div>
         </div>
-        <button onClick={() => navigate('/criaturas')} className="btn-ghost text-sm">←</button>
+        <button
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+          aria-label="Volver"
+          className="btn-ghost px-2.5 py-1.5 text-lg leading-none"
+        >
+          ←
+        </button>
       </div>
 
       {/* Acciones: todo lo que puedes hacer con este dino, desde su ficha */}

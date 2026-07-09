@@ -4,7 +4,7 @@ import { WEAPONS, hitsToKnockout, wildTorpor } from './knockout'
 import { findSpecies, getSpecies, getTamingFoods } from '../data'
 
 describe('calcTaming — validado contra Dododex/ASB (Rex 150 oficial)', () => {
-  const rex = findSpecies('ASE', 'Rex_Character_BP')!
+  const rex = findSpecies('Rex_Character_BP')!
   const foods = getTamingFoods('Rex')!
   const kibble = foods.find((f) => f.name === 'Exceptional Kibble')!
   const rawMeat = foods.find((f) => f.name === 'Raw Meat')!
@@ -114,7 +114,7 @@ describe('calcTaming — validado contra Dododex/ASB (Rex 150 oficial)', () => {
 
 describe('regresiones de bugs reportados (07-2026)', () => {
   it('Ankylo 150 con bayas ≈ 3h, no 473h (bug de clones STA con placeholder)', () => {
-    const anky = getSpecies('ASE').find((s) => s.name === 'Ankylosaurus')!
+    const anky = getSpecies().find((s) => s.name === 'Ankylosaurus')!
     const foods = getTamingFoods('Ankylosaurus')!
     const berries = foods.find((f) => f.name === 'Berries')!
     const r = calcTaming(anky.taming!, berries, 150, {
@@ -126,7 +126,7 @@ describe('regresiones de bugs reportados (07-2026)', () => {
   })
 
   it('Dodo 150 con bayas se doma en minutos, no horas', () => {
-    const dodo = getSpecies('ASE').find((s) => s.name === 'Dodo')!
+    const dodo = getSpecies().find((s) => s.name === 'Dodo')!
     const foods = getTamingFoods('Dodo')!
     const berries = foods.find((f) => f.name === 'Berries') ?? foods[foods.length - 1]
     const r = calcTaming(dodo.taming!, berries, 150)!
@@ -146,18 +146,16 @@ describe('regresiones de bugs reportados (07-2026)', () => {
     expect(by('conquest').tsm).toBe(5)
   })
 
-  it('aberrantes con base eliminados en AMBAS versiones; Alphas/bosses/Eerie fuera', () => {
-    for (const v of ['ASE', 'ASA'] as const) {
-      const names = getSpecies(v).map((s) => s.name)
-      const aberrants = names.filter((n) => n.startsWith('Aberrant '))
-      expect(aberrants).toEqual(['Aberrant Salmon']) // único sin base con ese nombre
-      expect(names.some((n) => n.startsWith('Alpha '))).toBe(false)
-      expect(names.some((n) => n.startsWith('Eerie '))).toBe(false)
-    }
+  it('aberrantes con base eliminados; Alphas/bosses/Eerie fuera', () => {
+    const names = getSpecies().map((s) => s.name)
+    const aberrants = names.filter((n) => n.startsWith('Aberrant '))
+    expect(aberrants).toEqual(['Aberrant Salmon']) // único sin base con ese nombre
+    expect(names.some((n) => n.startsWith('Alpha '))).toBe(false)
+    expect(names.some((n) => n.startsWith('Eerie '))).toBe(false)
   })
 
   it('breeding: Rex incuba 5h a 32-34°C y madura en ~3d21h (datos ASB)', () => {
-    const rex = getSpecies('ASE').find((s) => s.name === 'Rex')!
+    const rex = getSpecies().find((s) => s.name === 'Rex')!
     expect(rex.breeding).not.toBeNull()
     expect(rex.breeding!.incubation).toBeCloseTo(17998.56, 1)
     expect(rex.breeding!.maturation).toBeCloseTo(333333.333, 1)
@@ -176,7 +174,7 @@ describe('regresiones de bugs reportados (07-2026)', () => {
 })
 
 describe('knockout — validado contra Dododex (Rex 150: 98 flechas ballesta / 70 dardos / 35 shock)', () => {
-  const rex = findSpecies('ASE', 'Rex_Character_BP')!
+  const rex = findSpecies('Rex_Character_BP')!
   const torpor = wildTorpor({ B: rex.stats.torpor!.B, Iw: rex.stats.torpor!.Iw }, 150)
 
   it('torpor total Rex 150 = 15.407', () => {

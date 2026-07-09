@@ -16,9 +16,8 @@ import { db } from '../../store/db'
 export function InspectorPage() {
   const { speciesId } = useParams()
   const navigate = useNavigate()
-  const { version } = useSettings()
 
-  const species = speciesId ? findSpecies(version, decodeURIComponent(speciesId)) : undefined
+  const species = speciesId ? findSpecies(decodeURIComponent(speciesId)) : undefined
 
   /** 'fresh' = recién domado (Ld=0 — el caso común); 'leveled' = con niveles gastados; 'wild' = sin domar.
    *  Preseleccionable desde la ficha de criatura vía ?m= */
@@ -42,10 +41,10 @@ export function InspectorPage() {
 
   const relevantStats = useMemo(() => {
     if (!species) return []
-    const base = POINT_STATS.filter((k) => statReceivesPoints(k, species, version) && species.displayed[k])
+    const base = POINT_STATS.filter((k) => statReceivesPoints(k, species) && species.displayed[k])
     // en modo salvaje solo tienen sentido los stats con crecimiento salvaje (Iw > 0)
     return mode === 'wild' ? base.filter((k) => (species.stats[k]?.Iw ?? 0) > 0) : base
-  }, [species, version, mode])
+  }, [species, mode])
 
   const result = useMemo(() => {
     if (!species) return null
@@ -87,7 +86,6 @@ export function InspectorPage() {
     const lvl = Number(level)
     return extractPostTame({
       species,
-      version,
       observed,
       ctx: { tamed: true, bred, TE: bred ? 1 : Number(TE) / 100, IB: Number(IB) / 100 },
       mult,
@@ -100,7 +98,7 @@ export function InspectorPage() {
       displayPrecisionPerStat: precisions,
       lockedLd0: fresh ? [...relevantStats] : [...locked],
     })
-  }, [species, version, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked, mult])
+  }, [species, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked, mult])
 
   async function saveDino() {
     if (!species || !result || result.solutions.length !== 1) return
@@ -116,7 +114,6 @@ export function InspectorPage() {
       name: dinoName || `${species.name} sin nombre`,
       speciesId: species.id,
       speciesName: species.name,
-      version,
       level: Number(level) || 0,
       TE: mode === 'wild' ? 0 : bred ? 1 : Number(TE) / 100,
       IB: mode === 'wild' ? 0 : Number(IB) / 100,
@@ -148,9 +145,9 @@ export function InspectorPage() {
             onChange={(e) => e.target.value && navigate(`/inspector/${encodeURIComponent(e.target.value)}`)}
           >
             <option value="" disabled>
-              Elige especie ({getSpecies(version).length} · {version})
+              Elige especie ({getSpecies().length})
             </option>
-            {getSpecies(version).map((s) => (
+            {getSpecies().map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
@@ -183,7 +180,7 @@ export function InspectorPage() {
           </button>
           <div>
             <h2 className="display text-2xl font-bold">{species.name}</h2>
-            <p className="text-xs text-bone-faint">Inspector post-tame · {version}</p>
+            <p className="text-xs text-bone-faint">Inspector post-tame</p>
           </div>
         </div>
         <button onClick={() => navigate('/inspector')} className="btn-ghost text-sm">
@@ -378,7 +375,7 @@ export function InspectorPage() {
               <p className="mt-2 rounded-lg border border-tek-dark/40 bg-surface-0/50 px-3 py-2 text-sm text-bone-dim">
                 <span className="display font-bold text-bone">{assigned}</span> puntos visibles ·{' '}
                 <span className="display font-bold text-bone-faint">{hidden}</span> en stats ocultos
-                {version === 'ASA' ? ' (velocidad y similares — desperdiciados)' : ' (velocidad, etc.)'}
+                {' (velocidad y similares — desperdiciados)'}
               </p>
             )
           })()}

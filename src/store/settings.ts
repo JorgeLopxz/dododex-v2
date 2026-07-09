@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import {
   OFFICIAL_MULTIPLIERS,
-  type GameVersion,
   type PointStatKey,
   type ServerMultipliers,
 } from '../engine/types'
@@ -10,9 +9,6 @@ import {
 export type ServerPreset = 'official' | 'vanilla' | 'custom'
 
 interface Settings {
-  version: GameVersion
-  setVersion: (v: GameVersion) => void
-
   /** Preset de servidor: oficial (con nerf salud/melee), vanilla (sin nerf) o personalizado */
   preset: ServerPreset
   setPreset: (p: ServerPreset) => void
@@ -29,8 +25,6 @@ interface Settings {
 export const useSettings = create<Settings>()(
   persist(
     (set) => ({
-      version: 'ASA',
-      setVersion: (version) => set({ version }),
       preset: 'official',
       setPreset: (preset) => set({ preset }),
       customIwM: {},

@@ -9,7 +9,6 @@ import {
 } from '../../engine/taming'
 import { WEAPONS, hitsToKnockout, wildTorpor } from '../../engine/knockout'
 import { findSpecies, getSpecies, getTamingFoods } from '../../data'
-import { useSettings } from '../../store/settings'
 import { tameBonusLevels } from '../../engine/statFormula'
 import { CreatureImage, ItemImage } from '../../ui/GameImage'
 
@@ -19,9 +18,8 @@ const TOP_FOODS = 6
 export function TamingPage() {
   const { speciesId } = useParams()
   const navigate = useNavigate()
-  const { version } = useSettings()
 
-  const species = speciesId ? findSpecies(version, decodeURIComponent(speciesId)) : undefined
+  const species = speciesId ? findSpecies(decodeURIComponent(speciesId)) : undefined
   const [level, setLevel] = useState('150')
   const [preset, setPreset] = useState<string>('official')
   const [customTsm, setCustomTsm] = useState('1')
@@ -38,14 +36,14 @@ export function TamingPage() {
   const tsm = preset === 'custom' ? (Number(customTsm) > 0 ? Number(customTsm) : 1) : TAMING_PRESETS.find((p) => p.id === preset)?.tsm ?? 1
   const mults: TamingServerMults = { tamingSpeed: tsm, foodDrain: 1, wildTorporDrain: 1 }
   const torporStat = species?.stats.torpor ? { B: species.stats.torpor.B, Iw: species.stats.torpor.Iw } : undefined
-  const sang = sanguine && version === 'ASA'
+  const sang = sanguine
 
   /** por comida: resultado usando SOLO esa comida (para la tabla) */
   const soloRows = useMemo(() => {
-    if (!species?.taming || !foods) return []
+    if (!species || !foods) return []
     return foods
       .map((food) => {
-        const r = calcTamingPlan(species.taming!, [{ food, pieces: 100000 }], lvl, { mults, torporStat, sanguineElixir: sang })
+        const r = calcTamingPlan(species.taming, [{ food, pieces: 100000 }], lvl, { mults, torporStat, sanguineElixir: sang })
         return r.enough && r.used.length > 0 ? { food, pieces: r.used[0].pieces, te: r.te, bonus: r.bonusLevels, seconds: r.seconds } : null
       })
       .filter((r) => r !== null)
@@ -55,7 +53,7 @@ export function TamingPage() {
   /** plan activo: cantidades del usuario, o auto (mejor comida) si no tocó nada */
   const hasCustomPlan = Object.values(qty).some((n) => n > 0)
   const plan = useMemo(() => {
-    if (!species?.taming || !foods) return null
+    if (!species || !foods) return null
     const items: PlanItem[] = hasCustomPlan
       ? foods.map((f) => ({ food: f, pieces: qty[f.name] ?? 0 })).filter((i) => i.pieces > 0)
       : foods.length > 0
@@ -68,7 +66,7 @@ export function TamingPage() {
 
   if (!species) {
     const q = search.trim().toLowerCase()
-    const list = getSpecies(version).filter((s) => s.taming && (!q || s.name.toLowerCase().includes(q))).slice(0, 30)
+    const list = getSpecies().filter((s) => !q || s.name.toLowerCase().includes(q)).slice(0, 30)
     return (
       <section className="mx-auto max-w-lg">
         <h2 className="display mb-1 text-2xl font-bold">Calculadora de tameo</h2>
@@ -115,8 +113,7 @@ export function TamingPage() {
           <div>
             <h2 className="display text-2xl font-bold leading-tight">{species.name}</h2>
             <p className="text-xs text-bone-faint">
-              Tameo · {version}
-              {species.taming?.nonViolent && ' · pasivo'}
+              Tameo{species.taming.nonViolent && ' · pasivo'}
             </p>
           </div>
         </div>
@@ -130,12 +127,10 @@ export function TamingPage() {
             <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel salvaje</span>
             <input type="number" inputMode="numeric" value={level} onChange={(e) => setLevel(e.target.value)} className="input-field w-28" />
           </label>
-          {version === 'ASA' && (
-            <label className="flex items-center gap-2 pb-2 text-sm text-bone-dim">
-              <input type="checkbox" checked={sanguine} onChange={(e) => setSanguine(e.target.checked)} className="size-4 accent-(--color-tek-deep)" />
-              Sanguine Elixir (−30%)
-            </label>
-          )}
+          <label className="flex items-center gap-2 pb-2 text-sm text-bone-dim">
+            <input type="checkbox" checked={sanguine} onChange={(e) => setSanguine(e.target.checked)} className="size-4 accent-(--color-tek-deep)" />
+            Sanguine Elixir (−30%)
+          </label>
         </div>
         <div role="group" aria-label="Preset de servidor" className="flex flex-wrap gap-1.5">
           {TAMING_PRESETS.map((p) => (
@@ -162,10 +157,8 @@ export function TamingPage() {
         </p>
       </div>
 
-      {!species.taming || !foods ? (
-        <div className="panel p-6 text-center text-bone-dim">
-          {!species.taming ? 'Esta especie no se doma por afinidad (o no hay datos).' : 'Sin datos de dieta para esta especie.'}
-        </div>
+      {!foods ? (
+        <div className="panel p-6 text-center text-bone-dim">Sin datos de dieta para esta especie.</div>
       ) : (
         <>
           {/* Resultado del plan activo */}

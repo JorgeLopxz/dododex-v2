@@ -11,7 +11,7 @@ import { OFFICIAL_MULTIPLIERS, type PointStatKey } from '../engine/types'
  */
 describe('Integración — Inspector post-tame con Rex real', () => {
   it('recupera los puntos exactos desde valores mostrados in-game', () => {
-    const rex = findSpecies('ASA', 'Rex_Character_BP')!
+    const rex = findSpecies('Rex_Character_BP')!
     const ctx = { tamed: true, bred: false, TE: 0.995, IB: 0 }
     const truth: Partial<Record<PointStatKey, { Lw: number; Ld: number }>> = {
       health: { Lw: 22, Ld: 7 },
@@ -34,7 +34,6 @@ describe('Integración — Inspector post-tame con Rex real', () => {
 
     const res = extractPostTame({
       species: rex,
-      version: 'ASA',
       observed,
       ctx,
       mult: OFFICIAL_MULTIPLIERS,

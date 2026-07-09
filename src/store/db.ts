@@ -3,7 +3,7 @@
  * los datos son del usuario y se exportan/importan como JSON.
  */
 import Dexie, { type EntityTable } from 'dexie'
-import type { GameVersion, PointStatKey } from '../engine/types'
+import type { PointStatKey } from '../engine/types'
 
 export interface SavedStat {
   /** Niveles salvajes (incluye bonus de tameo) */
@@ -19,7 +19,6 @@ export interface SavedDino {
   name: string
   speciesId: string
   speciesName: string
-  version: GameVersion
   sex?: 'M' | 'F'
   /** Nivel total actual */
   level: number
@@ -36,6 +35,10 @@ export const db = new Dexie('dododex-v2') as Dexie & {
 
 db.version(1).stores({
   dinos: '++id, speciesId, name, version, createdAt',
+})
+// v2: fuera el índice "version" (la app es solo ASA); los dinos guardados se conservan
+db.version(2).stores({
+  dinos: '++id, speciesId, name, createdAt',
 })
 
 export async function exportLibrary(): Promise<string> {

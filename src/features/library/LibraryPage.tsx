@@ -116,7 +116,7 @@ export function LibraryPage() {
                     <div>
                       <h3 className="display font-bold">{d.name}</h3>
                       <p className="text-xs text-bone-faint">
-                        {d.speciesName} · Nv {d.level} · {d.version} · TE {(d.TE * 100).toFixed(0)}%
+                        {d.speciesName} · Nv {d.level} · TE {(d.TE * 100).toFixed(0)}%
                         {d.IB > 0 && ` · Imprint ${(d.IB * 100).toFixed(0)}%`}
                       </p>
                     </div>

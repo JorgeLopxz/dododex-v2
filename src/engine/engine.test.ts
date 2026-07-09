@@ -125,7 +125,7 @@ describe('solvePostTameStat / extractPostTame (inspector post-tame ⭐)', () => 
     const domPoints = 5 + 0 + 0 + 10 + 12
 
     const res = extractPostTame({
-      species: TESTREX, version: 'ASA', observed, ctx, mult: NO_MULT, wildPoints, domPoints,
+      species: TESTREX, observed, ctx, mult: NO_MULT, wildPoints, domPoints,
     })
     expect(res.solutions.length).toBeGreaterThanOrEqual(1)
     expect(res.solutions).toContainEqual(expect.objectContaining(truth))
@@ -134,9 +134,9 @@ describe('solvePostTameStat / extractPostTame (inspector post-tame ⭐)', () => 
     }
   })
 
-  it('ASA: speed no entra en la extracción; ASE sí puede', () => {
-    expect(statReceivesPoints('speed', TESTREX, 'ASA')).toBe(false)
-    expect(statReceivesPoints('health', TESTREX, 'ASA')).toBe(true)
+  it('speed no entra en la extracción (regla ASA); health sí', () => {
+    expect(statReceivesPoints('speed', TESTREX)).toBe(false)
+    expect(statReceivesPoints('health', TESTREX)).toBe(true)
   })
 
   it('imprint al 100%: el extractor lo descuenta correctamente', () => {
@@ -149,7 +149,7 @@ describe('solvePostTameStat / extractPostTame (inspector post-tame ⭐)', () => 
   it('datos incompatibles ⇒ sin soluciones globales (aviso honesto, no respuesta inventada)', () => {
     const ctx = TAMED(1)
     const observed = { health: 12345.6 } // valor imposible para la especie
-    const res = extractPostTame({ species: TESTREX, version: 'ASA', observed, ctx, mult: NO_MULT, wildPoints: 10 })
+    const res = extractPostTame({ species: TESTREX, observed, ctx, mult: NO_MULT, wildPoints: 10 })
     expect(res.solutions).toHaveLength(0)
   })
 })

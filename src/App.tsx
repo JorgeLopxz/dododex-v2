@@ -1,25 +1,21 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { HomePage } from './features/home/HomePage'
-import { CreaturesPage } from './features/creatures/CreaturesPage'
 import { CreatureDetailPage } from './features/creatures/CreatureDetailPage'
 import { InspectorPage } from './features/inspector/InspectorPage'
 import { LibraryPage } from './features/library/LibraryPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { TamingPage } from './features/taming/TamingPage'
-import { useSettings } from './store/settings'
 import { getDataInfo } from './data'
-import { DinoFootprint, IconDino, IconHome, IconLibrary, IconScan } from './ui/icons'
+import { DinoFootprint, IconHome, IconLibrary, IconScan } from './ui/icons'
 
 const NAV = [
-  { to: '/', icon: IconHome, label: 'Inicio', end: true },
-  { to: '/criaturas', icon: IconDino, label: 'Criaturas' },
+  { to: '/', icon: IconHome, label: 'Buscar', end: true },
   { to: '/inspector', icon: IconScan, label: 'Inspector' },
   { to: '/dinos', icon: IconLibrary, label: 'Mis Dinos' },
 ]
 
 export default function App() {
-  const { version, setVersion } = useSettings()
-  const info = getDataInfo(version)
+  const info = getDataInfo()
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
@@ -30,27 +26,6 @@ export default function App() {
             DODODEX <span className="text-tek">V2</span>
           </span>
         </NavLink>
-        {/* Toggle ASA/ASE: cambia constantes Y reglas del motor (Speed, caps…) */}
-        <div
-          role="group"
-          aria-label="Versión del juego"
-          className="flex rounded-xl border border-surface-3 bg-surface-1 p-1"
-        >
-          {(['ASA', 'ASE'] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setVersion(v)}
-              aria-pressed={version === v}
-              className={`display rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ${
-                version === v
-                  ? 'bg-gradient-to-br from-tek to-tek-deep text-surface-0 shadow-lg shadow-tek-deep/30'
-                  : 'text-bone-dim hover:text-bone'
-              }`}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
         <NavLink
           to="/ajustes"
           aria-label="Ajustes del servidor"
@@ -70,7 +45,7 @@ export default function App() {
       <main className="flex-1 px-4 pb-28">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/criaturas" element={<CreaturesPage />} />
+          <Route path="/criaturas" element={<Navigate to="/" replace />} />
           <Route path="/criaturas/:speciesId" element={<CreatureDetailPage />} />
           <Route path="/inspector/:speciesId?" element={<InspectorPage />} />
           <Route path="/dinos" element={<LibraryPage />} />

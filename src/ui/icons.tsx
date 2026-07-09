@@ -36,22 +36,26 @@ export function IconHome({ size = 22 }: { size?: number }) {
   )
 }
 
-export function IconDino({ size = 22 }: { size?: number }) {
-  // silueta simplificada de cabeza de raptor
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
-      <path d="M4 15.5c0-5 3.5-8.5 8-8.5 3 0 5 1.2 6.5 3.2L21 12l-2.5 1-1 3.5c-3 2-8 2.2-11 .5" />
-      <path d="M13.5 12.2h.01" strokeWidth="2.6" />
-      <path d="M15 16.5c-1.2.6-2.6.9-4 .9" />
-    </svg>
-  )
-}
-
 export function IconScan({ size = 22 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
       <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" />
       <path d="M7 12h10M12 8.5v7" />
+    </svg>
+  )
+}
+
+export function IconStar({ size = 20, filled = false }: { size?: number; filled?: boolean }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      {...stroke}
+      fill={filled ? 'currentColor' : 'none'}
+    >
+      <path d="m12 3.2 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.4l5.9-.8z" />
     </svg>
   )
 }

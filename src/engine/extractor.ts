@@ -2,7 +2,6 @@ import { calcStat } from './statFormula'
 import {
   POINT_STATS,
   type CreatureContext,
-  type GameVersion,
   type PointStatKey,
   type ServerMultipliers,
   type Species,
@@ -19,7 +18,6 @@ export interface StatCandidate {
 
 export interface ExtractionInput {
   species: Species
-  version: GameVersion
   /** Valores observados in-game por stat (los que quiera aportar el usuario) */
   observed: Partial<Record<PointStatKey, number>>
   ctx: CreatureContext
@@ -62,12 +60,12 @@ export interface ExtractionResult {
   statsConsidered: PointStatKey[]
 }
 
-/** ¿Puede este stat recibir puntos en esta especie/versión? */
-export function statReceivesPoints(key: PointStatKey, species: Species, version: GameVersion): boolean {
+/** ¿Puede este stat recibir puntos en esta especie? */
+export function statReceivesPoints(key: PointStatKey, species: Species): boolean {
   if (species.stats[key] === null) return false
   if (species.noWildPoints?.includes(key)) return false
-  // ASA: velocidad no subible por defecto (ni salvaje ni doméstica) — ver ANALISIS.md §5.2
-  if (version === 'ASA' && key === 'speed') return false
+  // ASA: velocidad no subible por defecto (ni salvaje ni doméstica)
+  if (key === 'speed') return false
   return true
 }
 
@@ -130,14 +128,14 @@ export function solvePostTameStat(
  */
 export function extractPostTame(input: ExtractionInput): ExtractionResult {
   const {
-    species, version, observed, ctx, mult,
+    species, observed, ctx, mult,
     wildPoints, domPoints,
     displayPrecision = 0.1, displayPrecisionPerStat = {}, lockedLd0 = [],
     maxLwPerStat = 254, maxLdPerStat = 88,
   } = input
 
   const statsConsidered = POINT_STATS.filter(
-    (k) => observed[k] !== undefined && statReceivesPoints(k, species, version),
+    (k) => observed[k] !== undefined && statReceivesPoints(k, species),
   )
 
   const perStat: ExtractionResult['perStat'] = {}

@@ -1,9 +1,11 @@
 /**
- * FASE 1 — Pipeline de datos de especies.
- * Descarga (si falta) values.json (ASE) y ASA-values.json de ARK Smart Breeding (MIT, © 2015 cadon)
- * y genera src/data/species-{ase,asa}.json en formato compacto:
- *   [id, nombre, tbhm, displayedStats, [statsx8 (null | [B,Iw,Id,Ta,Tm])]]
+ * Pipeline de datos de especies (solo ASA).
+ * Descarga (si falta) ASA-values.json de ARK Smart Breeding (MIT, © 2015 cadon)
+ * — y values.json (ASE) como base del overlay, porque ASA hereda stats de él —
+ * y genera src/data/species-asa.json en formato compacto:
+ *   [id, nombre, tbhm, displayedStats, [statsx8 (null | [B,Iw,Id,Ta,Tm])], taming[9], breeding[5]|null]
  * Orden de stats propio: health, stamina, oxygen, food, weight, melee, speed, torpor.
+ * Solo se emiten especies DOMABLES (principio: si no es tameable, fuera de la base de datos).
  * Uso: node scripts/build-data.mjs [--offline]
  */
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
@@ -112,6 +114,7 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
         ? [b.incubationTime ?? 0, b.gestationTime ?? 0, b.maturationTime ?? 0, b.eggTempMin ?? 0, b.eggTempMax ?? 0]
         : null
     if (!sp.name) continue // entradas internas (misiones, summoned, STA) sin nombre real
+    if (!taming) continue // sin datos de tameo por afinidad ⇒ no domable ⇒ fuera
     const baseName = sp.name
     const extraVariants = (sp.variants ?? []).filter((v) => !baseName.toLowerCase().includes(v.toLowerCase()))
     const name = extraVariants.length ? `${baseName} (${extraVariants.join(', ')})` : baseName
@@ -168,7 +171,6 @@ const aseRaw = await ensureRaw(FILES.ase)
   console.log(`Backfill v298: ${fcFixed} consumos reales, ${tdpsFixed} torpor; ${zeroed} sin dato (tiempo oculto)`)
 }
 
-const ase = transform(aseRaw, 'ASE')
 const aseByBp = new Map(
   aseRaw.species
     .filter((sp) => sp.fullStatsRaw)
@@ -178,7 +180,6 @@ const aseByBp = new Map(
     ]),
 )
 const asa = transform(await ensureRaw(FILES.asa), 'ASA', aseByBp)
-writeFileSync(`${OUT_DIR}/species-ase.json`, JSON.stringify(ase))
 writeFileSync(`${OUT_DIR}/species-asa.json`, JSON.stringify(asa))
 
 // ——— Comidas de tameo (tamingFoodData.json de ASB: dietas por especie + valores f/a) ———
@@ -204,4 +205,4 @@ writeFileSync(
   `${OUT_DIR}/taming-foods.json`,
   JSON.stringify({ version: tfd.version, source: 'cadon/ARKStatsExtractor (MIT)', foods: defaults, perSpecies }),
 )
-console.log(`OK → ${OUT_DIR}/species-{ase,asa}.json (v ASE ${ase.version} / ASA ${asa.version}) + taming-foods.json (${Object.keys(perSpecies).length} especies)`)
+console.log(`OK → ${OUT_DIR}/species-asa.json (v ${asa.version}) + taming-foods.json (${Object.keys(perSpecies).length} especies)`)

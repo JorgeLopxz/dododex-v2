@@ -4,8 +4,6 @@
  * V = (B·(1+Lw·Iw·IwM)·TBHM·(1+IB·0.2·IBM) + Ta·TaM) · (1+TE·Tm·TmM) · (1+Ld·Id·IdM)
  */
 
-export type GameVersion = 'ASA' | 'ASE'
-
 export const STAT_KEYS = [
   'health',
   'stamina',
