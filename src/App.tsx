@@ -1,18 +1,22 @@
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { HomePage } from './features/home/HomePage'
 import { CreatureDetailPage } from './features/creatures/CreatureDetailPage'
-import { InspectorPage } from './features/inspector/InspectorPage'
 import { LibraryPage } from './features/library/LibraryPage'
 import { SettingsPage } from './features/settings/SettingsPage'
-import { TamingPage } from './features/taming/TamingPage'
 import { getDataInfo } from './data'
-import { DinoFootprint, IconHome, IconLibrary, IconScan } from './ui/icons'
+import { DinoFootprint, IconGear, IconHome, IconLibrary } from './ui/icons'
 
 const NAV = [
   { to: '/', icon: IconHome, label: 'Buscar', end: true },
-  { to: '/inspector', icon: IconScan, label: 'Inspector' },
   { to: '/dinos', icon: IconLibrary, label: 'Mis Dinos' },
+  { to: '/ajustes', icon: IconGear, label: 'Ajustes' },
 ]
+
+/** URLs antiguas /tameo/:id e /inspector/:id → pestaña correspondiente de la súper-ficha */
+function LegacyRedirect({ tab }: { tab: string }) {
+  const { speciesId } = useParams()
+  return <Navigate to={speciesId ? `/criaturas/${speciesId}?tab=${tab}` : '/'} replace />
+}
 
 export default function App() {
   const info = getDataInfo()
@@ -26,20 +30,9 @@ export default function App() {
             DODODEX <span className="text-tek">V2</span>
           </span>
         </NavLink>
-        <NavLink
-          to="/ajustes"
-          aria-label="Ajustes del servidor"
-          className={({ isActive }) =>
-            `grid size-9 place-items-center rounded-lg border border-surface-3 transition-colors ${
-              isActive ? 'border-tek-deep/50 text-tek' : 'text-bone-dim hover:text-bone'
-            }`
-          }
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3.2" />
-            <path d="M12 2.8v3M12 18.2v3M21.2 12h-3M5.8 12h-3M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1M18.5 18.5l-2.1-2.1M7.6 7.6 5.5 5.5" />
-          </svg>
-        </NavLink>
+        <span className="display text-[11px] font-semibold uppercase tracking-widest text-bone-faint">
+          ASA · Vanilla
+        </span>
       </header>
 
       <main className="flex-1 px-4 pb-28">
@@ -47,9 +40,9 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/criaturas" element={<Navigate to="/" replace />} />
           <Route path="/criaturas/:speciesId" element={<CreatureDetailPage />} />
-          <Route path="/inspector/:speciesId?" element={<InspectorPage />} />
+          <Route path="/inspector/:speciesId?" element={<LegacyRedirect tab="inspector" />} />
+          <Route path="/tameo/:speciesId?" element={<LegacyRedirect tab="tameo" />} />
           <Route path="/dinos" element={<LibraryPage />} />
-          <Route path="/tameo/:speciesId?" element={<TamingPage />} />
           <Route path="/ajustes" element={<SettingsPage />} />
         </Routes>
         <p className="mt-10 text-center text-[11px] leading-relaxed text-bone-faint">

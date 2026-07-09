@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   TAMING_PRESETS,
   calcTamingPlan,
@@ -8,18 +8,14 @@ import {
   type TamingServerMults,
 } from '../../engine/taming'
 import { WEAPONS, hitsToKnockout, wildTorpor } from '../../engine/knockout'
-import { findSpecies, getSpecies, getTamingFoods } from '../../data'
+import { getTamingFoods, type SpeciesEntry } from '../../data'
 import { tameBonusLevels } from '../../engine/statFormula'
-import { CreatureImage, ItemImage } from '../../ui/GameImage'
+import { ItemImage } from '../../ui/GameImage'
 
 const TOP_FOODS = 6
 
-/** Calculadora de tameo v2 — paridad Dododex: presets, combos de comida, noqueo por arma. */
-export function TamingPage() {
-  const { speciesId } = useParams()
-  const navigate = useNavigate()
-
-  const species = speciesId ? findSpecies(decodeURIComponent(speciesId)) : undefined
+/** Calculadora de tameo embebida en la ficha: presets, combos de comida, noqueo por arma. */
+export function TamingCalculator({ species }: { species: SpeciesEntry }) {
   const [level, setLevel] = useState('150')
   const [preset, setPreset] = useState<string>('official')
   const [customTsm, setCustomTsm] = useState('1')
@@ -29,69 +25,38 @@ export function TamingPage() {
   const [qty, setQty] = useState<Record<string, number>>({})
   const [weaponId, setWeaponId] = useState('crossbow')
   const [quality, setQuality] = useState('100')
-  const [search, setSearch] = useState('')
 
-  const foods = useMemo(() => (species ? getTamingFoods(species.name) : null), [species])
+  const foods = useMemo(() => getTamingFoods(species.name), [species])
   const lvl = Math.max(1, Number(level) || 150)
   const tsm = preset === 'custom' ? (Number(customTsm) > 0 ? Number(customTsm) : 1) : TAMING_PRESETS.find((p) => p.id === preset)?.tsm ?? 1
   const mults: TamingServerMults = { tamingSpeed: tsm, foodDrain: 1, wildTorporDrain: 1 }
-  const torporStat = species?.stats.torpor ? { B: species.stats.torpor.B, Iw: species.stats.torpor.Iw } : undefined
-  const sang = sanguine
+  const torporStat = species.stats.torpor ? { B: species.stats.torpor.B, Iw: species.stats.torpor.Iw } : undefined
 
   /** por comida: resultado usando SOLO esa comida (para la tabla) */
   const soloRows = useMemo(() => {
-    if (!species || !foods) return []
+    if (!foods) return []
     return foods
       .map((food) => {
-        const r = calcTamingPlan(species.taming, [{ food, pieces: 100000 }], lvl, { mults, torporStat, sanguineElixir: sang })
+        const r = calcTamingPlan(species.taming, [{ food, pieces: 100000 }], lvl, { mults, torporStat, sanguineElixir: sanguine })
         return r.enough && r.used.length > 0 ? { food, pieces: r.used[0].pieces, te: r.te, bonus: r.bonusLevels, seconds: r.seconds } : null
       })
       .filter((r) => r !== null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [species, foods, lvl, tsm, sang])
+  }, [species, foods, lvl, tsm, sanguine])
 
   /** plan activo: cantidades del usuario, o auto (mejor comida) si no tocó nada */
   const hasCustomPlan = Object.values(qty).some((n) => n > 0)
   const plan = useMemo(() => {
-    if (!species || !foods) return null
+    if (!foods) return null
     const items: PlanItem[] = hasCustomPlan
       ? foods.map((f) => ({ food: f, pieces: qty[f.name] ?? 0 })).filter((i) => i.pieces > 0)
       : foods.length > 0
         ? [{ food: foods[0], pieces: 100000 }]
         : []
     if (items.length === 0) return null
-    return calcTamingPlan(species.taming, items, lvl, { mults, torporStat, sanguineElixir: sang })
+    return calcTamingPlan(species.taming, items, lvl, { mults, torporStat, sanguineElixir: sanguine })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [species, foods, qty, hasCustomPlan, lvl, tsm, sang])
-
-  if (!species) {
-    const q = search.trim().toLowerCase()
-    const list = getSpecies().filter((s) => !q || s.name.toLowerCase().includes(q)).slice(0, 30)
-    return (
-      <section className="mx-auto max-w-lg">
-        <h2 className="display mb-1 text-2xl font-bold">Calculadora de tameo</h2>
-        <p className="mb-4 text-sm text-bone-dim">Comida, efectividad, narcóticos y noqueo — fórmulas exactas del juego.</p>
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔎  Busca una criatura…"
-          aria-label="Buscar criatura"
-          className="input-field mb-3 py-3"
-        />
-        <ul className="grid gap-2">
-          {list.map((s) => (
-            <li key={s.id}>
-              <Link to={`/tameo/${encodeURIComponent(s.id)}`} className="panel panel-hover flex items-center gap-3 p-2.5">
-                <CreatureImage name={s.name} size={40} />
-                <span className="font-semibold">{s.name}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )
-  }
+  }, [species, foods, qty, hasCustomPlan, lvl, tsm, sanguine])
 
   const visibleRows = showAll ? soloRows : soloRows.slice(0, TOP_FOODS)
   const torporTotal = torporStat ? wildTorpor(torporStat, lvl) : null
@@ -99,27 +64,7 @@ export function TamingPage() {
   const qualityNum = Math.max(1, Number(quality) || 100)
 
   return (
-    <section aria-label={`Tameo de ${species.name}`} className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/tameo'))}
-            aria-label="Volver"
-            className="btn-ghost px-2.5 py-1.5 text-lg leading-none"
-          >
-            ←
-          </button>
-          <CreatureImage name={species.name} size={52} />
-          <div>
-            <h2 className="display text-2xl font-bold leading-tight">{species.name}</h2>
-            <p className="text-xs text-bone-faint">
-              Tameo{species.taming.nonViolent && ' · pasivo'}
-            </p>
-          </div>
-        </div>
-        <button onClick={() => navigate('/tameo')} className="btn-ghost text-sm">Cambiar</button>
-      </div>
-
+    <div className="space-y-4">
       {/* Nivel + presets de servidor */}
       <div className="panel p-4">
         <div className="mb-3 flex flex-wrap items-end gap-3">
@@ -321,10 +266,10 @@ export function TamingPage() {
 
           <p className="text-xs text-bone-faint">
             TE 100% teórica: +{tameBonusLevels(lvl, 1)} niveles → Nv {lvl + tameBonusLevels(lvl, 1)}. Tras domar,{' '}
-            <Link to={`/inspector/${encodeURIComponent(species.id)}`} className="text-tek underline">inspecciona dónde cayeron los puntos</Link>.
+            <Link to={{ search: 'tab=inspector' }} className="text-tek underline">inspecciona dónde cayeron los puntos</Link>.
           </p>
         </>
       )}
-    </section>
+    </div>
   )
 }

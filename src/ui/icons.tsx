@@ -45,6 +45,15 @@ export function IconScan({ size = 22 }: { size?: number }) {
   )
 }
 
+export function IconGear({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 2.8v3M12 18.2v3M21.2 12h-3M5.8 12h-3M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1M18.5 18.5l-2.1-2.1M7.6 7.6 5.5 5.5" />
+    </svg>
+  )
+}
+
 export function IconStar({ size = 20, filled = false }: { size?: number; filled?: boolean }) {
   return (
     <svg

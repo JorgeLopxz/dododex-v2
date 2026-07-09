@@ -92,10 +92,10 @@ export function LibraryPage() {
           <p className="mb-4 text-bone-dim">
             Aún no hay dinos guardados.
             <br />
-            Analiza tu primer tame con el Inspector. 🦖
+            Busca tu criatura y analízala en su pestaña <strong className="text-bone">Inspector</strong>. 🦖
           </p>
-          <Link to="/inspector" className="btn-primary inline-flex items-center gap-2">
-            <IconScan size={18} /> Abrir Inspector
+          <Link to="/" className="btn-primary inline-flex items-center gap-2">
+            <IconScan size={18} /> Buscar criatura
           </Link>
         </div>
       ) : (
@@ -116,7 +116,10 @@ export function LibraryPage() {
                     <div>
                       <h3 className="display font-bold">{d.name}</h3>
                       <p className="text-xs text-bone-faint">
-                        {d.speciesName} · Nv {d.level} · TE {(d.TE * 100).toFixed(0)}%
+                        <Link to={`/criaturas/${encodeURIComponent(d.speciesId)}`} className="underline decoration-surface-3 hover:text-tek">
+                          {d.speciesName}
+                        </Link>{' '}
+                        · Nv {d.level} · TE {(d.TE * 100).toFixed(0)}%
                         {d.IB > 0 && ` · Imprint ${(d.IB * 100).toFixed(0)}%`}
                       </p>
                     </div>

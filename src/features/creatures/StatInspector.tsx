@@ -1,26 +1,23 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { extractPostTame, extractWildStat, statReceivesPoints, type ExtractionResult } from '../../engine/extractor'
 import { tameBonusLevels } from '../../engine/statFormula'
 import { POINT_STATS, type PointStatKey } from '../../engine/types'
-import { findSpecies, getSpecies } from '../../data'
+import type { SpeciesEntry } from '../../data'
 import { STAT_META } from '../../ui/statMeta'
 import { StatBar } from '../../ui/StatBar'
 import { getMultipliers, useSettings } from '../../store/settings'
 import { db } from '../../store/db'
 
 /**
- * ⭐ Inspector post-tame: la función que Dododex no tiene.
- * Flujo guiado en 3 pasos: dino → contexto → stats. Resultado visual con barras.
+ * ⭐ Inspector post-tame embebido en la ficha: la función que Dododex no tiene.
+ * Contexto → stats → resultado visual con barras.
  */
-export function InspectorPage() {
-  const { speciesId } = useParams()
+export function StatInspector({ species }: { species: SpeciesEntry }) {
   const navigate = useNavigate()
 
-  const species = speciesId ? findSpecies(decodeURIComponent(speciesId)) : undefined
-
   /** 'fresh' = recién domado (Ld=0 — el caso común); 'leveled' = con niveles gastados; 'wild' = sin domar.
-   *  Preseleccionable desde la ficha de criatura vía ?m= */
+   *  Preseleccionable vía ?m= */
   const [searchParams] = useSearchParams()
   const [mode, setMode] = useState<'fresh' | 'leveled' | 'wild'>(() => {
     const m = searchParams.get('m')
@@ -40,14 +37,12 @@ export function InspectorPage() {
   const mult = useMemo(() => getMultipliers(settings), [settings])
 
   const relevantStats = useMemo(() => {
-    if (!species) return []
     const base = POINT_STATS.filter((k) => statReceivesPoints(k, species) && species.displayed[k])
     // en modo salvaje solo tienen sentido los stats con crecimiento salvaje (Iw > 0)
     return mode === 'wild' ? base.filter((k) => (species.stats[k]?.Iw ?? 0) > 0) : base
   }, [species, mode])
 
   const result = useMemo(() => {
-    if (!species) return null
     const observed: Partial<Record<PointStatKey, number>> = {}
     const precisions: Partial<Record<PointStatKey, number>> = {}
     for (const k of relevantStats) {
@@ -101,7 +96,7 @@ export function InspectorPage() {
   }, [species, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked, mult])
 
   async function saveDino() {
-    if (!species || !result || result.solutions.length !== 1) return
+    if (!result || result.solutions.length !== 1) return
     const sol = result.solutions[0]
     const stats: Record<string, { Lw: number; Ld: number; value: number }> = {}
     for (const k of result.statsConsidered) {
@@ -124,43 +119,6 @@ export function InspectorPage() {
     setTimeout(() => navigate('/dinos'), 600)
   }
 
-  /* ——— Paso 1: elegir especie ——— */
-  if (!species) {
-    return (
-      <section className="mx-auto max-w-lg">
-        <h2 className="display mb-1 text-2xl font-bold">Inspector post-tame</h2>
-        <p className="mb-6 text-sm text-bone-dim">
-          Descubre cuántos puntos cayeron en cada stat de tu dino <strong className="text-bone">ya domado</strong> —
-          lo que ninguna otra app puede decirte.
-        </p>
-        <div className="panel p-5">
-          <div className="mb-3 flex items-center gap-2.5">
-            <span className="step-badge">1</span>
-            <h3 className="display font-semibold">¿Qué criatura es?</h3>
-          </div>
-          <select
-            aria-label="Especie"
-            className="input-field"
-            defaultValue=""
-            onChange={(e) => e.target.value && navigate(`/inspector/${encodeURIComponent(e.target.value)}`)}
-          >
-            <option value="" disabled>
-              Elige especie ({getSpecies().length})
-            </option>
-            {getSpecies().map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <p className="mt-3 text-xs text-bone-faint">
-            Consejo: también puedes llegar aquí desde la pestaña <strong>Criaturas</strong>.
-          </p>
-        </div>
-      </section>
-    )
-  }
-
   const uniqueSolution = result?.solutions.length === 1 ? result.solutions[0] : null
   const barMax = Math.max(30, ...result ? result.statsConsidered.map((k) => {
     const c = (uniqueSolution?.[k] ?? result.perStat[k]?.candidates[0])
@@ -168,30 +126,11 @@ export function InspectorPage() {
   }) : [0]) * 1.15
 
   return (
-    <section aria-label={`Inspector de ${species.name}`} className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/inspector'))}
-            aria-label="Volver"
-            className="btn-ghost px-2.5 py-1.5 text-lg leading-none"
-          >
-            ←
-          </button>
-          <div>
-            <h2 className="display text-2xl font-bold">{species.name}</h2>
-            <p className="text-xs text-bone-faint">Inspector post-tame</p>
-          </div>
-        </div>
-        <button onClick={() => navigate('/inspector')} className="btn-ghost text-sm">
-          Cambiar
-        </button>
-      </div>
-
-      {/* Paso 2: contexto */}
+    <div className="space-y-4">
+      {/* Paso 1: contexto */}
       <div className="panel p-5">
         <div className="mb-4 flex items-center gap-2.5">
-          <span className="step-badge">2</span>
+          <span className="step-badge">1</span>
           <h3 className="display font-semibold">Cuéntame de tu dino</h3>
         </div>
 
@@ -265,10 +204,10 @@ export function InspectorPage() {
         )}
       </div>
 
-      {/* Paso 3: stats */}
+      {/* Paso 2: stats */}
       <div className="panel p-5">
         <div className="mb-4 flex items-center gap-2.5">
-          <span className="step-badge">3</span>
+          <span className="step-badge">2</span>
           <h3 className="display font-semibold">Copia los valores que ves in-game</h3>
         </div>
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
@@ -425,6 +364,6 @@ export function InspectorPage() {
           )}
         </div>
       )}
-    </section>
+    </div>
   )
 }

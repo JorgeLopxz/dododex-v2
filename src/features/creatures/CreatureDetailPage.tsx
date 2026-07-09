@@ -1,26 +1,32 @@
 import { useMemo } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { findSpecies, getTamingFoods } from '../../data'
 import { calcTaming, formatDuration } from '../../engine/taming'
 import { STAT_KEYS } from '../../engine/types'
 import { STAT_META } from '../../ui/statMeta'
-import { IconScan } from '../../ui/icons'
+import { useFavorites } from '../../store/favorites'
+import { IconStar } from '../../ui/icons'
 import { CreatureImage } from '../../ui/GameImage'
+import { TamingCalculator } from './TamingCalculator'
+import { StatInspector } from './StatInspector'
 
-/** Ficha de criatura: stats base + tameo de un vistazo + accesos directos (estilo Wikily unificado). */
+const TABS = [
+  { id: 'resumen', label: 'Resumen' },
+  { id: 'tameo', label: '🧮 Tameo' },
+  { id: 'inspector', label: '⭐ Inspector' },
+] as const
+type TabId = (typeof TABS)[number]['id']
+
+/** Súper-ficha: TODO lo de una criatura en un sitio — resumen, calculadora de tameo e inspector. */
 export function CreatureDetailPage() {
   const { speciesId } = useParams()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const species = speciesId ? findSpecies(decodeURIComponent(speciesId)) : undefined
+  const { ids: favoriteIds, toggle } = useFavorites()
 
-  const quickTame = useMemo(() => {
-    if (!species) return null
-    const foods = getTamingFoods(species.name)
-    if (!foods?.length) return null
-    return calcTaming(species.taming, foods[0], 150, {
-      torporStat: species.stats.torpor ? { B: species.stats.torpor.B, Iw: species.stats.torpor.Iw } : undefined,
-    })
-  }, [species])
+  const rawTab = searchParams.get('tab')
+  const tab: TabId = rawTab === 'tameo' || rawTab === 'inspector' ? rawTab : 'resumen'
 
   if (!species) {
     return (
@@ -29,21 +35,11 @@ export function CreatureDetailPage() {
       </p>
     )
   }
-
-  const rows = STAT_KEYS.filter((k) => species.stats[k] && species.displayed[k])
+  const isFav = favoriteIds.includes(species.id)
 
   return (
     <section aria-label={`Ficha de ${species.name}`} className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <CreatureImage name={species.name} size={56} />
-          <div>
-            <h2 className="display text-2xl font-bold leading-tight">{species.name}</h2>
-            <p className="text-xs text-bone-faint">
-              {species.taming.nonViolent ? 'Tameo pasivo' : 'Tameo por noqueo'}
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center gap-2.5">
         <button
           onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
           aria-label="Volver"
@@ -51,31 +47,70 @@ export function CreatureDetailPage() {
         >
           ←
         </button>
+        <CreatureImage name={species.name} size={52} />
+        <div className="min-w-0 flex-1">
+          <h2 className="display truncate text-2xl font-bold leading-tight">{species.name}</h2>
+          <p className="text-xs text-bone-faint">
+            {species.taming.nonViolent ? 'Tameo pasivo' : 'Tameo por noqueo'}
+          </p>
+        </div>
+        <button
+          onClick={() => toggle(species.id)}
+          aria-label={isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+          aria-pressed={isFav}
+          className={`grid size-10 shrink-0 place-items-center rounded-lg border border-surface-3 transition-colors ${
+            isFav ? 'text-warn' : 'text-bone-faint hover:text-bone-dim'
+          }`}
+        >
+          <IconStar filled={isFav} />
+        </button>
       </div>
 
-      {/* Acciones: todo lo que puedes hacer con este dino, desde su ficha */}
-      <div className="grid grid-cols-3 gap-2">
-        <Link to={`/tameo/${encodeURIComponent(species.id)}`} className="btn-primary text-center text-xs sm:text-sm">
-          🧮 Calcular tameo
-        </Link>
-        <Link
-          to={`/inspector/${encodeURIComponent(species.id)}?m=wild`}
-          className="btn-ghost inline-flex items-center justify-center gap-1.5 text-center text-xs sm:text-sm"
-        >
-          🌿 Stats salvaje
-        </Link>
-        <Link
-          to={`/inspector/${encodeURIComponent(species.id)}?m=fresh`}
-          className="btn-ghost inline-flex items-center justify-center gap-1.5 text-center text-xs sm:text-sm"
-        >
-          <IconScan size={15} /> Stats post-tame
-        </Link>
+      {/* Pestañas de la súper-ficha */}
+      <div role="group" aria-label="Sección de la ficha" className="flex gap-2 rounded-lg bg-surface-0/60 p-1.5">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setSearchParams(t.id === 'resumen' ? {} : { tab: t.id }, { replace: true })}
+            aria-pressed={tab === t.id}
+            className="mode-tab"
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* Tameo de un vistazo (nv 150 oficial) */}
+      {tab === 'resumen' && <SummaryTab species={species} />}
+      {tab === 'tameo' && <TamingCalculator species={species} />}
+      {tab === 'inspector' && <StatInspector species={species} />}
+    </section>
+  )
+}
+
+function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSpecies>> }) {
+  const [, setSearchParams] = useSearchParams()
+
+  const quickTame = useMemo(() => {
+    const foods = getTamingFoods(species.name)
+    if (!foods?.length) return null
+    return calcTaming(species.taming, foods[0], 150, {
+      torporStat: species.stats.torpor ? { B: species.stats.torpor.B, Iw: species.stats.torpor.Iw } : undefined,
+    })
+  }, [species])
+
+  const rows = STAT_KEYS.filter((k) => species.stats[k] && species.displayed[k])
+
+  return (
+    <div className="space-y-4">
+      {/* Tameo de un vistazo (nv 150 oficial) → la pestaña Tameo para afinar */}
       {quickTame && (
-        <div className="panel p-4">
-          <p className="display mb-1 text-xs font-semibold uppercase tracking-widest text-tek">Tameo nv 150 · oficial</p>
+        <button
+          onClick={() => setSearchParams({ tab: 'tameo' }, { replace: true })}
+          className="panel panel-hover w-full p-4 text-left"
+        >
+          <p className="display mb-1 text-xs font-semibold uppercase tracking-widest text-tek">
+            Tameo nv 150 · oficial — toca para ajustar
+          </p>
           <p className="text-sm text-bone-dim">
             <strong className="text-bone">{quickTame.food.name}</strong> ×
             <strong className="display text-bone">{quickTame.pieces}</strong> · TE{' '}
@@ -86,7 +121,7 @@ export function CreatureDetailPage() {
               <> · 💤 {quickTame.torpor.narcotics} narcóticos</>
             )}
           </p>
-        </div>
+        </button>
       )}
 
       {/* Cría: incubación, maduración, cuddles e imprint — compacto como Dododex */}
@@ -170,6 +205,6 @@ export function CreatureDetailPage() {
       <p className="text-xs text-bone-faint">
         Salvaje: puntos suben el stat desde base. Domado: cada nivel tuyo sube un % del valor post-tame.
       </p>
-    </section>
+    </div>
   )
 }
