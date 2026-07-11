@@ -41,7 +41,7 @@ export function CreatureImage({ name, size = 44, className = '' }: { name: strin
       <span
         aria-hidden="true"
         style={{ width: size, height: size }}
-        className={`display grid shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-amber ${className}`}
+        className={`display inline-grid shrink-0 place-items-center align-middle rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-amber ${className}`}
       >
         {initials}
       </span>
@@ -67,7 +67,7 @@ export function ItemImage({ name, size = 28, fallback = '🍖' }: { name: string
   const [failed, setFailed] = useState(false)
   if (failed) {
     return (
-      <span aria-hidden="true" style={{ width: size, height: size }} className="grid shrink-0 place-items-center text-base">
+      <span aria-hidden="true" style={{ width: size, height: size }} className="inline-grid shrink-0 place-items-center align-middle text-base">
         {fallback}
       </span>
     )

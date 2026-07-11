@@ -71,7 +71,9 @@ export function HomePage() {
             Busca cualquiera de las <strong className="text-bone">{getSpecies().length}</strong> criaturas domables de ARK.
           </p>
           <p className="text-xs text-bone-faint">
-            Marca tus habituales con la <IconStar size={13} filled /> y aparecerán aquí nada más abrir la app.
+            Marca tus habituales con la estrella{' '}
+            <span className="inline-flex translate-y-0.5 text-warn"><IconStar size={13} filled /></span>{' '}
+            y aparecerán aquí nada más abrir la app.
           </p>
         </div>
       )}
