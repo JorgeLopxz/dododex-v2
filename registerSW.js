@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/dododex-v2/sw.js', { scope: '/dododex-v2/' })})}
