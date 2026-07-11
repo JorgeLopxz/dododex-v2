@@ -109,14 +109,14 @@ export function LibraryPage() {
                   <div className="flex items-center gap-3">
                     <span
                       aria-hidden="true"
-                      className="display grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-tek"
+                      className="display grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-amber"
                     >
                       {d.name.slice(0, 2).toUpperCase()}
                     </span>
                     <div>
                       <h3 className="display font-bold">{d.name}</h3>
                       <p className="text-xs text-bone-faint">
-                        <Link to={`/criaturas/${encodeURIComponent(d.speciesId)}`} className="underline decoration-surface-3 hover:text-tek">
+                        <Link to={`/criaturas/${encodeURIComponent(d.speciesId)}`} className="underline decoration-surface-3 hover:text-amber">
                           {d.speciesName}
                         </Link>{' '}
                         · Nv {d.level} · TE {(d.TE * 100).toFixed(0)}%

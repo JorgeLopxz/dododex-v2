@@ -43,7 +43,7 @@ export function SettingsPage() {
         <div className="panel p-5">
           <h3 className="display mb-1 font-semibold">Multiplicadores por stat</h3>
           <p className="mb-4 text-xs text-bone-dim">
-            Los <code className="text-tek">PerLevelStatsMultiplier_DinoWild / _DinoTamed</code> de tu Game.ini.
+            Los <code className="text-amber">PerLevelStatsMultiplier_DinoWild / _DinoTamed</code> de tu Game.ini.
             Déjalo en 1 si no lo tocaste.
           </p>
           <div className="mb-2 grid grid-cols-[1fr_5rem_5rem] items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-bone-faint">
@@ -81,7 +81,7 @@ export function SettingsPage() {
               type="checkbox"
               checked={s.customNerf}
               onChange={(e) => s.setCustomNerf(e.target.checked)}
-              className="size-4 accent-(--color-tek-deep)"
+              className="size-4 accent-(--color-amber-deep)"
             />
             Mantener nerf oficial post-tame (salud/melee)
           </label>

@@ -1,29 +1,40 @@
 @import 'tailwindcss';
 
 /*
- * Design system "Tek HUD" — inspirado en el HUD de ARK y la estética Tek tier:
- * paneles holográficos translúcidos azul-cian, brackets angulares en las esquinas,
- * glow eléctrico. Stats en paleta Okabe-Ito (segura para daltonismo).
+ * Design system "Brasa y Piedra" — supervivencia ARK, no SaaS:
+ * losas de piedra oscura y cálida, acentos ámbar de antorcha/brasa,
+ * bordes de metal envejecido con esquinas reforzadas, y el cian de
+ * cristal Tek RESERVADO como firma del Inspector post-tame (lo high-tech).
+ * Stats en paleta Okabe-Ito (segura para daltonismo).
  */
 @theme {
   --font-display: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-  /* Superficies (azul-negro profundo, frío) */
-  --color-surface-0: #060b10;
-  --color-surface-1: #0b141c;
-  --color-surface-2: #122230;
-  --color-surface-3: #1b3447;
+  /* Superficies: basalto y piedra cálida, de la sombra a la losa */
+  --color-surface-0: #0c0a07;
+  --color-surface-1: #151109;
+  --color-surface-2: #221a0e;
+  --color-surface-3: #382b16;
 
-  /* Neutros hielo (nombres 'bone' conservados como API) */
-  --color-bone: #dcedf2;
-  --color-bone-dim: #93b2bd;
-  --color-bone-faint: #5d7884;
+  /* Neutros hueso/pergamino */
+  --color-bone: #efe4cd;
+  --color-bone-dim: #b5a482;
+  --color-bone-faint: #7d6c4d;
 
-  /* Acento Tek: cian eléctrico */
-  --color-tek: #39e6e0;
+  /* Acento principal: ámbar de brasa/antorcha */
+  --color-amber: #ffb547;
+  --color-amber-deep: #d97e18;
+  --color-amber-dark: #7d4a0c;
+
+  /* Cristal Tek (solo Inspector y detalles "high-tech") */
+  --color-tek: #3ee6df;
   --color-tek-deep: #14a8b8;
   --color-tek-dark: #0b6572;
+
+  /* Metal envejecido (bordes, remaches) */
+  --color-metal: #58513f;
+  --color-metal-dim: #38332a;
 
   /* Paleta Okabe-Ito por stat (nunca color solo: siempre con icono + etiqueta) */
   --color-stat-health: #e69f00;
@@ -37,7 +48,7 @@
 
   /* Semánticos */
   --color-ok: #00c98d;
-  --color-warn: #e69f00;
+  --color-warn: #ffb547;
   --color-danger: #ef6c2e;
 }
 
@@ -51,11 +62,11 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   background:
-    /* glow superior cian tipo HUD */
-    radial-gradient(90rem 42rem at 50% -22rem, rgba(20, 168, 184, 0.16), transparent 62%),
-    radial-gradient(46rem 30rem at 108% 112%, rgba(20, 168, 184, 0.07), transparent 60%),
-    /* retícula hex sutil */
-    repeating-linear-gradient(0deg, transparent 0 2px, rgba(57, 230, 224, 0.012) 2px 4px),
+    /* resplandor de antorcha arriba */
+    radial-gradient(90rem 42rem at 50% -22rem, rgba(217, 126, 24, 0.13), transparent 62%),
+    radial-gradient(46rem 30rem at 108% 112%, rgba(217, 126, 24, 0.06), transparent 60%),
+    /* veta de piedra sutil */
+    repeating-linear-gradient(105deg, transparent 0 3px, rgba(239, 228, 205, 0.008) 3px 6px),
     var(--color-surface-0);
   background-attachment: fixed;
 }
@@ -67,27 +78,27 @@ body {
     letter-spacing: 0.03em;
   }
 
-  /* Panel holográfico HUD: translúcido, borde cian, brackets en esquinas */
+  /* Losa de piedra con marco de metal envejecido y esquinas reforzadas */
   .panel {
     position: relative;
-    background: linear-gradient(165deg, rgba(57, 230, 224, 0.055), rgba(57, 230, 224, 0.012) 40%),
-      color-mix(in srgb, var(--color-surface-1) 88%, transparent);
-    border: 1px solid rgba(57, 230, 224, 0.16);
-    border-radius: 0.625rem;
+    background:
+      linear-gradient(165deg, rgba(239, 228, 205, 0.04), rgba(239, 228, 205, 0.008) 45%),
+      color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+    border: 1px solid var(--color-metal-dim);
+    border-radius: 0.375rem;
     box-shadow:
-      inset 0 1px 0 rgba(220, 237, 242, 0.05),
-      0 0 22px rgba(20, 168, 184, 0.07),
-      0 8px 26px rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(6px);
+      inset 0 1px 0 rgba(239, 228, 205, 0.05),
+      inset 0 -6px 14px rgba(0, 0, 0, 0.25),
+      0 8px 26px rgba(0, 0, 0, 0.5);
   }
-  /* Brackets angulares tipo HUD en esquinas opuestas */
+  /* Refuerzos metálicos en esquinas opuestas */
   .panel::before,
   .panel::after {
     content: '';
     position: absolute;
-    width: 14px;
-    height: 14px;
-    border-color: rgba(57, 230, 224, 0.55);
+    width: 12px;
+    height: 12px;
+    border-color: var(--color-metal);
     border-style: solid;
     pointer-events: none;
   }
@@ -95,13 +106,13 @@ body {
     top: -1px;
     left: -1px;
     border-width: 2px 0 0 2px;
-    border-top-left-radius: 0.625rem;
+    border-top-left-radius: 0.375rem;
   }
   .panel::after {
     bottom: -1px;
     right: -1px;
     border-width: 0 2px 2px 0;
-    border-bottom-right-radius: 0.625rem;
+    border-bottom-right-radius: 0.375rem;
   }
 
   .panel-hover {
@@ -109,26 +120,31 @@ body {
   }
   .panel-hover:hover {
     transform: translateY(-2px);
-    border-color: rgba(57, 230, 224, 0.45);
+    border-color: color-mix(in srgb, var(--color-amber-deep) 55%, var(--color-metal-dim));
     box-shadow:
-      inset 0 1px 0 rgba(220, 237, 242, 0.06),
-      0 0 30px rgba(20, 168, 184, 0.16),
-      0 12px 32px rgba(0, 0, 0, 0.55);
+      inset 0 1px 0 rgba(239, 228, 205, 0.06),
+      0 0 26px rgba(217, 126, 24, 0.14),
+      0 12px 32px rgba(0, 0, 0, 0.6);
+  }
+  .panel-hover:hover::before,
+  .panel-hover:hover::after {
+    border-color: var(--color-amber-deep);
   }
 
   .btn-primary {
     font-family: var(--font-display);
     font-weight: 600;
-    color: #04181a;
-    background: linear-gradient(135deg, var(--color-tek), var(--color-tek-deep));
-    border-radius: 0.5rem;
+    color: #1c1002;
+    background: linear-gradient(135deg, var(--color-amber), var(--color-amber-deep));
+    border: 1px solid rgba(255, 181, 71, 0.4);
+    border-radius: 0.375rem;
     padding: 0.625rem 1.25rem;
-    box-shadow: 0 0 16px rgba(57, 230, 224, 0.35), 0 2px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 16px rgba(217, 126, 24, 0.3), 0 2px 10px rgba(0, 0, 0, 0.45);
     transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   }
   .btn-primary:hover {
-    filter: brightness(1.12);
-    box-shadow: 0 0 24px rgba(57, 230, 224, 0.5), 0 2px 10px rgba(0, 0, 0, 0.4);
+    filter: brightness(1.1);
+    box-shadow: 0 0 24px rgba(255, 181, 71, 0.4), 0 2px 10px rgba(0, 0, 0, 0.45);
   }
   .btn-primary:active {
     transform: scale(0.98);
@@ -139,27 +155,28 @@ body {
   }
 
   .btn-ghost {
-    border: 1px solid rgba(57, 230, 224, 0.22);
-    border-radius: 0.5rem;
+    border: 1px solid var(--color-metal-dim);
+    border-radius: 0.375rem;
     padding: 0.5rem 1rem;
     color: var(--color-bone-dim);
     transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   }
   .btn-ghost:hover {
-    border-color: rgba(57, 230, 224, 0.5);
+    border-color: var(--color-amber-deep);
     color: var(--color-bone);
-    background: rgba(57, 230, 224, 0.07);
-    box-shadow: 0 0 14px rgba(20, 168, 184, 0.15);
+    background: rgba(217, 126, 24, 0.08);
+    box-shadow: 0 0 14px rgba(217, 126, 24, 0.14);
   }
 
   .input-field {
     width: 100%;
-    background: rgba(6, 11, 16, 0.75);
-    border: 1px solid var(--color-surface-3);
-    border-radius: 0.5rem;
+    background: rgba(6, 4, 2, 0.7);
+    border: 1px solid var(--color-metal-dim);
+    border-radius: 0.375rem;
     padding: 0.625rem 0.875rem;
     color: var(--color-bone);
     font-variant-numeric: tabular-nums;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .input-field::placeholder {
@@ -167,11 +184,14 @@ body {
   }
   .input-field:focus {
     outline: none;
-    border-color: var(--color-tek-deep);
-    box-shadow: 0 0 0 3px rgba(20, 168, 184, 0.22), 0 0 12px rgba(57, 230, 224, 0.18);
+    border-color: var(--color-amber-deep);
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.4),
+      0 0 0 3px rgba(217, 126, 24, 0.22),
+      0 0 12px rgba(255, 181, 71, 0.15);
   }
 
-  /* Cabecera de paso numerado del flujo del Inspector */
+  /* Cabecera de paso numerado del flujo del Inspector (cristal Tek) */
   .step-badge {
     font-family: var(--font-display);
     display: inline-flex;
@@ -179,52 +199,52 @@ body {
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     background: linear-gradient(135deg, var(--color-tek), var(--color-tek-deep));
     color: #04181a;
     font-weight: 700;
     font-size: 0.9rem;
-    box-shadow: 0 0 12px rgba(57, 230, 224, 0.45);
+    box-shadow: 0 0 12px rgba(62, 230, 223, 0.4);
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
   }
 
-  /* Divisor de energía Tek: línea con pulso central */
+  /* Divisor de brasa: línea con pulso central ámbar */
   .claw-divider {
     height: 2px;
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(57, 230, 224, 0.6) 30%,
-      var(--color-tek) 50%,
-      rgba(57, 230, 224, 0.6) 70%,
+      rgba(217, 126, 24, 0.6) 30%,
+      var(--color-amber) 50%,
+      rgba(217, 126, 24, 0.6) 70%,
       transparent
     );
-    box-shadow: 0 0 12px rgba(57, 230, 224, 0.5);
+    box-shadow: 0 0 12px rgba(255, 181, 71, 0.45);
     border-radius: 999px;
   }
 
-  /* Selector de modo tipo segmented-control HUD */
+  /* Selector de modo tipo segmented-control tallado en piedra */
   .mode-tab {
     font-family: var(--font-display);
     flex: 1;
     padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--color-bone-dim);
     transition: all 0.15s ease;
   }
   .mode-tab[aria-pressed='true'] {
-    background: linear-gradient(135deg, rgba(57, 230, 224, 0.2), rgba(20, 168, 184, 0.12));
-    color: var(--color-tek);
-    border: 1px solid rgba(57, 230, 224, 0.4);
-    box-shadow: 0 0 12px rgba(20, 168, 184, 0.18);
+    background: linear-gradient(135deg, rgba(255, 181, 71, 0.18), rgba(217, 126, 24, 0.1));
+    color: var(--color-amber);
+    border: 1px solid rgba(217, 126, 24, 0.5);
+    box-shadow: 0 0 12px rgba(217, 126, 24, 0.16), inset 0 1px 0 rgba(255, 181, 71, 0.12);
   }
 }
 
 /* Foco visible accesible: ≥2px y contraste ≥3:1 (WCAG 2.4.7) */
 :focus-visible {
-  outline: 2px solid var(--color-tek);
+  outline: 2px solid var(--color-amber);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -238,5 +258,5 @@ select {
 }
 
 ::selection {
-  background: rgba(20, 168, 184, 0.45);
+  background: rgba(217, 126, 24, 0.5);
 }

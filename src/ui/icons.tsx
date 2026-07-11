@@ -4,17 +4,17 @@ export function DinoFootprint({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <defs>
-        <linearGradient id="tekgrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="var(--color-tek)" />
-          <stop offset="1" stopColor="var(--color-tek-deep)" />
+        <linearGradient id="embergrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--color-amber)" />
+          <stop offset="1" stopColor="var(--color-amber-deep)" />
         </linearGradient>
       </defs>
       {/* almohadilla */}
-      <ellipse cx="16" cy="21" rx="7.5" ry="6.5" fill="url(#tekgrad)" />
+      <ellipse cx="16" cy="21" rx="7.5" ry="6.5" fill="url(#embergrad)" />
       {/* dedos */}
-      <ellipse cx="7.5" cy="11.5" rx="2.6" ry="5" transform="rotate(-24 7.5 11.5)" fill="url(#tekgrad)" />
-      <ellipse cx="16" cy="8.5" rx="2.7" ry="5.6" fill="url(#tekgrad)" />
-      <ellipse cx="24.5" cy="11.5" rx="2.6" ry="5" transform="rotate(24 24.5 11.5)" fill="url(#tekgrad)" />
+      <ellipse cx="7.5" cy="11.5" rx="2.6" ry="5" transform="rotate(-24 7.5 11.5)" fill="url(#embergrad)" />
+      <ellipse cx="16" cy="8.5" rx="2.7" ry="5.6" fill="url(#embergrad)" />
+      <ellipse cx="24.5" cy="11.5" rx="2.6" ry="5" transform="rotate(24 24.5 11.5)" fill="url(#embergrad)" />
     </svg>
   )
 }

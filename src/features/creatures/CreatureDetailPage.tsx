@@ -31,7 +31,7 @@ export function CreatureDetailPage() {
   if (!species) {
     return (
       <p className="panel p-6 text-center text-bone-dim">
-        Especie no encontrada. <Link to="/" className="text-tek underline">Volver al buscador</Link>
+        Especie no encontrada. <Link to="/" className="text-amber underline">Volver al buscador</Link>
       </p>
     )
   }
@@ -108,14 +108,14 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
           onClick={() => setSearchParams({ tab: 'tameo' }, { replace: true })}
           className="panel panel-hover w-full p-4 text-left"
         >
-          <p className="display mb-1 text-xs font-semibold uppercase tracking-widest text-tek">
+          <p className="display mb-1 text-xs font-semibold uppercase tracking-widest text-amber">
             Tameo nv 150 · oficial — toca para ajustar
           </p>
           <p className="text-sm text-bone-dim">
             <strong className="text-bone">{quickTame.food.name}</strong> ×
             <strong className="display text-bone">{quickTame.pieces}</strong> · TE{' '}
             <strong className="text-ok">{(quickTame.te * 100).toFixed(1)}%</strong> · →Nv{' '}
-            <strong className="text-tek">{150 + quickTame.bonusLevels}</strong> · ⏱{' '}
+            <strong className="text-amber">{150 + quickTame.bonusLevels}</strong> · ⏱{' '}
             {formatDuration(quickTame.seconds)}
             {quickTame.torpor && quickTame.torpor.narcotics > 0 && (
               <> · 💤 {quickTame.torpor.narcotics} narcóticos</>
@@ -133,7 +133,7 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
         const babyFoods = getTamingFoods(species.name)?.filter((f) => !f.name.endsWith('Kibble')).slice(0, 3)
         return (
           <div className="panel p-4">
-            <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-tek">Cría · rates oficiales</p>
+            <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">Cría · rates oficiales</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-4">
               <div>
                 <span className="block text-[11px] text-bone-faint">{b.gestation > 0 ? '🤰 Gestación' : '🥚 Incubación'}</span>

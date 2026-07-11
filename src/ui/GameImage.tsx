@@ -41,7 +41,7 @@ export function CreatureImage({ name, size = 44, className = '' }: { name: strin
       <span
         aria-hidden="true"
         style={{ width: size, height: size }}
-        className={`display grid shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-tek ${className}`}
+        className={`display grid shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-amber ${className}`}
       >
         {initials}
       </span>

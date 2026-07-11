@@ -1,6 +1,10 @@
 # 🦖 DODODEX V2
 
-Companion app personal para **ARK: Survival Ascended / Evolved** — lo mejor de Dododex y Wikily, más lo que ninguna tiene: **inspector de stats post-tame** y biblioteca de tus dinos.
+Companion app personal para **ARK: Survival Ascended** (vanilla) — lo mejor de Dododex y Wikily, más lo que ninguna tiene: **inspector de stats post-tame** y biblioteca de tus dinos.
+
+**🌐 Web: <https://jorgelopxz.github.io/dododex-v2/>** — instalable como app (PWA) desde el navegador, funciona offline. Se redespliega sola con cada push a `main`.
+
+Desarrollo local: `npm install && npm run dev` → <http://localhost:5173/>
 
 ## Features clave (objetivo)
 

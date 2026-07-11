@@ -73,7 +73,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
             <input type="number" inputMode="numeric" value={level} onChange={(e) => setLevel(e.target.value)} className="input-field w-28" />
           </label>
           <label className="flex items-center gap-2 pb-2 text-sm text-bone-dim">
-            <input type="checkbox" checked={sanguine} onChange={(e) => setSanguine(e.target.checked)} className="size-4 accent-(--color-tek-deep)" />
+            <input type="checkbox" checked={sanguine} onChange={(e) => setSanguine(e.target.checked)} className="size-4 accent-(--color-amber-deep)" />
             Sanguine Elixir (−30%)
           </label>
         </div>
@@ -110,9 +110,9 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
           {plan && (
             <div
               className="panel p-5"
-              style={{ borderColor: plan.enough ? 'color-mix(in srgb, var(--color-tek) 40%, transparent)' : 'color-mix(in srgb, var(--color-warn) 50%, transparent)' }}
+              style={{ borderColor: plan.enough ? 'color-mix(in srgb, var(--color-amber) 45%, transparent)' : 'color-mix(in srgb, var(--color-danger) 50%, transparent)' }}
             >
-              <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-tek">
+              <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">
                 {hasCustomPlan ? 'Tu plan de comida' : `Mejor opción · ${plan.used[0]?.food.name}`}
               </p>
               {hasCustomPlan && (
@@ -139,7 +139,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                   )}
                   <span>TE <strong className="display text-ok">{(plan.te * 100).toFixed(1)}%</strong></span>
                   <span>
-                    → Nv <strong className="display text-tek">{lvl + plan.bonusLevels}</strong>
+                    → Nv <strong className="display text-amber">{lvl + plan.bonusLevels}</strong>
                     <span className="text-xs"> (+{plan.bonusLevels})</span>
                   </span>
                   {plan.seconds > 0 && <span>⏱ {formatDuration(plan.seconds)}</span>}
@@ -222,7 +222,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
           {/* Noqueo por arma y calidad */}
           {torporTotal !== null && !species.taming.nonViolent && (
             <div className="panel p-4">
-              <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-tek">Noqueo · torpor {Math.round(torporTotal).toLocaleString()}</p>
+              <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">Noqueo · torpor {Math.round(torporTotal).toLocaleString()}</p>
               <div className="mb-3 flex flex-wrap items-end gap-3">
                 <label className="text-sm">
                   <span className="mb-1 block text-xs font-medium text-bone-dim">Arma</span>
@@ -239,7 +239,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                 <p className="flex items-center gap-2 pb-1 text-lg">
                   <ItemImage name={weapon.weaponImage} size={30} fallback="🏹" />
                   <ItemImage name={weapon.itemImage} size={26} fallback="➶" />
-                  <strong className="display text-2xl text-tek">{hitsToKnockout(torporTotal, weapon, qualityNum)}</strong>{' '}
+                  <strong className="display text-2xl text-amber">{hitsToKnockout(torporTotal, weapon, qualityNum)}</strong>{' '}
                   <span className="text-sm text-bone-dim">{weapon.ammo}</span>
                 </p>
               </div>
@@ -248,7 +248,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                   <button
                     key={w.id}
                     onClick={() => setWeaponId(w.id)}
-                    className="flex items-center justify-between gap-1.5 rounded-lg border border-surface-3/60 bg-surface-0/40 px-2.5 py-1.5 text-left hover:border-tek-dark"
+                    className="flex items-center justify-between gap-1.5 rounded-lg border border-surface-3/60 bg-surface-0/40 px-2.5 py-1.5 text-left hover:border-amber-dark"
                   >
                     <span className="flex min-w-0 items-center gap-1.5">
                       <ItemImage name={w.weaponImage} size={22} fallback="🏹" />
@@ -266,7 +266,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
 
           <p className="text-xs text-bone-faint">
             TE 100% teórica: +{tameBonusLevels(lvl, 1)} niveles → Nv {lvl + tameBonusLevels(lvl, 1)}. Tras domar,{' '}
-            <Link to={{ search: 'tab=inspector' }} className="text-tek underline">inspecciona dónde cayeron los puntos</Link>.
+            <Link to={{ search: 'tab=inspector' }} className="text-amber underline">inspecciona dónde cayeron los puntos</Link>.
           </p>
         </>
       )}

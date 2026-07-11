@@ -6,3 +6,4 @@ coverage/
 .DS_Store
 Thumbs.db
 data-raw/
+.claude/settings.local.json
