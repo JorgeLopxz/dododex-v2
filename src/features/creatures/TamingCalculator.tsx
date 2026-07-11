@@ -10,6 +10,7 @@ import {
 import { WEAPONS, hitsToKnockout, wildTorpor } from '../../engine/knockout'
 import { getTamingFoods, type SpeciesEntry } from '../../data'
 import { tameBonusLevels } from '../../engine/statFormula'
+import { getTamingSpeed, useSettings } from '../../store/settings'
 import { ItemImage } from '../../ui/GameImage'
 
 const TOP_FOODS = 6
@@ -17,8 +18,8 @@ const TOP_FOODS = 6
 /** Calculadora de tameo embebida en la ficha: presets, combos de comida, noqueo por arma. */
 export function TamingCalculator({ species }: { species: SpeciesEntry }) {
   const [level, setLevel] = useState('150')
-  const [preset, setPreset] = useState<string>('official')
-  const [customTsm, setCustomTsm] = useState('1')
+  /* rates del servidor: persistentes en settings (sobreviven al cambio de pestaña/sesión) */
+  const { tamingPreset: preset, setTamingPreset: setPreset, customTsm, setCustomTsm } = useSettings()
   const [sanguine, setSanguine] = useState(false)
   const [showAll, setShowAll] = useState(false)
   /** cantidades elegidas por comida (plan combinado); vacío ⇒ auto con la mejor comida */
@@ -28,7 +29,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
 
   const foods = useMemo(() => getTamingFoods(species.name), [species])
   const lvl = Math.max(1, Number(level) || 150)
-  const tsm = preset === 'custom' ? (Number(customTsm) > 0 ? Number(customTsm) : 1) : TAMING_PRESETS.find((p) => p.id === preset)?.tsm ?? 1
+  const tsm = getTamingSpeed({ tamingPreset: preset, customTsm })
   const mults: TamingServerMults = { tamingSpeed: tsm, foodDrain: 1, wildTorporDrain: 1 }
   const torporStat = species.stats.torpor ? { B: species.stats.torpor.B, Iw: species.stats.torpor.Iw } : undefined
 
@@ -90,9 +91,10 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
             <input
               type="number"
               step="0.5"
+              min="0.1"
               aria-label="Taming Speed personalizado"
               value={customTsm}
-              onChange={(e) => setCustomTsm(e.target.value)}
+              onChange={(e) => setCustomTsm(Number(e.target.value) || 1)}
               className="input-field w-20 px-2 py-1.5 text-sm"
             />
           )}

@@ -5,6 +5,7 @@ import {
   type PointStatKey,
   type ServerMultipliers,
 } from '../engine/types'
+import { TAMING_PRESETS } from '../engine/taming'
 
 export type ServerPreset = 'official' | 'vanilla' | 'custom'
 
@@ -12,6 +13,13 @@ interface Settings {
   /** Preset de servidor: oficial (con nerf salud/melee), vanilla (sin nerf) o personalizado */
   preset: ServerPreset
   setPreset: (p: ServerPreset) => void
+
+  /** Rates de tameo del servidor (persistentes hasta que el usuario las cambie) */
+  tamingPreset: string
+  setTamingPreset: (id: string) => void
+  /** TamingSpeedMultiplier del preset "custom" */
+  customTsm: number
+  setCustomTsm: (v: number) => void
   /** PerLevelStatsMultiplier_DinoWild por stat (solo preset custom) */
   customIwM: Partial<Record<PointStatKey, number>>
   /** PerLevelStatsMultiplier_DinoTamed por stat (solo preset custom) */
@@ -27,6 +35,10 @@ export const useSettings = create<Settings>()(
     (set) => ({
       preset: 'official',
       setPreset: (preset) => set({ preset }),
+      tamingPreset: 'official',
+      setTamingPreset: (tamingPreset) => set({ tamingPreset }),
+      customTsm: 1,
+      setCustomTsm: (customTsm) => set({ customTsm }),
       customIwM: {},
       customIdM: {},
       customNerf: true,
@@ -55,6 +67,12 @@ export function getMultipliers(s: Pick<Settings, 'preset' | 'customIwM' | 'custo
     TmM: s.customNerf ? OFFICIAL_MULTIPLIERS.TmM : {},
     IBM: 1,
   }
+}
+
+/** TamingSpeedMultiplier efectivo según el preset de rates guardado. */
+export function getTamingSpeed(s: Pick<Settings, 'tamingPreset' | 'customTsm'>): number {
+  if (s.tamingPreset === 'custom') return s.customTsm > 0 ? s.customTsm : 1
+  return TAMING_PRESETS.find((p) => p.id === s.tamingPreset)?.tsm ?? 1
 }
 
 export const PRESET_LABEL: Record<ServerPreset, string> = {

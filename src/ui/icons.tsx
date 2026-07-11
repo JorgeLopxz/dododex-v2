@@ -69,10 +69,11 @@ export function IconStar({ size = 20, filled = false }: { size?: number; filled?
   )
 }
 
-export function IconLibrary({ size = 22 }: { size?: number }) {
+export function IconPick({ size = 22 }: { size?: number }) {
+  // pico de minería: mango en diagonal + cabeza curva
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
-      <path d="M5 4.5h4.5a2 2 0 0 1 2 2V19a1.8 1.8 0 0 0-1.8-1.5H5zM19 4.5h-4.5a2 2 0 0 0-2 2V19a1.8 1.8 0 0 1 1.8-1.5H19z" />
+      <path d="m14 10-9.5 9.5M13 4.5c3.2-.6 6.4.7 8.2 3.1M13 4.5l1.6 1.6M21.2 7.6l-1.9 1.2M13.7 5.4c2.3-.2 4.5.7 5.8 2.6" />
     </svg>
   )
 }

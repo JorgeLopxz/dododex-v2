@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { findSpecies, getTamingFoods } from '../../data'
 import { calcTaming, formatDuration } from '../../engine/taming'
 import { STAT_KEYS } from '../../engine/types'
 import { STAT_META } from '../../ui/statMeta'
+import { getTamingSpeed, useSettings } from '../../store/settings'
 import { useFavorites } from '../../store/favorites'
 import { IconStar } from '../../ui/icons'
 import { CreatureImage } from '../../ui/GameImage'
@@ -89,15 +90,20 @@ export function CreatureDetailPage() {
 
 function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSpecies>> }) {
   const [, setSearchParams] = useSearchParams()
+  const settings = useSettings()
+  const tsm = getTamingSpeed(settings)
 
   const quickTame = useMemo(() => {
     const foods = getTamingFoods(species.name)
     if (!foods?.length) return null
     return calcTaming(species.taming, foods[0], 150, {
+      mults: { tamingSpeed: tsm, foodDrain: 1, wildTorporDrain: 1 },
       torporStat: species.stats.torpor ? { B: species.stats.torpor.B, Iw: species.stats.torpor.Iw } : undefined,
     })
-  }, [species])
+  }, [species, tsm])
 
+  const [statLevel, setStatLevel] = useState('150')
+  const lvlNum = Math.max(1, Number(statLevel) || 150)
   const rows = STAT_KEYS.filter((k) => species.stats[k] && species.displayed[k])
 
   return (
@@ -109,7 +115,7 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
           className="panel panel-hover w-full p-4 text-left"
         >
           <p className="display mb-1 text-xs font-semibold uppercase tracking-widest text-amber">
-            Tameo nv 150 · oficial — toca para ajustar
+            Tameo nv 150 · rates ×{tsm} — toca para ajustar
           </p>
           <p className="text-sm text-bone-dim">
             <strong className="text-bone">{quickTame.food.name}</strong> ×
@@ -167,44 +173,62 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
         )
       })()}
 
-      {/* Stats base */}
-      <div className="panel overflow-x-auto p-2">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-bone-faint">
-              <th className="px-3 py-2">Stat</th>
-              <th className="px-3 py-2 text-right">Base</th>
-              <th className="px-3 py-2 text-right">+/nivel salvaje</th>
-              <th className="px-3 py-2 text-right">+/nivel domado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((k) => {
-              const c = species.stats[k]!
-              const meta = STAT_META[k]
-              const fmt = (v: number) => (meta.percent ? `${(v * 100).toFixed(1)}%` : v % 1 === 0 ? v.toString() : v.toFixed(1))
-              return (
-                <tr key={k} className="odd:bg-surface-0/40">
-                  <td className="flex items-center gap-2 px-3 py-2 font-medium">
-                    <span aria-hidden="true" style={{ color: meta.color }}>{meta.icon}</span>
-                    {meta.label}
-                  </td>
-                  <td className="display px-3 py-2 text-right tabular-nums">{fmt(c.B)}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-bone-dim">
-                    {c.Iw > 0 ? `+${fmt(c.B * c.Iw)}` : '—'}
-                  </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-bone-dim">
-                    {c.Id > 0 ? `+${(c.Id * 100).toFixed(1)}%` : '—'}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+      {/* Stats estimados al nivel elegido (reparto medio de puntos salvajes) */}
+      <div className="panel p-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-2">
+          <p className="display text-xs font-semibold uppercase tracking-widest text-amber">Stats salvajes</p>
+          <label className="flex items-center gap-2 text-xs text-bone-dim">
+            a nivel
+            <input
+              type="number"
+              inputMode="numeric"
+              value={statLevel}
+              onChange={(e) => setStatLevel(e.target.value)}
+              className="input-field w-20 px-2 py-1 text-center text-sm"
+              aria-label="Nivel para estimar stats"
+            />
+          </label>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-bone-faint">
+                <th className="px-3 py-2">Stat</th>
+                <th className="px-3 py-2 text-right">Base</th>
+                <th className="px-3 py-2 text-right">+/nivel</th>
+                <th className="px-3 py-2 text-right">Nv {lvlNum} (medio)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((k) => {
+                const c = species.stats[k]!
+                const meta = STAT_META[k]
+                const fmt = (v: number) => (meta.percent ? `${(v * 100).toFixed(0)}%` : v % 1 === 0 ? v.toString() : v.toFixed(1))
+                // torpor sube con TODOS los niveles; el resto reparte (nv−1) puntos entre 7 stats
+                const pts = k === 'torpor' ? lvlNum - 1 : Math.floor((lvlNum - 1) / 7)
+                const est = c.Iw > 0 ? c.B * (1 + pts * c.Iw) : c.B
+                return (
+                  <tr key={k} className="odd:bg-surface-0/40">
+                    <td className="flex items-center gap-2 px-3 py-2 font-medium">
+                      <span aria-hidden="true" style={{ color: meta.color }}>{meta.icon}</span>
+                      {meta.label}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-bone-dim">{fmt(c.B)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-bone-dim">
+                      {c.Iw > 0 ? `+${fmt(c.B * c.Iw)}` : '—'}
+                    </td>
+                    <td className="display px-3 py-2 text-right tabular-nums">{fmt(est)}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="px-2 py-2 text-[11px] text-bone-faint">
+          «Medio» = puntos repartidos por igual entre stats; un salvaje real varía (compruébalo en la pestaña Inspector).
+          El torpor sí sube con cada nivel.
+        </p>
       </div>
-      <p className="text-xs text-bone-faint">
-        Salvaje: puntos suben el stat desde base. Domado: cada nivel tuyo sube un % del valor post-tame.
-      </p>
     </div>
   )
 }

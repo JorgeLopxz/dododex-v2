@@ -1,14 +1,14 @@
 import { Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { HomePage } from './features/home/HomePage'
 import { CreatureDetailPage } from './features/creatures/CreatureDetailPage'
-import { LibraryPage } from './features/library/LibraryPage'
+import { MaterialsPage } from './features/materials/MaterialsPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { getDataInfo } from './data'
-import { DinoFootprint, IconGear, IconHome, IconLibrary } from './ui/icons'
+import { DinoFootprint, IconGear, IconHome, IconPick } from './ui/icons'
 
 const NAV = [
   { to: '/', icon: IconHome, label: 'Buscar', end: true },
-  { to: '/dinos', icon: IconLibrary, label: 'Mis Dinos' },
+  { to: '/materiales', icon: IconPick, label: 'Materiales' },
   { to: '/ajustes', icon: IconGear, label: 'Ajustes' },
 ]
 
@@ -42,7 +42,8 @@ export default function App() {
           <Route path="/criaturas/:speciesId" element={<CreatureDetailPage />} />
           <Route path="/inspector/:speciesId?" element={<LegacyRedirect tab="inspector" />} />
           <Route path="/tameo/:speciesId?" element={<LegacyRedirect tab="tameo" />} />
-          <Route path="/dinos" element={<LibraryPage />} />
+          <Route path="/materiales" element={<MaterialsPage />} />
+          <Route path="/dinos" element={<Navigate to="/" replace />} />
           <Route path="/ajustes" element={<SettingsPage />} />
         </Routes>
         <p className="mt-10 text-center text-[11px] leading-relaxed text-bone-faint">

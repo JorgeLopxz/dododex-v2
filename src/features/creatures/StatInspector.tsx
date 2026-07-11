@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { extractPostTame, extractWildStat, statReceivesPoints, type ExtractionResult } from '../../engine/extractor'
 import { tameBonusLevels } from '../../engine/statFormula'
 import { POINT_STATS, type PointStatKey } from '../../engine/types'
@@ -7,15 +7,12 @@ import type { SpeciesEntry } from '../../data'
 import { STAT_META } from '../../ui/statMeta'
 import { StatBar } from '../../ui/StatBar'
 import { getMultipliers, useSettings } from '../../store/settings'
-import { db } from '../../store/db'
 
 /**
  * ⭐ Inspector post-tame embebido en la ficha: la función que Dododex no tiene.
  * Contexto → stats → resultado visual con barras.
  */
 export function StatInspector({ species }: { species: SpeciesEntry }) {
-  const navigate = useNavigate()
-
   /** 'fresh' = recién domado (Ld=0 — el caso común); 'leveled' = con niveles gastados; 'wild' = sin domar.
    *  Preseleccionable vía ?m= */
   const [searchParams] = useSearchParams()
@@ -30,8 +27,6 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
   const [postTameLevel, setPostTameLevel] = useState('')
   const [values, setValues] = useState<Partial<Record<PointStatKey, string>>>({})
   const [locked, setLocked] = useState<Set<PointStatKey>>(new Set())
-  const [dinoName, setDinoName] = useState('')
-  const [saved, setSaved] = useState(false)
 
   const settings = useSettings()
   const mult = useMemo(() => getMultipliers(settings), [settings])
@@ -94,30 +89,6 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
       lockedLd0: fresh ? [...relevantStats] : [...locked],
     })
   }, [species, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked, mult])
-
-  async function saveDino() {
-    if (!result || result.solutions.length !== 1) return
-    const sol = result.solutions[0]
-    const stats: Record<string, { Lw: number; Ld: number; value: number }> = {}
-    for (const k of result.statsConsidered) {
-      const cand = sol[k]
-      if (!cand) continue
-      const raw = Number((values[k] ?? '0').replace(',', '.'))
-      stats[k] = { ...cand, value: STAT_META[k].percent ? raw / 100 : raw }
-    }
-    await db.dinos.add({
-      name: dinoName || `${species.name} sin nombre`,
-      speciesId: species.id,
-      speciesName: species.name,
-      level: Number(level) || 0,
-      TE: mode === 'wild' ? 0 : bred ? 1 : Number(TE) / 100,
-      IB: mode === 'wild' ? 0 : Number(IB) / 100,
-      stats,
-      createdAt: Date.now(),
-    })
-    setSaved(true)
-    setTimeout(() => navigate('/dinos'), 600)
-  }
 
   const uniqueSolution = result?.solutions.length === 1 ? result.solutions[0] : null
   const barMax = Math.max(30, ...result ? result.statsConsidered.map((k) => {
@@ -347,21 +318,6 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
             )
           })()}
 
-          {uniqueSolution && (
-            <div className="mt-4 flex flex-col gap-2 border-t border-surface-3 pt-4 sm:flex-row">
-              <input
-                type="text"
-                value={dinoName}
-                onChange={(e) => setDinoName(e.target.value)}
-                placeholder="Ponle nombre (Rexy, Machacadora…)"
-                aria-label="Nombre del dino"
-                className="input-field flex-1"
-              />
-              <button onClick={saveDino} disabled={saved} className="btn-primary">
-                {saved ? '✓ Guardado' : '💾 Guardar en Mis Dinos'}
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>
