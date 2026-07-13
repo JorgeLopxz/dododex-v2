@@ -9,13 +9,13 @@ import {
 } from '../../data/wikiMaps'
 import { MapAttribution, MapBoard } from '../../ui/MapBoard'
 
-/** Escala de probabilidad de spawn (frecuencia relativa → color). */
+/** Escala de probabilidad de spawn: verde = donde MÁS aparece, rojo = casi nunca. */
 const PROB_SCALE = [
-  { max: 0.2, color: '#22c55e', label: 'Muy rara' },
-  { max: 0.4, color: '#a3cc16', label: 'Rara' },
+  { max: 0.2, color: '#ef4444', label: 'Muy rara' },
+  { max: 0.4, color: '#f97316', label: 'Rara' },
   { max: 0.6, color: '#eab308', label: 'Media' },
-  { max: 0.8, color: '#f97316', label: 'Alta' },
-  { max: Infinity, color: '#ef4444', label: 'Muy alta' },
+  { max: 0.8, color: '#a3cc16', label: 'Alta' },
+  { max: Infinity, color: '#22c55e', label: 'Muy alta' },
 ] as const
 
 function probColor(ratio: number): string {
@@ -88,10 +88,10 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
         }
         status={status}
       />
-      {/* Leyenda de probabilidad */}
+      {/* Leyenda de probabilidad (de más a menos spawn) */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-bone-dim">
         <span className="text-bone-faint">Probabilidad:</span>
-        {PROB_SCALE.map((s) => (
+        {[...PROB_SCALE].reverse().map((s) => (
           <span key={s.label} className="inline-flex items-center gap-1">
             <span className="size-2.5 rounded-sm" style={{ background: s.color }} aria-hidden="true" />
             {s.label}
