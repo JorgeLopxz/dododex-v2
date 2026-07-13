@@ -60,11 +60,33 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
     const n = nameOf(sp)
     return n?.startsWith('Aberrant ') && names.has(n.slice(9))
   }
-  // No domables: Alphas, bosses, esqueléticos, zombies, eerie (mobile), VR…
-  const UNTAMEABLE_NAME = /^(Alpha |Corrupted |Skeletal |Zombie |Eerie |Enraged |Malfunctioned |VR |Bone )/
-  const UNTAMEABLE_BOSS = /Boss|Overseer|KingKaiju|MegaMek|Rockwell_Character|Dragon_Character|Gorilla_Character|Spider_Character|BossSpider|Manticore_Character|Moeder|MasterController/i
-  const isUntameable = (sp) =>
-    UNTAMEABLE_NAME.test(nameOf(sp) ?? '') || UNTAMEABLE_BOSS.test(sp.blueprintPath ?? '')
+  // No domables: Alphas, bosses, esqueléticos, zombies, eerie (mobile), VR,
+  // criaturas de evento (fantasmas, DodoRex, Bunny…) y unidades no-tame (drones, meks…)
+  const UNTAMEABLE_NAME =
+    /^(Alpha |Skeletal |Zombie |Eerie |Enraged |Malfunctioned |VR |Bone |Party |Bunny |Revenant |X-|R-)|(Corrupted|Ghost|DodoRex|Dodo Wyvern|Zomdodo|Murder Turkey|Insect Swarm|Diseased|Broodmother|Yeti|\bDrone\b|Defense Unit|Scout|Enforcer|^Mek$|Exo-Mek|Macrophage|Summoner|Forest Wyvern|Rubble Golem|Titan$|Titan Flock|Lamprey|Subterranean Reaper|Surface Reaper|Elemental Reaper|Reaper Queen|Minion|Tamed\))/
+  // No domables reales que ASB trae con bloque de taming igualmente (peces, fauna ambiental…)
+  const UNTAMEABLE_EXACT = new Set([
+    'Nameless', 'Seeker', 'Coelacanth', 'Piranha', 'Sabertooth Salmon', 'Aberrant Salmon',
+    'Ammonite', 'Cnidaria', 'Leech', 'Trilobite', 'Eurypterid', 'Deathworm',
+    'Oil Jug Bug', 'Water Jug Bug', 'Titanomyrma Soldier',
+    'Kraken', 'Iceworm Queen', 'Lava Elemental', 'Ice Elemental', 'Chalk Elemental',
+    'Scrap Elemental', 'Neophyte', 'Cave Minotaur',
+  ])
+  // Tags de variante de ASB que marcan criaturas no obtenibles (van aparte del nombre)
+  const UNTAMEABLE_VARIANT = /^(Minion|Boss|Corrupted|Tamed|Summoned)$/
+  const UNTAMEABLE_BOSS = /Boss|Overseer|KingKaiju|MegaMek|Rockwell_Character|Dragon_Character|Gorilla_Character|Spider_Character|BossSpider|SpiderL|Manticore_Character|Moeder|MasterController|Minion/i
+  // Contenido aún NO liberado en ASA (Genesis 1/2): fuera hasta que Wildcard lo publique
+  const UNRELEASED_BP = /\/Genesis\/|\/Genesis2\/|\/Gen2\/|LionfishLion|Noglin|BrainSlug|MilkGlider|Maewing|SpaceDolphin|Astrodelphis|SpaceWhale|Astrocetus|Cherufe|Magmasaur|GiantTurtle|Megachelon|Shapeshifter|Ferox|TekStrider|Exosuit/i
+  const isUntameable = (sp) => {
+    const n = nameOf(sp) ?? ''
+    return (
+      UNTAMEABLE_NAME.test(n) ||
+      UNTAMEABLE_EXACT.has(n.replace(/\s*\(.*\)$/, '').trim()) ||
+      (sp.variants ?? []).some((v) => UNTAMEABLE_VARIANT.test(v)) ||
+      UNTAMEABLE_BOSS.test(sp.blueprintPath ?? '') ||
+      UNRELEASED_BP.test(sp.blueprintPath ?? '')
+    )
+  }
   for (const sp of raw.species) {
     // fuera clones de misión/evento (Genesis STA, Gauntlet, Summoned…): no son domables y
     // duplican nombres con datos placeholder (causa del bug "Ankylo 473h")
@@ -120,8 +142,16 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
     const name = extraVariants.length ? `${baseName} (${extraVariants.join(', ')})` : baseName
     out.push([id, name, tbhm, ds, stats, taming, breeding])
   }
-  console.log(`${label}: ${out.length} especies`)
-  return { version: raw.version, source: 'cadon/ARKStatsExtractor (MIT)', generated: new Date().toISOString(), species: out }
+  // Un solo registro por nombre visible: las copias (arena de boss, variantes de mapa…)
+  // comparten stats; nos quedamos con la de blueprint más corto (la base)
+  const byName = new Map()
+  for (const row of out) {
+    const prev = byName.get(row[1])
+    if (!prev || row[0].length < prev[0].length) byName.set(row[1], row)
+  }
+  const deduped = [...byName.values()]
+  console.log(`${label}: ${deduped.length} especies (${out.length - deduped.length} duplicados de nombre fusionados)`)
+  return { version: raw.version, source: 'cadon/ARKStatsExtractor (MIT)', generated: new Date().toISOString(), species: deduped }
 }
 
 const aseRaw = await ensureRaw(FILES.ase)

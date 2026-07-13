@@ -10,11 +10,13 @@ import { IconStar } from '../../ui/icons'
 import { CreatureImage } from '../../ui/GameImage'
 import { TamingCalculator } from './TamingCalculator'
 import { StatInspector } from './StatInspector'
+import { SpawnMap } from './SpawnMap'
 
 const TABS = [
   { id: 'resumen', label: 'Resumen' },
   { id: 'tameo', label: '🧮 Tameo' },
   { id: 'inspector', label: '⭐ Inspector' },
+  { id: 'mapa', label: '🗺️ Mapa' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -27,7 +29,7 @@ export function CreatureDetailPage() {
   const { ids: favoriteIds, toggle } = useFavorites()
 
   const rawTab = searchParams.get('tab')
-  const tab: TabId = rawTab === 'tameo' || rawTab === 'inspector' ? rawTab : 'resumen'
+  const tab: TabId = rawTab === 'tameo' || rawTab === 'inspector' || rawTab === 'mapa' ? rawTab : 'resumen'
 
   if (!species) {
     return (
@@ -84,6 +86,7 @@ export function CreatureDetailPage() {
       {tab === 'resumen' && <SummaryTab species={species} />}
       {tab === 'tameo' && <TamingCalculator species={species} />}
       {tab === 'inspector' && <StatInspector species={species} />}
+      {tab === 'mapa' && <SpawnMap species={species} />}
     </section>
   )
 }

@@ -146,12 +146,12 @@ describe('regresiones de bugs reportados (07-2026)', () => {
     expect(by('conquest').tsm).toBe(5)
   })
 
-  it('aberrantes con base eliminados; Alphas/bosses/Eerie fuera', () => {
+  it('aberrantes, Alphas, bosses, Eerie y minions fuera', () => {
     const names = getSpecies().map((s) => s.name)
-    const aberrants = names.filter((n) => n.startsWith('Aberrant '))
-    expect(aberrants).toEqual(['Aberrant Salmon']) // único sin base con ese nombre
+    expect(names.some((n) => n.startsWith('Aberrant '))).toBe(false)
     expect(names.some((n) => n.startsWith('Alpha '))).toBe(false)
     expect(names.some((n) => n.startsWith('Eerie '))).toBe(false)
+    expect(names.some((n) => /Minion|Boss/.test(n))).toBe(false)
   })
 
   it('breeding: Rex incuba 5h a 32-34°C y madura en ~3d21h (datos ASB)', () => {

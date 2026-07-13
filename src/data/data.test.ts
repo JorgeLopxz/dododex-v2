@@ -6,12 +6,16 @@ const NO_MULT = { IwM: {}, IdM: {}, TaM: {}, TmM: {}, IBM: 1 }
 
 describe('datos reales de especies ASA (criterio de salida)', () => {
   it('carga el dataset con cobertura completa y solo especies domables', () => {
-    // ~450 clones de misión (Genesis STA, Gauntlet, Summoned) se filtran en build-data
-    expect(getSpecies().length).toBeGreaterThan(380)
-    // sin duplicados trampa: un único Ankylosaurus
-    expect(getSpecies().filter((s) => s.name === 'Ankylosaurus')).toHaveLength(1)
+    // tras la purga (misiones, eventos, bosses, Genesis sin liberar, no-domables): ~180 reales
+    expect(getSpecies().length).toBeGreaterThan(150)
+    expect(getSpecies().length).toBeLessThan(300)
+    // sin duplicados de nombre
+    const names = getSpecies().map((s) => s.name)
+    expect(new Set(names).size).toBe(names.length)
     // principio: si no es tameable, no está en la base de datos
     expect(getSpecies().every((s) => s.taming.affinityNeeded0 > 0)).toBe(true)
+    // fuera contenido no liberado en ASA y criaturas de evento
+    expect(names.some((n) => /Shadowmane|^X-|^R-|Ghost|DodoRex|Coelacanth/.test(n))).toBe(false)
   })
 
   it('Rex coincide con la wiki (ark.wiki.gg/wiki/Rex)', () => {
