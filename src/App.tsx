@@ -2,14 +2,16 @@ import { Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { HomePage } from './features/home/HomePage'
 import { CreatureDetailPage } from './features/creatures/CreatureDetailPage'
 import { MaterialsPage } from './features/materials/MaterialsPage'
-import { SettingsPage } from './features/settings/SettingsPage'
+import { RecipesPage } from './features/recipes/RecipesPage'
+import { AssistantPage } from './features/assistant/AssistantPage'
 import { getDataInfo } from './data'
-import { DinoFootprint, IconGear, IconHome, IconPick } from './ui/icons'
+import { DinoFootprint, IconBrain, IconHome, IconPick, IconPot } from './ui/icons'
 
 const NAV = [
   { to: '/', icon: IconHome, label: 'Buscar', end: true },
   { to: '/materiales', icon: IconPick, label: 'Materiales' },
-  { to: '/ajustes', icon: IconGear, label: 'Ajustes' },
+  { to: '/recetas', icon: IconPot, label: 'Recetas' },
+  { to: '/ia', icon: IconBrain, label: 'IA' },
 ]
 
 /** URLs antiguas /tameo/:id e /inspector/:id → pestaña correspondiente de la súper-ficha */
@@ -43,8 +45,10 @@ export default function App() {
           <Route path="/inspector/:speciesId?" element={<LegacyRedirect tab="inspector" />} />
           <Route path="/tameo/:speciesId?" element={<LegacyRedirect tab="tameo" />} />
           <Route path="/materiales" element={<MaterialsPage />} />
+          <Route path="/recetas/:slug?" element={<RecipesPage />} />
+          <Route path="/ia" element={<AssistantPage />} />
           <Route path="/dinos" element={<Navigate to="/" replace />} />
-          <Route path="/ajustes" element={<SettingsPage />} />
+          <Route path="/ajustes" element={<Navigate to="/" replace />} />
         </Routes>
         <p className="mt-10 text-center text-[11px] leading-relaxed text-bone-faint">
           Datos v{info.version} · {new Date(info.generated).toLocaleDateString()} · derivados de ARK Smart Breeding

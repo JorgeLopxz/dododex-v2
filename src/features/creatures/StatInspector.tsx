@@ -6,7 +6,9 @@ import { POINT_STATS, type PointStatKey } from '../../engine/types'
 import type { SpeciesEntry } from '../../data'
 import { STAT_META } from '../../ui/statMeta'
 import { StatBar } from '../../ui/StatBar'
+import { StatRadar } from '../../ui/StatRadar'
 import { getMultipliers, useSettings } from '../../store/settings'
+import { ServerProfile } from './ServerProfile'
 
 /**
  * ⭐ Inspector post-tame embebido en la ficha: la función que Dododex no tiene.
@@ -98,6 +100,9 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
 
   return (
     <div className="space-y-4">
+      {/* Multiplicadores del servidor: imprescindibles para que los puntos salgan exactos */}
+      <ServerProfile />
+
       {/* Paso 1: contexto */}
       <div className="panel p-5">
         <div className="mb-4 flex items-center gap-2.5">
@@ -251,6 +256,15 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
               Marca «nunca subí este stat» donde aplique o añade el <strong>nivel tras domar</strong> para llegar a la
               respuesta exacta.
             </p>
+          )}
+
+          {/* Radar: en qué destaca este dino (puntos totales por stat) */}
+          {uniqueSolution && (
+            <StatRadar
+              values={result.statsConsidered
+                .filter((k) => uniqueSolution[k])
+                .map((k) => ({ stat: k, points: uniqueSolution[k]!.Lw + uniqueSolution[k]!.Ld }))}
+            />
           )}
 
           <div className="mt-3 grid gap-3.5">

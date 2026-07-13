@@ -45,11 +45,22 @@ export function IconScan({ size = 22 }: { size?: number }) {
   )
 }
 
-export function IconGear({ size = 22 }: { size?: number }) {
+export function IconPot({ size = 22 }: { size?: number }) {
+  // olla de cocina con vapor
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
-      <circle cx="12" cy="12" r="3.2" />
-      <path d="M12 2.8v3M12 18.2v3M21.2 12h-3M5.8 12h-3M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1M18.5 18.5l-2.1-2.1M7.6 7.6 5.5 5.5" />
+      <path d="M4.5 10.5h15v6a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3zM2.8 10.5h18.4M8 10.5V9M16 10.5V9" />
+      <path d="M9.5 3.5c-.8 1 .8 1.6 0 2.7M14.5 3.5c-.8 1 .8 1.6 0 2.7" />
+    </svg>
+  )
+}
+
+export function IconBrain({ size = 22 }: { size?: number }) {
+  // chispa de IA: burbuja de chat con destello
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
+      <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H13l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z" />
+      <path d="M12 6.8 13 9l2.2 1-2.2 1-1 2.2-1-2.2-2.2-1L11 9z" />
     </svg>
   )
 }

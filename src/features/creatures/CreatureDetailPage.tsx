@@ -2,8 +2,6 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { findSpecies, getTamingFoods } from '../../data'
 import { calcTaming, formatDuration } from '../../engine/taming'
-import { STAT_KEYS } from '../../engine/types'
-import { STAT_META } from '../../ui/statMeta'
 import { getTamingSpeed, useSettings } from '../../store/settings'
 import { useFavorites } from '../../store/favorites'
 import { IconStar } from '../../ui/icons'
@@ -16,7 +14,6 @@ const TABS = [
   { id: 'resumen', label: 'Resumen' },
   { id: 'tameo', label: '🧮 Tameo' },
   { id: 'inspector', label: '⭐ Inspector' },
-  { id: 'mapa', label: '🗺️ Mapa' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -29,7 +26,7 @@ export function CreatureDetailPage() {
   const { ids: favoriteIds, toggle } = useFavorites()
 
   const rawTab = searchParams.get('tab')
-  const tab: TabId = rawTab === 'tameo' || rawTab === 'inspector' || rawTab === 'mapa' ? rawTab : 'resumen'
+  const tab: TabId = rawTab === 'tameo' || rawTab === 'inspector' ? rawTab : 'resumen'
 
   if (!species) {
     return (
@@ -86,8 +83,31 @@ export function CreatureDetailPage() {
       {tab === 'resumen' && <SummaryTab species={species} />}
       {tab === 'tameo' && <TamingCalculator species={species} />}
       {tab === 'inspector' && <StatInspector species={species} />}
-      {tab === 'mapa' && <SpawnMap species={species} />}
     </section>
+  )
+}
+
+/** Comando de consola con botón de copiar. */
+function CommandRow({ label, cmd, note }: { label: string; cmd: string; note?: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-20 shrink-0 text-[11px] text-bone-faint">{label}</span>
+      <code className="min-w-0 flex-1 truncate rounded bg-surface-0/70 px-2 py-1.5 text-xs text-bone-dim">{cmd}</code>
+      <button
+        onClick={() => {
+          navigator.clipboard.writeText(cmd).then(() => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1200)
+          })
+        }}
+        className="btn-ghost shrink-0 px-2.5 py-1 text-xs"
+        aria-label={`Copiar comando: ${label}`}
+      >
+        {copied ? '✓' : '📋'}
+      </button>
+      {note && <span className="sr-only">{note}</span>}
+    </div>
   )
 }
 
@@ -95,6 +115,7 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
   const [, setSearchParams] = useSearchParams()
   const settings = useSettings()
   const tsm = getTamingSpeed(settings)
+  const { breedingMult, setBreedingMult } = settings
 
   const quickTame = useMemo(() => {
     const foods = getTamingFoods(species.name)
@@ -105,9 +126,12 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
     })
   }, [species, tsm])
 
-  const [statLevel, setStatLevel] = useState('150')
-  const lvlNum = Math.max(1, Number(statLevel) || 150)
-  const rows = STAT_KEYS.filter((k) => species.stats[k] && species.displayed[k])
+  const [cmdLevel, setCmdLevel] = useState('150')
+  const lvl = Math.max(1, Number(cmdLevel) || 150)
+  /** clase del blueprint para comandos: id + "_C" */
+  const cls = `${species.id.replace(/~\d+$/, '')}_C`
+  /** heurística de silla: nombre sin espacios + "Saddle" (GFI hace matching parcial in-game) */
+  const saddleGfi = species.name.replace(/\s*\(.*\)$/, '').replace(/[\s-]/g, '') + 'Saddle'
 
   return (
     <div className="space-y-4">
@@ -133,31 +157,56 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
         </button>
       )}
 
-      {/* Cría: incubación, maduración, cuddles e imprint — compacto como Dododex */}
+      {/* Cría con rates del servidor (multiplicador persistente) */}
       {species.breeding && (() => {
         const b = species.breeding
-        const CUDDLE = 28800 // 8h oficial
-        const cuddles = b.maturation > 0 ? Math.floor(b.maturation / CUDDLE) : 0
+        const m = breedingMult
+        const CUDDLE = 28800 / m // 8h oficial, escala con las rates
+        const maturation = b.maturation / m
+        const cuddles = maturation > 0 ? Math.floor(maturation / CUDDLE) : 0
         const perCuddle = cuddles > 0 ? Math.min(100, 100 / cuddles) : 0
         const babyFoods = getTamingFoods(species.name)?.filter((f) => !f.name.endsWith('Kibble')).slice(0, 3)
         return (
           <div className="panel p-4">
-            <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">Cría · rates oficiales</p>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="display text-xs font-semibold uppercase tracking-widest text-amber">Cría · rates ×{m}</p>
+              <div role="group" aria-label="Rates de cría del servidor" className="flex items-center gap-1">
+                {[1, 2, 3].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setBreedingMult(v)}
+                    aria-pressed={m === v}
+                    className="mode-tab flex-none px-2 py-1 text-[11px]"
+                  >
+                    ×{v}
+                  </button>
+                ))}
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0.5"
+                  value={breedingMult}
+                  onChange={(e) => setBreedingMult(Number(e.target.value))}
+                  aria-label="Multiplicador de cría personalizado"
+                  className="input-field w-16 px-1.5 py-1 text-center text-xs"
+                />
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-4">
               <div>
                 <span className="block text-[11px] text-bone-faint">{b.gestation > 0 ? '🤰 Gestación' : '🥚 Incubación'}</span>
-                <span className="display font-semibold">{formatDuration(b.gestation > 0 ? b.gestation : b.incubation)}</span>
+                <span className="display font-semibold">{formatDuration((b.gestation > 0 ? b.gestation : b.incubation) / m)}</span>
                 {b.incubation > 0 && b.eggTempMax > 0 && (
                   <span className="block text-[11px] text-bone-dim">{b.eggTempMin}–{b.eggTempMax} °C</span>
                 )}
               </div>
               <div>
                 <span className="block text-[11px] text-bone-faint">🐣 Maduración</span>
-                <span className="display font-semibold">{formatDuration(b.maturation)}</span>
-                <span className="block text-[11px] text-bone-dim">bebé {formatDuration(b.maturation * 0.1)} · juvenil hasta {formatDuration(b.maturation * 0.5)}</span>
+                <span className="display font-semibold">{formatDuration(maturation)}</span>
+                <span className="block text-[11px] text-bone-dim">bebé {formatDuration(maturation * 0.1)} · juvenil hasta {formatDuration(maturation * 0.5)}</span>
               </div>
               <div>
-                <span className="block text-[11px] text-bone-faint">🤗 Imprint (cuddle cada 8h)</span>
+                <span className="block text-[11px] text-bone-faint">🤗 Imprint (cuddle cada {formatDuration(CUDDLE)})</span>
                 <span className="display font-semibold">{cuddles > 0 ? `${cuddles} cuddles · ${perCuddle.toFixed(1)}%/ud` : '—'}</span>
                 <span className="block text-[11px] text-bone-dim">100%: +20% stats (no estamina/oxígeno)</span>
               </div>
@@ -170,67 +219,42 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
               </div>
             </div>
             <p className="mt-2 border-t border-surface-3 pt-2 text-[11px] text-bone-faint">
-              Montado por quien lo imprintó: +30% daño y −30% daño recibido adicionales.
+              ×1 = oficial · ajusta a las MatingSpeed/EggHatchSpeed/MaturationSpeed de tu servidor.
+              Montado por quien lo imprintó: +30% daño y −30% daño recibido.
             </p>
           </div>
         )
       })()}
 
-      {/* Stats estimados al nivel elegido (reparto medio de puntos salvajes) */}
-      <div className="panel p-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-2">
-          <p className="display text-xs font-semibold uppercase tracking-widest text-amber">Stats salvajes</p>
+      {/* Comandos de spawn (un jugador / servidores con admin) */}
+      <div className="panel space-y-2 p-4">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <p className="display text-xs font-semibold uppercase tracking-widest text-amber">Comandos</p>
           <label className="flex items-center gap-2 text-xs text-bone-dim">
-            a nivel
+            nivel
             <input
               type="number"
               inputMode="numeric"
-              value={statLevel}
-              onChange={(e) => setStatLevel(e.target.value)}
-              className="input-field w-20 px-2 py-1 text-center text-sm"
-              aria-label="Nivel para estimar stats"
+              value={cmdLevel}
+              onChange={(e) => setCmdLevel(e.target.value)}
+              className="input-field w-16 px-1.5 py-1 text-center text-xs"
+              aria-label="Nivel para el comando de spawn tameado"
             />
           </label>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-[11px] uppercase tracking-wider text-bone-faint">
-                <th className="px-3 py-2">Stat</th>
-                <th className="px-3 py-2 text-right">Base</th>
-                <th className="px-3 py-2 text-right">+/nivel</th>
-                <th className="px-3 py-2 text-right">Nv {lvlNum} (medio)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((k) => {
-                const c = species.stats[k]!
-                const meta = STAT_META[k]
-                const fmt = (v: number) => (meta.percent ? `${(v * 100).toFixed(0)}%` : v % 1 === 0 ? v.toString() : v.toFixed(1))
-                // torpor sube con TODOS los niveles; el resto reparte (nv−1) puntos entre 7 stats
-                const pts = k === 'torpor' ? lvlNum - 1 : Math.floor((lvlNum - 1) / 7)
-                const est = c.Iw > 0 ? c.B * (1 + pts * c.Iw) : c.B
-                return (
-                  <tr key={k} className="odd:bg-surface-0/40">
-                    <td className="flex items-center gap-2 px-3 py-2 font-medium">
-                      <span aria-hidden="true" style={{ color: meta.color }}>{meta.icon}</span>
-                      {meta.label}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-bone-dim">{fmt(c.B)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-bone-dim">
-                      {c.Iw > 0 ? `+${fmt(c.B * c.Iw)}` : '—'}
-                    </td>
-                    <td className="display px-3 py-2 text-right tabular-nums">{fmt(est)}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-        <p className="px-2 py-2 text-[11px] text-bone-faint">
-          «Medio» = puntos repartidos por igual entre stats; un salvaje real varía (compruébalo en la pestaña Inspector).
-          El torpor sí sube con cada nivel.
+        <CommandRow label="Salvaje" cmd={`cheat Summon ${cls}`} />
+        <CommandRow label="Tameado" cmd={`cheat GMSummon "${cls}" ${lvl}`} />
+        <CommandRow label="Montura" cmd={`cheat GFI ${saddleGfi} 1 0 0`} />
+        <p className="text-[11px] text-bone-faint">
+          Pégalo en la consola (un jugador o admin). La montura usa búsqueda parcial GFI — si no da
+          resultado, esa criatura no tiene silla o usa otro nombre.
         </p>
+      </div>
+
+      {/* Dónde aparece: mapa de spawn integrado */}
+      <div>
+        <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">Dónde aparece</p>
+        <SpawnMap species={species} />
       </div>
     </div>
   )

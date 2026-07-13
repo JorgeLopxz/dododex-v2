@@ -9,9 +9,22 @@ import {
 } from '../../data/wikiMaps'
 import { MapAttribution, MapBoard } from '../../ui/MapBoard'
 
+/** Escala de probabilidad de spawn (frecuencia relativa → color). */
+const PROB_SCALE = [
+  { max: 0.2, color: '#22c55e', label: 'Muy rara' },
+  { max: 0.4, color: '#a3cc16', label: 'Rara' },
+  { max: 0.6, color: '#eab308', label: 'Media' },
+  { max: 0.8, color: '#f97316', label: 'Alta' },
+  { max: Infinity, color: '#ef4444', label: 'Muy alta' },
+] as const
+
+function probColor(ratio: number): string {
+  return PROB_SCALE.find((s) => ratio <= s.max)!.color
+}
+
 /**
  * Mapa de aparición de la criatura: regiones de spawn reales (datos Purlovia
- * vía ark.wiki.gg) pintadas como zonas calientes según frecuencia.
+ * vía ark.wiki.gg), coloreadas de verde (poco probable) a rojo (muy probable).
  */
 export function SpawnMap({ species }: { species: SpeciesEntry }) {
   const [map, setMap] = useState<string>(ASA_MAPS[0])
@@ -65,11 +78,28 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
       <MapBoard
         map={map}
         image={image}
-        layers={regions?.length ? [{ color: '#ef6c2e', regions }] : []}
+        layers={
+          regions?.length
+            ? (() => {
+                const maxF = Math.max(...regions.map((r) => r.f), 0.0001)
+                return [{ color: '#ef4444', regions: regions.map((r) => ({ ...r, color: probColor(r.f / maxF) })) }]
+              })()
+            : []
+        }
         status={status}
       />
+      {/* Leyenda de probabilidad */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-bone-dim">
+        <span className="text-bone-faint">Probabilidad:</span>
+        {PROB_SCALE.map((s) => (
+          <span key={s.label} className="inline-flex items-center gap-1">
+            <span className="size-2.5 rounded-sm" style={{ background: s.color }} aria-hidden="true" />
+            {s.label}
+          </span>
+        ))}
+      </div>
       <p className="text-[11px] text-bone-faint">
-        Zonas más opacas = contenedores de spawn más frecuentes. Cuevas y zonas especiales pueden no reflejarse.
+        Frecuencia relativa al punto más caliente de este mapa. Cuevas y zonas especiales pueden no reflejarse.
       </p>
       <MapAttribution />
     </div>

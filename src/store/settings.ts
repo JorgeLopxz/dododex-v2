@@ -20,6 +20,14 @@ interface Settings {
   /** TamingSpeedMultiplier del preset "custom" */
   customTsm: number
   setCustomTsm: (v: number) => void
+
+  /** Multiplicador de velocidad de cría del servidor (incubación+maduración; ×1 = oficial) */
+  breedingMult: number
+  setBreedingMult: (v: number) => void
+
+  /** Clave de la API de Gemini para el asistente (solo se guarda en este dispositivo) */
+  geminiKey: string
+  setGeminiKey: (k: string) => void
   /** PerLevelStatsMultiplier_DinoWild por stat (solo preset custom) */
   customIwM: Partial<Record<PointStatKey, number>>
   /** PerLevelStatsMultiplier_DinoTamed por stat (solo preset custom) */
@@ -39,6 +47,10 @@ export const useSettings = create<Settings>()(
       setTamingPreset: (tamingPreset) => set({ tamingPreset }),
       customTsm: 1,
       setCustomTsm: (customTsm) => set({ customTsm }),
+      breedingMult: 1,
+      setBreedingMult: (breedingMult) => set({ breedingMult: breedingMult > 0 ? breedingMult : 1 }),
+      geminiKey: '',
+      setGeminiKey: (geminiKey) => set({ geminiKey: geminiKey.trim() }),
       customIwM: {},
       customIdM: {},
       customNerf: true,

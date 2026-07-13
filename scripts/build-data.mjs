@@ -93,12 +93,15 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
     if (isMission(sp)) continue
     if (isDupAberrant(sp)) continue
     if (isUntameable(sp)) continue
-    // ASA-values.json es un overlay: si la especie no trae stats, hereda de la base ASE (match por blueprint)
+    // ASA-values.json es un overlay: cada campo ausente hereda de la base ASE (match por blueprint).
+    // Ojo: hay especies con stats propios pero SIN nombre/taming (p.ej. Griffin) — heredar por campo.
     const bpKey = (sp.blueprintPath ?? sp.name).split('/').pop().split('.').pop().replace(/["']/g, '')
+    const inherited = fallbackStatsByBp.get(bpKey)
     if (!sp.fullStatsRaw) {
-      const inherited = fallbackStatsByBp.get(bpKey)
       if (!inherited) continue
       sp.fullStatsRaw = inherited.fullStatsRaw
+    }
+    if (inherited) {
       sp.name ??= inherited.name
       sp.taming ??= inherited.taming
       sp.breeding ??= inherited.breeding

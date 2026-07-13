@@ -10,6 +10,30 @@ import { CreatureImage } from '../../ui/GameImage'
 const PREVIEW_STATS: StatKey[] = ['health', 'stamina', 'weight', 'melee']
 const MAX_RESULTS = 30
 
+/** Los tames que todo el mundo busca (ids verificados contra el dataset). */
+const POPULAR_IDS = [
+  'Rex_Character_BP',
+  'Gigant_Character_BP',
+  'Carcha_Character_BP',
+  'Ptero_Character_BP',
+  'Argent_Character_BP',
+  'Griffin_Character_BP',
+  'Maelizard_Character_BP',
+  'FireLion_Character_BP',
+  'RockDrake_Character_BP',
+  'Wyvern_Character_BP_Ash',
+  'Therizino_Character_BP',
+  'Ankylo_Character_BP',
+  'Doed_Character_BP',
+  'Yutyrannus_Character_BP',
+  'Desmodus_Character_BP',
+  'Gigantoraptor_Character_BP',
+  'Deinonychus_Character_BP',
+  'Thylacoleo_Character_BP',
+  'Quetz_Character_BP',
+  'Shastasaurus_Character_BP',
+]
+
 /** Home = buscador. Sin búsqueda: SOLO favoritos. Al teclear: filtro en tiempo real. */
 export function HomePage() {
   const [query, setQuery] = useState('')
@@ -22,6 +46,13 @@ export function HomePage() {
   }, [q])
   const favorites = useMemo(
     () => getSpecies().filter((s) => favoriteIds.includes(s.id)),
+    [favoriteIds],
+  )
+  const popular = useMemo(
+    () =>
+      POPULAR_IDS.filter((id) => !favoriteIds.includes(id))
+        .map((id) => getSpecies().find((s) => s.id === id))
+        .filter((s) => s !== undefined),
     [favoriteIds],
   )
 
@@ -54,27 +85,39 @@ export function HomePage() {
             </p>
           )}
         </>
-      ) : favorites.length > 0 ? (
-        <>
-          <h2 className="display mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-bone-faint">
-            <IconStar size={15} filled /> Favoritos
-          </h2>
-          <ul className="grid gap-2.5">
-            {favorites.map((s) => (
-              <CreatureRow key={s.id} species={s} />
-            ))}
-          </ul>
-        </>
       ) : (
-        <div className="panel p-8 text-center text-sm text-bone-dim">
-          <p className="mb-2">
-            Busca cualquiera de las <strong className="text-bone">{getSpecies().length}</strong> criaturas domables de ARK.
-          </p>
-          <p className="text-xs text-bone-faint">
-            Marca tus habituales con la estrella{' '}
-            <span className="inline-flex translate-y-0.5 text-warn"><IconStar size={13} filled /></span>{' '}
-            y aparecerán aquí nada más abrir la app.
-          </p>
+        <div className="space-y-6">
+          {favorites.length > 0 ? (
+            <div>
+              <h2 className="display mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-bone-faint">
+                <IconStar size={15} filled /> Favoritos
+              </h2>
+              <ul className="grid gap-2.5">
+                {favorites.map((s) => (
+                  <CreatureRow key={s.id} species={s} />
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="px-2 text-center text-xs text-bone-faint">
+              Busca cualquiera de las <strong className="text-bone-dim">{getSpecies().length}</strong> criaturas domables —
+              marca tus habituales con la estrella{' '}
+              <span className="inline-flex translate-y-0.5 text-warn"><IconStar size={12} filled /></span>{' '}
+              y aparecerán aquí las primeras.
+            </p>
+          )}
+          {popular.length > 0 && (
+            <div>
+              <h2 className="display mb-3 text-sm font-semibold uppercase tracking-widest text-bone-faint">
+                🔥 Populares
+              </h2>
+              <ul className="grid gap-2.5">
+                {popular.map((s) => (
+                  <CreatureRow key={s.id} species={s} />
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </section>

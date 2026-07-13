@@ -11,6 +11,7 @@ import { WEAPONS, hitsToKnockout, wildTorpor } from '../../engine/knockout'
 import { getTamingFoods, type SpeciesEntry } from '../../data'
 import { tameBonusLevels } from '../../engine/statFormula'
 import { getTamingSpeed, useSettings } from '../../store/settings'
+import { recipeSlug } from '../recipes/RecipesPage'
 import { ItemImage } from '../../ui/GameImage'
 
 const TOP_FOODS = 6
@@ -167,15 +168,32 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
               <span>Comida</span><span className="text-right">Cant.</span><span className="text-right">TE</span><span className="text-right">Tiempo</span><span className="text-center">Tu plan</span>
             </div>
             {visibleRows.map((r) => (
-              <div key={r.food.name} className="grid grid-cols-[1fr_4.5rem_3.5rem_4.5rem_5.5rem] items-center gap-1 rounded-lg px-2 py-1.5 odd:bg-surface-0/40">
+              <div
+                key={r.food.name}
+                onClick={() => setQty({ [r.food.name]: r.pieces })}
+                title={`Usar solo ${r.food.name} (×${r.pieces})`}
+                className="grid cursor-pointer grid-cols-[1fr_4.5rem_3.5rem_4.5rem_5.5rem] items-center gap-1 rounded-lg px-2 py-1.5 transition-colors odd:bg-surface-0/40 hover:bg-surface-2/60"
+              >
                 <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <ItemImage name={r.food.name} size={26} />
-                  <span className="truncate">
-                    {r.food.name}
-                    {r.food.name.endsWith('Kibble') && (
-                      <span className="text-[10px] font-normal text-bone-faint"> (o superior)</span>
-                    )}
-                  </span>
+                  {r.food.name.endsWith('Kibble') ? (
+                    <Link
+                      to={`/recetas/${recipeSlug(r.food.name)}`}
+                      onClick={(e) => e.stopPropagation()}
+                      title={`Ver receta de ${r.food.name}`}
+                      className="flex min-w-0 items-center gap-2 underline decoration-surface-3 hover:text-amber"
+                    >
+                      <ItemImage name={r.food.name} size={26} />
+                      <span className="truncate">{r.food.name}</span>
+                    </Link>
+                  ) : (
+                    <>
+                      <ItemImage name={r.food.name} size={26} />
+                      <span className="truncate">{r.food.name}</span>
+                    </>
+                  )}
+                  {r.food.name.endsWith('Kibble') && (
+                    <span className="shrink-0 text-[10px] font-normal text-bone-faint">(o sup.)</span>
+                  )}
                 </span>
                 <span className="display text-right text-sm tabular-nums">{r.pieces}</span>
                 <span
@@ -187,7 +205,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                 <span className="text-right text-xs tabular-nums text-bone-dim">
                   {r.seconds > 0 ? formatDuration(r.seconds) : '—'}
                 </span>
-                <span className="flex items-center justify-center gap-1">
+                <span className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
                   <button
                     aria-label={`Quitar ${r.food.name} del plan`}
                     onClick={() => setQty((q) => ({ ...q, [r.food.name]: Math.max(0, (q[r.food.name] ?? 0) - 1) }))}

@@ -9,7 +9,8 @@ const topoUrl = (map: string) => wikiFileUrl(`${map} Topographic Map.jpg`)
 export interface MapLayer {
   color: string
   points?: MapPoint[]
-  regions?: SpawnRegion[]
+  /** regiones; si traen `color` propio (escala de rareza) prevalece sobre el de la capa */
+  regions?: (SpawnRegion & { color?: string })[]
 }
 
 /**
@@ -42,13 +43,11 @@ export function MapBoard({
     const W = cv.width
     const H = cv.height
     for (const layer of layers) {
-      // regiones (heatmap): alpha según frecuencia relativa del contenedor
+      // regiones (heatmap): color por rareza si viene asignado; alpha suave y constante
       if (layer.regions?.length) {
-        const maxF = Math.max(...layer.regions.map((r) => r.f), 1)
+        ctx.globalAlpha = 0.45
         for (const r of layer.regions) {
-          const alpha = 0.16 + 0.42 * Math.min(1, r.f / maxF)
-          ctx.fillStyle = layer.color
-          ctx.globalAlpha = alpha
+          ctx.fillStyle = r.color ?? layer.color
           const x = (Math.min(r.x1, r.x2) / 100) * W
           const y = (Math.min(r.y1, r.y2) / 100) * H
           const w = (Math.abs(r.x2 - r.x1) / 100) * W

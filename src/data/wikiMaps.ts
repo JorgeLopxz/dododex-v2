@@ -24,7 +24,7 @@ export interface SpawnRegion {
   f: number
 }
 
-/** Mapas liberados en ASA (única fuente para selectores). */
+/** Mapas liberados en ASA con datos en la wiki (Astraeos aún no tiene páginas de datos). */
 export const ASA_MAPS = [
   'The Island',
   'Scorched Earth',
@@ -33,7 +33,7 @@ export const ASA_MAPS = [
   'Extinction',
   'Ragnarok',
   'Valguero',
-  'Astraeos',
+  'Lost Colony',
 ] as const
 
 const API = 'https://ark.wiki.gg/api.php'
@@ -91,9 +91,12 @@ export async function loadResourceMap(mapName: string): Promise<ResourceMapData 
     try {
       const data = JSON.parse(body)
       const groups: Record<string, MapPoint[]> = {}
-      for (const [group, list] of Object.entries<{ x?: number; y?: number }[]>(data.markers ?? {})) {
+      // páginas nuevas (ASA): {x, y}; páginas ASE antiguas: {lat, lon} — ambas en % 0-100
+      for (const [group, list] of Object.entries<{ x?: number; y?: number; lat?: number; lon?: number }[]>(
+        data.markers ?? {},
+      )) {
         groups[group.toLowerCase()] = list
-          .map((m) => ({ x: m.x ?? -1, y: m.y ?? -1 }))
+          .map((m) => ({ x: m.x ?? m.lon ?? -1, y: m.y ?? m.lat ?? -1 }))
           .filter((p) => p.x >= 0 && p.y >= 0)
       }
       const bg = data.background
@@ -112,14 +115,14 @@ export const RESOURCE_GROUP_ALIASES: Record<string, string[]> = {
   cristal: ['crystal'],
   obsidiana: ['obsidian'],
   petroleo: ['oil', 'oil-vein', 'oil-rock'],
-  perlas: ['silica', 'silica-pearls', 'pearls'],
-  'perlas-negras': ['black-pearls'],
+  perlas: ['silica', 'silica-pearls', 'pearls', 'pearl'],
+  'perlas-negras': ['black-pearl', 'black-pearls'],
   miel: ['beehive', 'giant-bee-hive', 'honey'],
   azufre: ['sulfur'],
-  sal: ['salt', 'raw-salt'],
-  gemas: ['gems', 'gem', 'blue-gems', 'green-gems', 'red-gems'],
+  sal: ['salt', 'raw-salt', 'saltpeter'],
+  gemas: ['gem', 'gems'],
   seda: ['silk'],
-  elemento: ['element-node', 'element-vein', 'charge-node'],
+  elemento: ['element', 'element-ore', 'element-node', 'element-vein', 'charge-node'],
 }
 
 /** Puntos de un recurso: agrega todos los grupos cuyo id base coincide con un alias. */

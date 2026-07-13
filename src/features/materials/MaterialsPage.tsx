@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react'
 import { ASA_MAPS, loadResourceMap, resourcePoints, type ResourceMapData } from '../../data/wikiMaps'
 import { MapAttribution, MapBoard, type MapLayer } from '../../ui/MapBoard'
+import { ItemImage } from '../../ui/GameImage'
 
+/** item = nombre del icono real del juego (CDN de Dododex); icon = fallback emoji */
 const RESOURCES = [
-  { id: 'metal', label: 'Metal', icon: '⛏️', color: '#c8d2dc' },
-  { id: 'cristal', label: 'Cristal', icon: '💎', color: '#8fe3f7' },
-  { id: 'obsidiana', label: 'Obsidiana', icon: '🌑', color: '#b29aff' },
-  { id: 'petroleo', label: 'Petróleo', icon: '🛢️', color: '#7fbc8c' },
-  { id: 'perlas', label: 'Perlas', icon: '🦪', color: '#ffffff' },
-  { id: 'perlas-negras', label: 'P. negras', icon: '⚫', color: '#ff8fb6' },
-  { id: 'miel', label: 'Miel', icon: '🍯', color: '#ffb547' },
-  { id: 'azufre', label: 'Azufre', icon: '🌋', color: '#e8dc4e' },
-  { id: 'sal', label: 'Sal', icon: '🧂', color: '#f0e6d8' },
-  { id: 'gemas', label: 'Gemas', icon: '💠', color: '#7dff9e' },
-  { id: 'seda', label: 'Seda', icon: '🕸️', color: '#e0c8ff' },
-  { id: 'elemento', label: 'Elemento', icon: '⚡', color: '#c084fc' },
+  { id: 'metal', label: 'Metal', item: 'Metal', icon: '⛏️', color: '#c8d2dc' },
+  { id: 'cristal', label: 'Cristal', item: 'Crystal', icon: '💎', color: '#8fe3f7' },
+  { id: 'obsidiana', label: 'Obsidiana', item: 'Obsidian', icon: '🌑', color: '#b29aff' },
+  { id: 'petroleo', label: 'Petróleo', item: 'Oil', icon: '🛢️', color: '#7fbc8c' },
+  { id: 'perlas', label: 'Perlas', item: 'Silica Pearls', icon: '🦪', color: '#ffffff' },
+  { id: 'perlas-negras', label: 'P. negras', item: 'Black Pearl', icon: '⚫', color: '#ff8fb6' },
+  { id: 'miel', label: 'Miel', item: 'Giant Bee Honey', icon: '🍯', color: '#ffb547' },
+  { id: 'azufre', label: 'Azufre', item: 'Sulfur', icon: '🌋', color: '#e8dc4e' },
+  { id: 'sal', label: 'Sal', item: 'Raw Salt', icon: '🧂', color: '#f0e6d8' },
+  { id: 'gemas', label: 'Gemas', item: 'Blue Gem', icon: '💠', color: '#7dff9e' },
+  { id: 'seda', label: 'Seda', item: 'Silk', icon: '🕸️', color: '#e0c8ff' },
+  { id: 'elemento', label: 'Elemento', item: 'Element', icon: '⚡', color: '#c084fc' },
 ] as const
 
 /**
@@ -83,11 +85,11 @@ export function MaterialsPage() {
             onClick={() => toggle(r.id)}
             aria-pressed={active.has(r.id)}
             disabled={status === 'ok' && counts[r.id] === 0}
-            className="mode-tab flex-none px-2.5 text-xs disabled:opacity-35"
+            className="mode-tab flex flex-none items-center gap-1.5 px-2.5 text-xs disabled:opacity-35"
             style={active.has(r.id) && counts[r.id] > 0 ? { borderColor: r.color, color: r.color } : undefined}
           >
-            {r.icon} {r.label}
-            {counts[r.id] > 0 && <span className="ml-1 opacity-70">({counts[r.id]})</span>}
+            <ItemImage name={r.item} size={18} fallback={r.icon} /> {r.label}
+            {counts[r.id] > 0 && <span className="opacity-70">({counts[r.id]})</span>}
           </button>
         ))}
       </div>
