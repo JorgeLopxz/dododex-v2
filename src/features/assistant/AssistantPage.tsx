@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../store/settings'
 
 const MODEL = 'gemini-2.5-flash'
-const SYSTEM = `Eres el asistente experto de DODODEX V2, una app companion de ARK: Survival Ascended (ASA).
+function buildSystem(gameVersion: 'asa' | 'ase') {
+  const gameName = gameVersion === 'asa' ? 'ARK: Survival Ascended (ASA)' : 'ARK: Survival Evolved (ASE)'
+  return `Eres el asistente experto de DODODEX V2, una app companion de ${gameName}.
 Eres un jugador veterano de ARK: dominas tameos, cría y mutaciones, kibbles, mapas, cuevas, artefactos,
 jefes, estrategias PvE/PvP y comandos de consola. Contesta SIEMPRE en español, de forma directa y práctica,
-con cantidades y pasos concretos. Si algo cambia entre ASE y ASA, da la respuesta de ASA vanilla oficial.
+con cantidades y pasos concretos. Responde según ${gameVersion === 'asa' ? 'ASA vanilla oficial' : 'ASE vanilla oficial'}.
 Si no estás seguro de un dato exacto, dilo honestamente. Respuestas compactas: nada de relleno.`
+}
 
 interface Msg {
   role: 'user' | 'model'
@@ -17,7 +20,7 @@ const CHAT_KEY = 'dododex-v2-chat'
 
 /** Asistente IA: chat experto en ARK usando la API de Gemini con la clave del usuario. */
 export function AssistantPage() {
-  const { geminiKey, setGeminiKey } = useSettings()
+  const { geminiKey, setGeminiKey, gameVersion } = useSettings()
   const [keyDraft, setKeyDraft] = useState('')
   const [messages, setMessages] = useState<Msg[]>(() => {
     try {
@@ -51,7 +54,7 @@ export function AssistantPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system_instruction: { parts: [{ text: SYSTEM }] },
+            system_instruction: { parts: [{ text: buildSystem(gameVersion) }] },
             contents: history.slice(-16).map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
             // gemini-2.5 gasta "thinking" DENTRO de maxOutputTokens → presupuesto amplio
             // y razonamiento apagado para que la respuesta nunca llegue cortada

@@ -1,8 +1,8 @@
 /**
- * Pipeline de datos de especies (solo ASA).
+ * Pipeline de datos de especies (ASA + ASE).
  * Descarga (si falta) ASA-values.json de ARK Smart Breeding (MIT, © 2015 cadon)
  * — y values.json (ASE) como base del overlay, porque ASA hereda stats de él —
- * y genera src/data/species-asa.json en formato compacto:
+ * y genera src/data/species-asa.json + src/data/species-ase.json en formato compacto:
  *   [id, nombre, tbhm, displayedStats, [statsx8 (null | [B,Iw,Id,Ta,Tm])], taming[9], breeding[5]|null]
  * Orden de stats propio: health, stamina, oxygen, food, weight, melee, speed, torpor.
  * Solo se emiten especies DOMABLES (principio: si no es tameable, fuera de la base de datos).
@@ -12,9 +12,14 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 
 const RAW_DIR = 'data-raw'
 const OUT_DIR = 'src/data'
+const PUBLIC_DIR = 'public/generated/wiki-maps'
 const BASE = 'https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json/values'
 const BASE_JSON = 'https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json'
 const FILES = { ase: 'values.json', asa: 'ASA-values.json' }
+const MAPS = {
+  asa: ['The Island', 'Scorched Earth', 'The Center', 'Aberration', 'Extinction', 'Ragnarok', 'Valguero', 'Lost Colony'],
+  ase: ['The Island', 'Scorched Earth', 'The Center', 'Aberration', 'Extinction', 'Ragnarok', 'Valguero', 'Crystal Isles', 'Genesis: Part 1', 'Genesis: Part 2', 'Fjordur', 'Lost Island'],
+}
 
 // fullStatsRaw de ASB usa 12 índices; mapeamos a nuestros 8
 // ASB: 0 Health, 1 Stamina, 2 Torpidity, 3 Oxygen, 4 Food, 5 Water, 6 Temp, 7 Weight, 8 Melee, 9 Speed, 10 Fort, 11 Craft
@@ -34,6 +39,7 @@ const isPlaceholderFc = (t) => t?.foodConsumptionBase === 0.01 && t?.foodConsump
 const offline = process.argv.includes('--offline')
 mkdirSync(RAW_DIR, { recursive: true })
 mkdirSync(OUT_DIR, { recursive: true })
+mkdirSync(PUBLIC_DIR, { recursive: true })
 
 async function ensureRaw(name) {
   const path = `${RAW_DIR}/${name}`
@@ -47,7 +53,55 @@ async function ensureRaw(name) {
   return JSON.parse(readFileSync(path, 'utf8'))
 }
 
-function transform(raw, label, fallbackStatsByBp = new Map()) {
+const mapSlug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+
+function ensureMapImage(mapName, version) {
+  const slug = `${version}-${mapSlug(mapName)}`
+  const fileName = `${slug}.svg`
+  const outPath = `${PUBLIC_DIR}/${fileName}`
+  if (!existsSync(outPath)) {
+    const hue = version === 'asa' ? 32 : 186
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#13211a"/>
+          <stop offset="1" stop-color="#0b1511"/>
+        </linearGradient>
+        <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="hsla(${hue}, 80%, 70%, 0.22)"/>
+          <stop offset="1" stop-color="hsla(${hue}, 75%, 55%, 0.08)"/>
+        </linearGradient>
+        <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+          <path d="M100 0H0V100" fill="none" stroke="rgba(239,228,205,0.08)" stroke-width="2"/>
+        </pattern>
+      </defs>
+      <rect width="1000" height="1000" fill="url(#bg)"/>
+      <rect width="1000" height="1000" fill="url(#grid)"/>
+      <circle cx="500" cy="500" r="360" fill="url(#ink)"/>
+      <path d="M120 720 C240 620, 340 620, 500 700 S760 780, 880 610" fill="none" stroke="rgba(239,228,205,0.18)" stroke-width="18" stroke-linecap="round"/>
+      <path d="M220 250 C340 180, 460 200, 540 280 S720 390, 820 300" fill="none" stroke="rgba(239,228,205,0.14)" stroke-width="14" stroke-linecap="round"/>
+      <text x="50%" y="44%" text-anchor="middle" font-family="system-ui, sans-serif" font-size="66" font-weight="700" fill="#efe4cd">${mapName}</text>
+      <text x="50%" y="52%" text-anchor="middle" font-family="system-ui, sans-serif" font-size="30" fill="rgba(239,228,205,0.78)">${version.toUpperCase()} oficial</text>
+      <text x="50%" y="90%" text-anchor="middle" font-family="system-ui, sans-serif" font-size="22" fill="rgba(239,228,205,0.52)">Fondo local generado para evitar CORS y rate limits</text>
+    </svg>`
+    writeFileSync(outPath, svg)
+  }
+  return `/generated/wiki-maps/${fileName}`
+}
+
+async function fetchMapPage(title) {
+  const url = `https://ark.wiki.gg/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}?action=raw`
+  const res = await fetch(url, {
+    headers: {
+      'user-agent': 'DODODEX V2 (JorgeLopxz; https://github.com/JorgeLopxz/dododex-v2)',
+      accept: 'text/plain,*/*',
+    },
+  })
+  if (!res.ok) return null
+  return await res.text()
+}
+
+function transform(raw, label, fallbackStatsByBp = new Map(), { asaOnly = false } = {}) {
   const seen = new Map()
   const out = []
   const isMission = (sp) => /Missions\/|Gauntlet|_STA\b|TameSTA|Summoned|_Retrieve/i.test(sp.blueprintPath ?? '')
@@ -86,7 +140,7 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
       UNTAMEABLE_EXACT.has(n.replace(/\s*\(.*\)$/, '').trim()) ||
       (sp.variants ?? []).some((v) => UNTAMEABLE_VARIANT.test(v)) ||
       UNTAMEABLE_BOSS.test(sp.blueprintPath ?? '') ||
-      UNRELEASED_BP.test(sp.blueprintPath ?? '')
+      (asaOnly && UNRELEASED_BP.test(sp.blueprintPath ?? ''))
     )
   }
   for (const sp of raw.species) {
@@ -214,8 +268,53 @@ const aseByBp = new Map(
       { fullStatsRaw: sp.fullStatsRaw, name: sp.name, TBHM: sp.TamedBaseHealthMultiplier ?? 1, ds: sp.displayedStats ?? 0, taming: sp.taming, breeding: sp.breeding },
     ]),
 )
-const asa = transform(await ensureRaw(FILES.asa), 'ASA', aseByBp)
+const ase = transform(aseRaw, 'ASE')
+const asa = transform(await ensureRaw(FILES.asa), 'ASA', aseByBp, { asaOnly: true })
+writeFileSync(`${OUT_DIR}/species-ase.json`, JSON.stringify(ase))
 writeFileSync(`${OUT_DIR}/species-asa.json`, JSON.stringify(asa))
+
+// ——— Mapas oficiales (recursos + spawns) ———
+function parseMapData(body) {
+  if (!body) return null
+  try {
+    const data = JSON.parse(body)
+    const groups = {}
+    for (const [group, list] of Object.entries(data.markers ?? {})) {
+      groups[group.toLowerCase()] = list
+        .map((m) => ({ x: m.x ?? m.lon ?? -1, y: m.y ?? m.lat ?? -1 }))
+        .filter((p) => p.x >= 0 && p.y >= 0)
+    }
+    const image = typeof data.background?.image === 'string' ? data.background.image : typeof data.background === 'string' ? data.background : null
+    return { image, groups }
+  } catch {
+    return null
+  }
+}
+
+async function buildMapData() {
+  const out = { asa: {}, ase: {} }
+  for (const version of /** @type {const} */ (['asa', 'ase'])) {
+    for (const mapName of MAPS[version]) {
+      const resourceTitle = `Data:Maps/Resources/${mapName}${version === 'asa' ? '/ASA' : ''}`
+      const spawnTitle = `Data:Spawn Map/${mapName}${version === 'asa' ? '/ASA' : ''}`
+      const [resourceBody, spawnBody] = await Promise.all([fetchMapPage(resourceTitle), fetchMapPage(spawnTitle)])
+      const resource = parseMapData(resourceBody)
+      const spawns = spawnBody ? (() => {
+        try {
+          const data = JSON.parse(spawnBody)
+          return Array.isArray(data) ? data : null
+        } catch {
+          return null
+        }
+      })() : null
+      const image = ensureMapImage(mapName, version)
+      out[version][mapName] = { image, groups: resource?.groups ?? {}, spawns: spawns ?? [] }
+    }
+  }
+  writeFileSync(`${OUT_DIR}/wiki-maps.json`, JSON.stringify(out))
+}
+
+await buildMapData()
 
 // ——— Comidas de tameo (tamingFoodData.json de ASB: dietas por especie + valores f/a) ———
 async function ensureRawJson(name) {
@@ -240,4 +339,6 @@ writeFileSync(
   `${OUT_DIR}/taming-foods.json`,
   JSON.stringify({ version: tfd.version, source: 'cadon/ARKStatsExtractor (MIT)', foods: defaults, perSpecies }),
 )
-console.log(`OK → ${OUT_DIR}/species-asa.json (v ${asa.version}) + taming-foods.json (${Object.keys(perSpecies).length} especies)`)
+console.log(
+  `OK → ${OUT_DIR}/species-ase.json (v ${ase.version}) + ${OUT_DIR}/species-asa.json (v ${asa.version}) + taming-foods.json (${Object.keys(perSpecies).length} especies)`,
+)

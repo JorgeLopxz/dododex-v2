@@ -22,7 +22,8 @@ export function CreatureDetailPage() {
   const { speciesId } = useParams()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const species = speciesId ? findSpecies(decodeURIComponent(speciesId)) : undefined
+  const { gameVersion } = useSettings()
+  const species = speciesId ? findSpecies(decodeURIComponent(speciesId), gameVersion) : undefined
   const { ids: favoriteIds, toggle } = useFavorites()
 
   const rawTab = searchParams.get('tab')
@@ -31,7 +32,7 @@ export function CreatureDetailPage() {
   if (!species) {
     return (
       <p className="panel p-6 text-center text-bone-dim">
-        Especie no encontrada. <Link to="/" className="text-amber underline">Volver al buscador</Link>
+        Especie no encontrada en {gameVersion.toUpperCase()}. <Link to="/" className="text-amber underline">Volver al buscador</Link>
       </p>
     )
   }

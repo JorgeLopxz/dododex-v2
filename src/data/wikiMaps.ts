@@ -1,12 +1,11 @@
 /**
  * Datos de mapas de ark.wiki.gg (CC BY-NC-SA 3.0 — uso no comercial con atribución).
- * Se descargan bajo demanda vía la API de MediaWiki (CORS con origin=*) y se
- * cachean en localStorage (30 días) + memoria para no golpear la wiki.
- *
- * Fuentes verificadas:
- *  - Recursos:  "Data:Maps/Resources/<Mapa>/ASA"  (fallback sin /ASA = datos ASE)
- *  - Spawns:    "Data:Spawn Map/<Mapa>/ASA"       (formato Purlovia, fallback ídem)
+ * Se generan en build desde la wiki y se consumen como JSON estático local,
+ * así evitamos CORS y dependencias de red en runtime.
  */
+
+import wikiMapsJson from './wiki-maps.json'
+import type { GameVersion } from '../store/settings'
 
 export interface MapPoint {
   /** % 0-100 sobre el ancho del mapa */
@@ -36,40 +35,20 @@ export const ASA_MAPS = [
   'Lost Colony',
 ] as const
 
-const API = 'https://ark.wiki.gg/api.php'
-const CACHE_PREFIX = 'dododex-v2-wiki:'
-const CACHE_DAYS = 30
-const memCache = new Map<string, unknown>()
-
-async function fetchRawPage(title: string): Promise<string | null> {
-  const key = CACHE_PREFIX + title
-  try {
-    const cached = localStorage.getItem(key)
-    if (cached) {
-      const { t, body } = JSON.parse(cached)
-      if (Date.now() - t < CACHE_DAYS * 86400_000) return body
-    }
-  } catch {
-    /* caché corrupta → refetch */
-  }
-  const url = `${API}?action=query&prop=revisions&rvprop=content&rvslots=main&formatversion=2&format=json&origin=*&titles=${encodeURIComponent(title)}`
-  let body: string | undefined
-  try {
-    const res = await fetch(url)
-    if (!res.ok) return null
-    const json = await res.json()
-    body = json?.query?.pages?.[0]?.revisions?.[0]?.slots?.main?.content
-  } catch {
-    return null
-  }
-  if (!body) return null
-  try {
-    localStorage.setItem(key, JSON.stringify({ t: Date.now(), body }))
-  } catch {
-    /* storage lleno: seguimos con caché en memoria */
-  }
-  return body
-}
+export const ASE_MAPS = [
+  'The Island',
+  'Scorched Earth',
+  'The Center',
+  'Aberration',
+  'Extinction',
+  'Ragnarok',
+  'Valguero',
+  'Crystal Isles',
+  'Genesis: Part 1',
+  'Genesis: Part 2',
+  'Fjordur',
+  'Lost Island',
+] as const
 
 /* ——— Recursos ——— */
 
@@ -80,43 +59,23 @@ export interface ResourceMapData {
   groups: Record<string, MapPoint[]>
 }
 
-function parseDataMap(body: string): ResourceMapData | null {
-  try {
-    const data = JSON.parse(body)
-    const groups: Record<string, MapPoint[]> = {}
-    // páginas nuevas (ASA): {x, y}; páginas ASE antiguas: {lat, lon} — ambas en % 0-100
-    for (const [group, list] of Object.entries<{ x?: number; y?: number; lat?: number; lon?: number }[]>(
-      data.markers ?? {},
-    )) {
-      groups[group.toLowerCase()] = list
-        .map((m) => ({ x: m.x ?? m.lon ?? -1, y: m.y ?? m.lat ?? -1 }))
-        .filter((p) => p.x >= 0 && p.y >= 0)
-    }
-    const bg = data.background
-    return { image: typeof bg === 'string' ? bg : (bg?.image ?? null), groups }
-  } catch {
-    return null
-  }
+interface WikiMapEntry {
+  image: string | null
+  groups: Record<string, MapPoint[]>
+  spawns: SpawnContainer[]
 }
 
-export async function loadResourceMap(mapName: string): Promise<ResourceMapData | null> {
-  const memKey = `res:${mapName}`
-  if (memCache.has(memKey)) return memCache.get(memKey) as ResourceMapData | null
-  // La página ASA suele traer solo los grupos re-verificados; la ASE tiene el resto
-  // (miel, savia, flores…). Se fusionan con prioridad ASA por grupo.
-  const asaBody = await fetchRawPage(`Data:Maps/Resources/${mapName}/ASA`)
-  const aseBody = await fetchRawPage(`Data:Maps/Resources/${mapName}`)
-  const asa = asaBody ? parseDataMap(asaBody) : null
-  const ase = aseBody ? parseDataMap(aseBody) : null
-  let out: ResourceMapData | null = null
-  if (asa || ase) {
-    out = {
-      image: asa?.image ?? ase?.image ?? null,
-      groups: { ...(ase?.groups ?? {}), ...(asa?.groups ?? {}) },
-    }
-  }
-  memCache.set(memKey, out)
-  return out
+interface WikiMapFile {
+  asa: Record<string, WikiMapEntry>
+  ase: Record<string, WikiMapEntry>
+}
+
+const WIKI_MAPS = wikiMapsJson as WikiMapFile
+
+export async function loadResourceMap(mapName: string, version: GameVersion = 'asa'): Promise<ResourceMapData | null> {
+  const entry = WIKI_MAPS[version]?.[mapName]
+  if (!entry) return null
+  return { image: entry.image, groups: entry.groups }
 }
 
 /** ids base de grupo de la wiki por recurso nuestro ("metal" cubre "metal tier-5" y "metal-rich"). */
@@ -170,23 +129,8 @@ interface SpawnContainer {
   s?: { f?: number; l?: number[][] }[]
 }
 
-export async function loadSpawnData(mapName: string): Promise<SpawnContainer[] | null> {
-  const memKey = `spawn:${mapName}`
-  if (memCache.has(memKey)) return memCache.get(memKey) as SpawnContainer[] | null
-  const body =
-    (await fetchRawPage(`Data:Spawn Map/${mapName}/ASA`)) ??
-    (await fetchRawPage(`Data:Spawn Map/${mapName}`))
-  let out: SpawnContainer[] | null = null
-  if (body) {
-    try {
-      const data = JSON.parse(body)
-      out = Array.isArray(data) ? data : null
-    } catch {
-      out = null
-    }
-  }
-  memCache.set(memKey, out)
-  return out
+export async function loadSpawnData(mapName: string, version: GameVersion = 'asa'): Promise<SpawnContainer[] | null> {
+  return WIKI_MAPS[version]?.[mapName]?.spawns ?? null
 }
 
 /** Regiones donde aparece la criatura (por nombre mostrado, insensible a mayúsculas). */

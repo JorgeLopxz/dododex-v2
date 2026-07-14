@@ -114,6 +114,7 @@ export function MapBoard({
   }, [])
 
   function onPointerDown(e: React.PointerEvent) {
+    e.preventDefault()
     boardRef.current?.setPointerCapture(e.pointerId)
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
   }

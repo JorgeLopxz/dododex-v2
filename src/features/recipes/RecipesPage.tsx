@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import recipesJson from '../../data/recipes.json'
 import { getSpecies, getTamingFoods } from '../../data'
 import { CreatureImage, ItemImage } from '../../ui/GameImage'
+import { useSettings } from '../../store/settings'
 
 interface Recipe {
   name: string
@@ -81,14 +82,15 @@ export function RecipesPage() {
 function RecipeDetail({ recipe }: { recipe: Recipe }) {
   const navigate = useNavigate()
   const eggs = DATA.eggs[recipe.name]
+  const { gameVersion } = useSettings()
 
   /** criaturas cuyo kibble preferido (afinidad completa) es este */
   const preferredBy = useMemo(() => {
     if (recipe.kind !== 'kibble') return []
-    return getSpecies().filter(
+    return getSpecies(gameVersion).filter(
       (s) => getTamingFoods(s.name)?.find((f) => f.name.endsWith('Kibble'))?.name === recipe.name,
     )
-  }, [recipe])
+  }, [recipe, gameVersion])
 
   return (
     <section aria-label={`Receta de ${recipe.name}`} className="space-y-4">

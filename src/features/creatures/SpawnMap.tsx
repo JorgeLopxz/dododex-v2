@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import type { SpeciesEntry } from '../../data'
 import {
   ASA_MAPS,
+  ASE_MAPS,
   loadResourceMap,
   loadSpawnData,
   spawnRegionsForCreature,
   type SpawnRegion,
 } from '../../data/wikiMaps'
 import { MapAttribution, MapBoard } from '../../ui/MapBoard'
+import { useSettings } from '../../store/settings'
 
 /** Escala de probabilidad de spawn: verde = donde MÁS aparece, rojo = casi nunca. */
 const PROB_SCALE = [
@@ -27,16 +29,23 @@ function probColor(ratio: number): string {
  * vía ark.wiki.gg), coloreadas de verde (poco probable) a rojo (muy probable).
  */
 export function SpawnMap({ species }: { species: SpeciesEntry }) {
-  const [map, setMap] = useState<string>(ASA_MAPS[0])
+  const { gameVersion } = useSettings()
+  const maps = gameVersion === 'asa' ? ASA_MAPS : ASE_MAPS
+  const mapSet = new Set<string>(maps)
+  const [map, setMap] = useState<string>(maps[0])
   const [regions, setRegions] = useState<SpawnRegion[] | null>(null)
   const [image, setImage] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading')
 
   useEffect(() => {
+    if (!mapSet.has(map)) setMap(maps[0])
+  }, [gameVersion, map, mapSet, maps])
+
+  useEffect(() => {
     let alive = true
     setStatus('loading')
     setRegions(null)
-    Promise.all([loadSpawnData(map), loadResourceMap(map)]).then(([containers, res]) => {
+    Promise.all([loadSpawnData(map, gameVersion), loadResourceMap(map, gameVersion)]).then(([containers, res]) => {
       if (!alive) return
       setImage(res?.image ?? null)
       if (!containers) {
@@ -49,7 +58,7 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
     return () => {
       alive = false
     }
-  }, [map, species])
+  }, [map, species, gameVersion])
 
   return (
     <div className="space-y-3">
@@ -57,7 +66,7 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
         <label className="text-sm">
           <span className="mb-1 block text-xs font-medium text-bone-dim">Mapa</span>
           <select value={map} onChange={(e) => setMap(e.target.value)} className="input-field w-44">
-            {ASA_MAPS.map((m) => (
+            {maps.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
           </select>

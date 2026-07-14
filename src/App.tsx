@@ -6,6 +6,7 @@ import { RecipesPage } from './features/recipes/RecipesPage'
 import { AssistantPage } from './features/assistant/AssistantPage'
 import { getDataInfo } from './data'
 import { DinoFootprint, IconBrain, IconHome, IconPick, IconPot } from './ui/icons'
+import { useSettings } from './store/settings'
 
 const NAV = [
   { to: '/', icon: IconHome, label: 'Buscar', end: true },
@@ -21,19 +22,37 @@ function LegacyRedirect({ tab }: { tab: string }) {
 }
 
 export default function App() {
-  const info = getDataInfo()
+  const { gameVersion, setGameVersion } = useSettings()
+  const info = getDataInfo(gameVersion)
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
-      <header className="flex items-center justify-between gap-2 px-4 py-4">
-        <NavLink to="/" className="flex items-center gap-2.5">
-          <DinoFootprint size={30} />
-          <span className="display text-xl font-bold tracking-wide">
-            DODODEX <span className="text-amber">V2</span>
-          </span>
-        </NavLink>
+      <header className="flex items-center justify-between gap-3 px-4 py-4">
+        <div className="flex items-center gap-3">
+          <NavLink to="/" className="flex items-center gap-2.5">
+            <DinoFootprint size={30} />
+            <span className="display text-xl font-bold tracking-wide">
+              DODODEX <span className="text-amber">V2</span>
+            </span>
+          </NavLink>
+          <div role="group" aria-label="Versión del juego" className="flex rounded-lg bg-surface-0/60 p-1 text-[11px] font-semibold uppercase tracking-widest">
+            {([
+              ['asa', 'ASA'],
+              ['ase', 'ASE'],
+            ] as const).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setGameVersion(value)}
+                aria-pressed={gameVersion === value}
+                className={`mode-tab px-2.5 py-1 ${gameVersion === value ? 'border-amber-deep text-amber' : ''}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         <span className="display text-[11px] font-semibold uppercase tracking-widest text-bone-faint">
-          ASA · Vanilla
+          {gameVersion === 'asa' ? 'ASA · Vanilla' : 'ASE · Vanilla'}
         </span>
       </header>
 

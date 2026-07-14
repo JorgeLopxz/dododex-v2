@@ -6,7 +6,10 @@ import type { Species, StatConstants, StatKey } from '../engine/types'
 import { STAT_KEYS } from '../engine/types'
 import type { SpeciesTaming, TamingFood } from '../engine/taming'
 import asaJson from './species-asa.json'
+import aseJson from './species-ase.json'
 import tamingFoodsJson from './taming-foods.json'
+
+export type GameVersion = 'asa' | 'ase'
 
 /** Formato compacto: [id, nombre, tbhm, displayedStats, stats[8], taming[9], breeding[5]|null] */
 type CompactTaming = [number, number, number, number, number, number, number, number, number]
@@ -152,18 +155,22 @@ function dedupeKibbles(foods: TamingFood[]): TamingFood[] {
   return out
 }
 
-let cache: SpeciesEntry[] | null = null
+const speciesCache: Partial<Record<GameVersion, SpeciesEntry[]>> = {}
 
-export function getSpecies(): SpeciesEntry[] {
-  cache ??= (asaJson as DataFile).species.map(toSpecies).sort((a, b) => a.name.localeCompare(b.name))
-  return cache
+function getDataFile(version: GameVersion): DataFile {
+  return (version === 'ase' ? aseJson : asaJson) as DataFile
 }
 
-export function findSpecies(id: string): SpeciesEntry | undefined {
-  return getSpecies().find((s) => s.id === id)
+export function getSpecies(version: GameVersion = 'asa'): SpeciesEntry[] {
+  speciesCache[version] ??= getDataFile(version).species.map(toSpecies).sort((a, b) => a.name.localeCompare(b.name))
+  return speciesCache[version]!
 }
 
-export function getDataInfo(): { version: string; generated: string; source: string } {
-  const file = asaJson as DataFile
+export function findSpecies(id: string, version: GameVersion = 'asa'): SpeciesEntry | undefined {
+  return getSpecies(version).find((s) => s.id === id)
+}
+
+export function getDataInfo(version: GameVersion = 'asa'): { version: string; generated: string; source: string } {
+  const file = getDataFile(version)
   return { version: file.version, generated: file.generated, source: file.source }
 }

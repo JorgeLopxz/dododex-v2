@@ -6,6 +6,7 @@ import type { StatKey } from '../../engine/types'
 import { useFavorites } from '../../store/favorites'
 import { IconStar } from '../../ui/icons'
 import { CreatureImage } from '../../ui/GameImage'
+import { useSettings } from '../../store/settings'
 
 const PREVIEW_STATS: StatKey[] = ['health', 'stamina', 'weight', 'melee']
 const MAX_RESULTS = 30
@@ -38,22 +39,23 @@ const POPULAR_IDS = [
 export function HomePage() {
   const [query, setQuery] = useState('')
   const { ids: favoriteIds } = useFavorites()
+  const { gameVersion } = useSettings()
 
   const q = query.trim().toLowerCase()
   const results = useMemo(() => {
     if (!q) return null
-    return getSpecies().filter((s) => s.name.toLowerCase().includes(q)).slice(0, MAX_RESULTS)
-  }, [q])
+    return getSpecies(gameVersion).filter((s) => s.name.toLowerCase().includes(q)).slice(0, MAX_RESULTS)
+  }, [q, gameVersion])
   const favorites = useMemo(
-    () => getSpecies().filter((s) => favoriteIds.includes(s.id)),
-    [favoriteIds],
+    () => getSpecies(gameVersion).filter((s) => favoriteIds.includes(s.id)),
+    [favoriteIds, gameVersion],
   )
   const popular = useMemo(
     () =>
       POPULAR_IDS.filter((id) => !favoriteIds.includes(id))
-        .map((id) => getSpecies().find((s) => s.id === id))
+        .map((id) => getSpecies(gameVersion).find((s) => s.id === id))
         .filter((s) => s !== undefined),
-    [favoriteIds],
+    [favoriteIds, gameVersion],
   )
 
   return (
@@ -100,7 +102,7 @@ export function HomePage() {
             </div>
           ) : (
             <p className="px-2 text-center text-xs text-bone-faint">
-              Busca cualquiera de las <strong className="text-bone-dim">{getSpecies().length}</strong> criaturas domables —
+              Busca cualquiera de las <strong className="text-bone-dim">{getSpecies(gameVersion).length}</strong> criaturas domables —
               marca tus habituales con la estrella{' '}
               <span className="inline-flex translate-y-0.5 text-warn"><IconStar size={12} filled /></span>{' '}
               y aparecerán aquí las primeras.

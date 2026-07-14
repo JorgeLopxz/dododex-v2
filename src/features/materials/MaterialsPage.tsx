@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ASA_MAPS, loadResourceMap, resourcePoints, type ResourceMapData } from '../../data/wikiMaps'
+import { ASA_MAPS, ASE_MAPS, loadResourceMap, resourcePoints, type ResourceMapData } from '../../data/wikiMaps'
 import { MapAttribution, MapBoard, type MapLayer } from '../../ui/MapBoard'
 import { ItemImage } from '../../ui/GameImage'
+import { useSettings } from '../../store/settings'
 
 /** item = nombre del icono real del juego (CDN de Dododex); icon = fallback emoji */
 const RESOURCES = [
@@ -37,16 +38,23 @@ const RESOURCES = [
  * Selecciona mapa + materiales y se pintan TODOS los puntos de spawn de cada uno.
  */
 export function MaterialsPage() {
-  const [map, setMap] = useState<string>(ASA_MAPS[0])
+  const { gameVersion } = useSettings()
+  const maps = gameVersion === 'asa' ? ASA_MAPS : ASE_MAPS
+  const mapSet = new Set<string>(maps)
+  const [map, setMap] = useState<string>(maps[0])
   const [active, setActive] = useState<Set<string>>(new Set(['metal']))
   const [data, setData] = useState<ResourceMapData | null>(null)
   const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading')
 
   useEffect(() => {
+    if (!mapSet.has(map)) setMap(maps[0])
+  }, [gameVersion, map, mapSet, maps])
+
+  useEffect(() => {
     let alive = true
     setStatus('loading')
     setData(null)
-    loadResourceMap(map).then((d) => {
+    loadResourceMap(map, gameVersion).then((d) => {
       if (!alive) return
       setData(d)
       setStatus(d ? 'ok' : 'error')
@@ -54,7 +62,7 @@ export function MaterialsPage() {
     return () => {
       alive = false
     }
-  }, [map])
+  }, [map, gameVersion])
 
   const counts: Record<string, number> = {}
   for (const r of RESOURCES) counts[r.id] = data ? resourcePoints(data, r.id).length : 0
@@ -83,7 +91,7 @@ export function MaterialsPage() {
         <label className="text-sm">
           <span className="mb-1 block text-xs font-medium text-bone-dim">Mapa</span>
           <select value={map} onChange={(e) => setMap(e.target.value)} className="input-field w-44">
-            {ASA_MAPS.map((m) => (
+            {maps.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
           </select>

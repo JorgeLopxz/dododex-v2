@@ -8,8 +8,13 @@ import {
 import { TAMING_PRESETS } from '../engine/taming'
 
 export type ServerPreset = 'official' | 'vanilla' | 'custom'
+export type GameVersion = 'asa' | 'ase'
 
 interface Settings {
+  /** Juego activo para filtrar datos y mapas: ASA o ASE */
+  gameVersion: GameVersion
+  setGameVersion: (v: GameVersion) => void
+
   /** Preset de servidor: oficial (con nerf salud/melee), vanilla (sin nerf) o personalizado */
   preset: ServerPreset
   setPreset: (p: ServerPreset) => void
@@ -41,6 +46,8 @@ interface Settings {
 export const useSettings = create<Settings>()(
   persist(
     (set) => ({
+      gameVersion: 'asa',
+      setGameVersion: (gameVersion) => set({ gameVersion }),
       preset: 'official',
       setPreset: (preset) => set({ preset }),
       tamingPreset: 'official',
