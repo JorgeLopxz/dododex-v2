@@ -25,6 +25,11 @@ const RESOURCES = [
   { id: 'seda', label: 'Seda', item: 'Silk', icon: '🕸️', color: '#e0c8ff' },
   { id: 'elemento', label: 'Elemento', item: 'Element', icon: '⚡', color: '#c084fc' },
   { id: 'gas', label: 'Gas', item: 'Congealed Gas Ball', icon: '💨', color: '#a8e6cf' },
+  { id: 'agua', label: 'Agua', item: 'Water Jar', icon: '💧', color: '#6fc3ff' },
+  { id: 'arcilla', label: 'Arcilla', item: 'Clay', icon: '🧱', color: '#d99a6c' },
+  { id: 'polimero', label: 'Polímero o.', item: 'Organic Polymer', icon: '⚪', color: '#e8f0f2' },
+  { id: 'verduras', label: 'Verduras', item: 'Rockarrot', icon: '🥕', color: '#ffb36b' },
+  { id: 'plantas', label: 'Especie Y/R', item: 'Plant Species Y Seed', icon: '🌱', color: '#8ce68c' },
 ] as const
 
 /**
@@ -85,15 +90,14 @@ export function MaterialsPage() {
         </label>
       </div>
 
-      {/* Capas de recursos (multi-selección); deshabilitado = sin datos en este mapa */}
+      {/* Capas de recursos (multi-selección); solo se listan los que EXISTEN en este mapa */}
       <div role="group" aria-label="Recursos a mostrar" className="flex flex-wrap gap-1.5">
-        {RESOURCES.map((r) => (
+        {RESOURCES.filter((r) => status !== 'ok' || counts[r.id] > 0).map((r) => (
           <button
             key={r.id}
             onClick={() => toggle(r.id)}
             aria-pressed={active.has(r.id)}
-            disabled={status === 'ok' && counts[r.id] === 0}
-            className="mode-tab flex flex-none items-center gap-1.5 px-2.5 text-xs disabled:opacity-35"
+            className="mode-tab flex flex-none items-center gap-1.5 px-2.5 text-xs"
             style={active.has(r.id) && counts[r.id] > 0 ? { borderColor: r.color, color: r.color } : undefined}
           >
             <ItemImage name={r.item} size={18} fallback={r.icon} /> {r.label}

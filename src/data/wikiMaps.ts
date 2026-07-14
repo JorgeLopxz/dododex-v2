@@ -141,6 +141,11 @@ export const RESOURCE_GROUP_ALIASES: Record<string, string[]> = {
   seda: ['silk'],
   elemento: ['element', 'element-ore', 'element-node', 'element-vein', 'charge-node'],
   gas: ['gas-vein', 'gas'],
+  agua: ['water-vein', 'water'],
+  arcilla: ['clay'],
+  polimero: ['organic-polymer'],
+  verduras: ['rockarrot', 'savoroot', 'longrass', 'citronal'],
+  plantas: ['plant-y', 'plant-r', 'plant-z', 'plant-x', 'plant'],
 }
 
 /** Puntos de un recurso: agrega todos los grupos cuyo id base coincide con un alias. */

@@ -32,6 +32,10 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
   /** 'points': ajustar puntos con ± hasta cuadrar con el juego; 'type': escribir valores y resolver */
   const [entryMode, setEntryMode] = useState<'points' | 'type'>('points')
   const [manual, setManual] = useState<Partial<Record<PointStatKey, number>>>({})
+  /** punto de partida del modo puntos: el promedio por nivel (te mueves lo mínimo) */
+  const lvlForAvg = Number(level)
+  const avgPts = Number.isFinite(lvlForAvg) && lvlForAvg > 1 ? Math.floor((lvlForAvg - 1) / 7) : 0
+  const effPts = (k: PointStatKey) => manual[k] ?? avgPts
 
   const settings = useSettings()
   const mult = useMemo(() => getMultipliers(settings), [settings])
@@ -204,20 +208,31 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
 
         {entryMode === 'points' && (
           <div className="space-y-2">
-            <p className="mb-3 text-xs text-bone-dim">
-              Cada stat parte del valor estándar (0 puntos). Dale a <strong className="text-bone">＋/−</strong> hasta
-              que el valor coincida con el de tu dino{mode === 'leveled' && ' (asume que no gastaste niveles: usa ⌨ Valores si ya subiste stats)'}.
-            </p>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-bone-dim">
+                {avgPts > 0 ? (
+                  <>Cada stat parte del <strong className="text-bone">promedio para nivel {lvlForAvg}</strong> ({avgPts} puntos) — ajusta con ＋/− hasta cuadrar.</>
+                ) : (
+                  <>Pon el nivel arriba y cada stat partirá del promedio (así te mueves lo mínimo).</>
+                )}
+                {mode === 'leveled' && ' Asume niveles sin gastar: usa ⌨ Valores si ya subiste stats.'}
+              </p>
+              {Object.keys(manual).length > 0 && (
+                <button onClick={() => setManual({})} className="btn-ghost px-2 py-1 text-[11px]">
+                  ↺ Promedio
+                </button>
+              )}
+            </div>
             {relevantStats.map((k) => {
               const meta = STAT_META[k]
               const c = species.stats[k]!
-              const pts = manual[k] ?? 0
+              const pts = effPts(k)
               const ctxx = mode === 'wild'
                 ? { tamed: false, bred: false, TE: 0, IB: 0 }
                 : { tamed: true, bred, TE: bred ? 1 : Number(TE) / 100, IB: Number(IB) / 100 }
               const val = calcStat(k, c, { Lw: pts, Ld: 0 }, ctxx, mult, species.TBHM)
               const shown = meta.percent ? `${(val * 100).toFixed(1)}%` : val.toFixed(1)
-              const bump = (d: number) => setManual((m) => ({ ...m, [k]: Math.max(0, (m[k] ?? 0) + d) }))
+              const bump = (d: number) => setManual((m) => ({ ...m, [k]: Math.max(0, (m[k] ?? avgPts) + d) }))
               return (
                 <div key={k} className="grid grid-cols-[1fr_auto_5.5rem] items-center gap-2 rounded-lg px-1 py-1 odd:bg-surface-0/40">
                   <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
@@ -249,14 +264,13 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
               )
             })}
             {(() => {
-              const total = relevantStats.reduce((a, k) => a + (manual[k] ?? 0), 0)
-              const lvlN = Number(level)
-              const expected = Number.isFinite(lvlN) && lvlN > 1 ? lvlN - 1 : null
+              const total = relevantStats.reduce((a, k) => a + effPts(k), 0)
+              const expected = avgPts > 0 ? lvlForAvg - 1 : null
               return (
                 <p className="pt-1 text-[11px] text-bone-faint">
                   Total asignado: <strong className="display text-bone">{total}</strong> puntos
                   {expected !== null && (
-                    <> · tu nivel {lvlN} implica {expected} (los que falten cayeron en stats ocultos)</>
+                    <> · tu nivel {lvlForAvg} implica {expected} (los que falten cayeron en stats ocultos)</>
                   )}
                 </p>
               )
@@ -314,15 +328,15 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
       {entryMode === 'points' && (
         <div className="panel p-5">
           <h3 className="display mb-1 font-semibold">Tu dino, de un vistazo</h3>
-          <StatRadar values={relevantStats.map((k) => ({ stat: k, points: manual[k] ?? 0 }))} />
+          <StatRadar values={relevantStats.map((k) => ({ stat: k, points: effPts(k) }))} />
           <div className="mt-3 grid gap-3.5">
             {relevantStats.map((k) => (
               <StatBar
                 key={k}
                 stat={k}
-                wild={manual[k] ?? 0}
+                wild={effPts(k)}
                 dom={0}
-                max={Math.max(30, ...relevantStats.map((x) => manual[x] ?? 0)) * 1.15}
+                max={Math.max(30, ...relevantStats.map((x) => effPts(x))) * 1.15}
               />
             ))}
           </div>
