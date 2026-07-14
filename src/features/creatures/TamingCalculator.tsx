@@ -192,7 +192,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                     </>
                   )}
                   {r.food.name.endsWith('Kibble') && (
-                    <span className="shrink-0 text-[10px] font-normal text-bone-faint">(o sup.)</span>
+                    <span className="hidden shrink-0 text-[10px] font-normal text-bone-faint sm:inline">(o sup.)</span>
                   )}
                 </span>
                 <span className="display text-right text-sm tabular-nums">{r.pieces}</span>
