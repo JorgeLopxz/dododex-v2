@@ -80,29 +80,39 @@ export interface ResourceMapData {
   groups: Record<string, MapPoint[]>
 }
 
+function parseDataMap(body: string): ResourceMapData | null {
+  try {
+    const data = JSON.parse(body)
+    const groups: Record<string, MapPoint[]> = {}
+    // páginas nuevas (ASA): {x, y}; páginas ASE antiguas: {lat, lon} — ambas en % 0-100
+    for (const [group, list] of Object.entries<{ x?: number; y?: number; lat?: number; lon?: number }[]>(
+      data.markers ?? {},
+    )) {
+      groups[group.toLowerCase()] = list
+        .map((m) => ({ x: m.x ?? m.lon ?? -1, y: m.y ?? m.lat ?? -1 }))
+        .filter((p) => p.x >= 0 && p.y >= 0)
+    }
+    const bg = data.background
+    return { image: typeof bg === 'string' ? bg : (bg?.image ?? null), groups }
+  } catch {
+    return null
+  }
+}
+
 export async function loadResourceMap(mapName: string): Promise<ResourceMapData | null> {
   const memKey = `res:${mapName}`
   if (memCache.has(memKey)) return memCache.get(memKey) as ResourceMapData | null
-  const body =
-    (await fetchRawPage(`Data:Maps/Resources/${mapName}/ASA`)) ??
-    (await fetchRawPage(`Data:Maps/Resources/${mapName}`))
+  // La página ASA suele traer solo los grupos re-verificados; la ASE tiene el resto
+  // (miel, savia, flores…). Se fusionan con prioridad ASA por grupo.
+  const asaBody = await fetchRawPage(`Data:Maps/Resources/${mapName}/ASA`)
+  const aseBody = await fetchRawPage(`Data:Maps/Resources/${mapName}`)
+  const asa = asaBody ? parseDataMap(asaBody) : null
+  const ase = aseBody ? parseDataMap(aseBody) : null
   let out: ResourceMapData | null = null
-  if (body) {
-    try {
-      const data = JSON.parse(body)
-      const groups: Record<string, MapPoint[]> = {}
-      // páginas nuevas (ASA): {x, y}; páginas ASE antiguas: {lat, lon} — ambas en % 0-100
-      for (const [group, list] of Object.entries<{ x?: number; y?: number; lat?: number; lon?: number }[]>(
-        data.markers ?? {},
-      )) {
-        groups[group.toLowerCase()] = list
-          .map((m) => ({ x: m.x ?? m.lon ?? -1, y: m.y ?? m.lat ?? -1 }))
-          .filter((p) => p.x >= 0 && p.y >= 0)
-      }
-      const bg = data.background
-      out = { image: typeof bg === 'string' ? bg : (bg?.image ?? null), groups }
-    } catch {
-      out = null
+  if (asa || ase) {
+    out = {
+      image: asa?.image ?? ase?.image ?? null,
+      groups: { ...(ase?.groups ?? {}), ...(asa?.groups ?? {}) },
     }
   }
   memCache.set(memKey, out)
@@ -120,9 +130,17 @@ export const RESOURCE_GROUP_ALIASES: Record<string, string[]> = {
   miel: ['beehive', 'giant-bee-hive', 'honey'],
   azufre: ['sulfur'],
   sal: ['salt', 'raw-salt', 'saltpeter'],
-  gemas: ['gem', 'gems'],
+  savia: ['sap', 'tree-sap'],
+  'gema-azul': ['gem-blue', 'blue-gems', 'blue-crystalized-sap'],
+  'gema-verde': ['gem-green', 'green-gems', 'green-crystalized-sap'],
+  'gema-roja': ['gem-red', 'red-gems', 'red-crystalized-sap'],
+  setas: ['mushroom', 'rare-mushroom', 'mushrooms'],
+  flor: ['rare-flower', 'rare-flowers'],
+  cactus: ['cactus', 'cactus-sap'],
+  keratina: ['keratin'],
   seda: ['silk'],
   elemento: ['element', 'element-ore', 'element-node', 'element-vein', 'charge-node'],
+  gas: ['gas-vein', 'gas'],
 }
 
 /** Puntos de un recurso: agrega todos los grupos cuyo id base coincide con un alias. */

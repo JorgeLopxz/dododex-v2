@@ -63,7 +63,7 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
   // No domables: Alphas, bosses, esqueléticos, zombies, eerie (mobile), VR,
   // criaturas de evento (fantasmas, DodoRex, Bunny…) y unidades no-tame (drones, meks…)
   const UNTAMEABLE_NAME =
-    /^(Alpha |Skeletal |Zombie |Eerie |Enraged |Malfunctioned |VR |Bone |Party |Bunny |Revenant |X-|R-)|(Corrupted|Ghost|DodoRex|Dodo Wyvern|Zomdodo|Murder Turkey|Insect Swarm|Diseased|Broodmother|Yeti|\bDrone\b|Defense Unit|Scout|Enforcer|^Mek$|Exo-Mek|Macrophage|Summoner|Forest Wyvern|Rubble Golem|Titan$|Titan Flock|Lamprey|Subterranean Reaper|Surface Reaper|Elemental Reaper|Reaper Queen|Minion|Tamed\))/
+    /^(Alpha |Skeletal |Zombie |Eerie |Enraged |Malfunctioned |VR |Bone |Party |Bunny |Revenant |R-)|(Corrupted|Ghost|DodoRex|Dodo Wyvern|Zomdodo|Murder Turkey|Insect Swarm|Diseased|Broodmother|Yeti|\bDrone\b|Defense Unit|Scout|Enforcer|^Mek$|Exo-Mek|Macrophage|Summoner|Forest Wyvern|Rubble Golem|Titan$|Titan Flock|Lamprey|Subterranean Reaper|Surface Reaper|Elemental Reaper|Reaper Queen|Minion|Tamed\))/
   // No domables reales que ASB trae con bloque de taming igualmente (peces, fauna ambiental…)
   const UNTAMEABLE_EXACT = new Set([
     'Nameless', 'Seeker', 'Coelacanth', 'Piranha', 'Sabertooth Salmon', 'Aberrant Salmon',
@@ -74,9 +74,11 @@ function transform(raw, label, fallbackStatsByBp = new Map()) {
   ])
   // Tags de variante de ASB que marcan criaturas no obtenibles (van aparte del nombre)
   const UNTAMEABLE_VARIANT = /^(Minion|Boss|Corrupted|Tamed|Summoned)$/
-  const UNTAMEABLE_BOSS = /Boss|Overseer|KingKaiju|MegaMek|Rockwell_Character|Dragon_Character|Gorilla_Character|Spider_Character|BossSpider|SpiderL|Manticore_Character|Moeder|MasterController|Minion/i
-  // Contenido aún NO liberado en ASA (Genesis 1/2): fuera hasta que Wildcard lo publique
-  const UNRELEASED_BP = /\/Genesis\/|\/Genesis2\/|\/Gen2\/|LionfishLion|Noglin|BrainSlug|MilkGlider|Maewing|SpaceDolphin|Astrodelphis|SpaceWhale|Astrocetus|Cherufe|Magmasaur|GiantTurtle|Megachelon|Shapeshifter|Ferox|TekStrider|Exosuit/i
+  // ojo: anclar /Spider a segmento de ruta — "BogSpider_Character" (Bloodstalker) lo contiene
+  const UNTAMEABLE_BOSS = /Boss|Overseer|KingKaiju|MegaMek|Rockwell_Character|Dragon_Character|Gorilla_Character|\/SpiderS|\/SpiderL|Manticore_Character|Moeder|MasterController|Minion/i
+  // Contenido aún NO liberado en ASA (Genesis 2): fuera hasta que Wildcard lo publique.
+  // Genesis 1 (Bloodstalker, X-, Magmasaur, Ferox, Astrocetus, Megachelon…) SÍ está.
+  const UNRELEASED_BP = /\/Genesis2\/|\/Gen2\/|LionfishLion|Noglin|BrainSlug|MilkGlider|Maewing|SpaceDolphin|Astrodelphis|TekStrider|Exosuit/i
   const isUntameable = (sp) => {
     const n = nameOf(sp) ?? ''
     return (

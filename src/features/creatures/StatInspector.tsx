@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { extractPostTame, extractWildStat, statReceivesPoints, type ExtractionResult } from '../../engine/extractor'
-import { tameBonusLevels } from '../../engine/statFormula'
+import { calcStat, tameBonusLevels } from '../../engine/statFormula'
 import { POINT_STATS, type PointStatKey } from '../../engine/types'
 import type { SpeciesEntry } from '../../data'
 import { STAT_META } from '../../ui/statMeta'
@@ -29,6 +29,9 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
   const [postTameLevel, setPostTameLevel] = useState('')
   const [values, setValues] = useState<Partial<Record<PointStatKey, string>>>({})
   const [locked, setLocked] = useState<Set<PointStatKey>>(new Set())
+  /** 'points': ajustar puntos con ± hasta cuadrar con el juego; 'type': escribir valores y resolver */
+  const [entryMode, setEntryMode] = useState<'points' | 'type'>('points')
+  const [manual, setManual] = useState<Partial<Record<PointStatKey, number>>>({})
 
   const settings = useSettings()
   const mult = useMemo(() => getMultipliers(settings), [settings])
@@ -182,10 +185,86 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
 
       {/* Paso 2: stats */}
       <div className="panel p-5">
-        <div className="mb-4 flex items-center gap-2.5">
-          <span className="step-badge">2</span>
-          <h3 className="display font-semibold">Copia los valores que ves in-game</h3>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <span className="step-badge">2</span>
+            <h3 className="display font-semibold">
+              {entryMode === 'points' ? 'Ajusta puntos hasta cuadrar' : 'Copia los valores que ves in-game'}
+            </h3>
+          </div>
+          <div role="group" aria-label="Modo de entrada" className="flex gap-1 rounded-lg bg-surface-0/60 p-1">
+            <button onClick={() => setEntryMode('points')} aria-pressed={entryMode === 'points'} className="mode-tab flex-none px-2.5 py-1 text-xs">
+              🎚 Puntos
+            </button>
+            <button onClick={() => setEntryMode('type')} aria-pressed={entryMode === 'type'} className="mode-tab flex-none px-2.5 py-1 text-xs">
+              ⌨ Valores
+            </button>
+          </div>
         </div>
+
+        {entryMode === 'points' && (
+          <div className="space-y-2">
+            <p className="mb-3 text-xs text-bone-dim">
+              Cada stat parte del valor estándar (0 puntos). Dale a <strong className="text-bone">＋/−</strong> hasta
+              que el valor coincida con el de tu dino{mode === 'leveled' && ' (asume que no gastaste niveles: usa ⌨ Valores si ya subiste stats)'}.
+            </p>
+            {relevantStats.map((k) => {
+              const meta = STAT_META[k]
+              const c = species.stats[k]!
+              const pts = manual[k] ?? 0
+              const ctxx = mode === 'wild'
+                ? { tamed: false, bred: false, TE: 0, IB: 0 }
+                : { tamed: true, bred, TE: bred ? 1 : Number(TE) / 100, IB: Number(IB) / 100 }
+              const val = calcStat(k, c, { Lw: pts, Ld: 0 }, ctxx, mult, species.TBHM)
+              const shown = meta.percent ? `${(val * 100).toFixed(1)}%` : val.toFixed(1)
+              const bump = (d: number) => setManual((m) => ({ ...m, [k]: Math.max(0, (m[k] ?? 0) + d) }))
+              return (
+                <div key={k} className="grid grid-cols-[1fr_auto_5.5rem] items-center gap-2 rounded-lg px-1 py-1 odd:bg-surface-0/40">
+                  <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
+                    <span aria-hidden="true" style={{ color: meta.color }}>{meta.icon}</span>
+                    <span className="truncate">{meta.label}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <button
+                      aria-label={`Quitar punto de ${meta.label}`}
+                      onClick={() => bump(-1)}
+                      className="grid size-7 place-items-center rounded bg-surface-2 text-bone-dim hover:text-bone"
+                    >−</button>
+                    <input
+                      type="number"
+                      min="0"
+                      value={pts}
+                      onChange={(e) => setManual((m) => ({ ...m, [k]: Math.max(0, Number(e.target.value) || 0) }))}
+                      aria-label={`Puntos en ${meta.label}`}
+                      className="input-field w-14 px-1 py-1 text-center text-sm"
+                    />
+                    <button
+                      aria-label={`Añadir punto a ${meta.label}`}
+                      onClick={() => bump(1)}
+                      className="grid size-7 place-items-center rounded bg-surface-2 text-bone-dim hover:text-bone"
+                    >+</button>
+                  </span>
+                  <span className="display text-right text-sm tabular-nums" style={{ color: meta.color }}>{shown}</span>
+                </div>
+              )
+            })}
+            {(() => {
+              const total = relevantStats.reduce((a, k) => a + (manual[k] ?? 0), 0)
+              const lvlN = Number(level)
+              const expected = Number.isFinite(lvlN) && lvlN > 1 ? lvlN - 1 : null
+              return (
+                <p className="pt-1 text-[11px] text-bone-faint">
+                  Total asignado: <strong className="display text-bone">{total}</strong> puntos
+                  {expected !== null && (
+                    <> · tu nivel {lvlN} implica {expected} (los que falten cayeron en stats ocultos)</>
+                  )}
+                </p>
+              )
+            })()}
+          </div>
+        )}
+
+        {entryMode === 'type' && (
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
           {relevantStats.map((k) => {
             const meta = STAT_META[k]
@@ -228,10 +307,33 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
             )
           })}
         </div>
+        )}
       </div>
 
+      {/* Resultado en modo puntos: directo de tus steppers */}
+      {entryMode === 'points' && (
+        <div className="panel p-5">
+          <h3 className="display mb-1 font-semibold">Tu dino, de un vistazo</h3>
+          <StatRadar values={relevantStats.map((k) => ({ stat: k, points: manual[k] ?? 0 }))} />
+          <div className="mt-3 grid gap-3.5">
+            {relevantStats.map((k) => (
+              <StatBar
+                key={k}
+                stat={k}
+                wild={manual[k] ?? 0}
+                dom={0}
+                max={Math.max(30, ...relevantStats.map((x) => manual[x] ?? 0)) * 1.15}
+              />
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] text-bone-faint">
+            Puntos salvajes (heredables al criar). Cambia a ⌨ Valores si prefieres que la app los deduzca sola.
+          </p>
+        </div>
+      )}
+
       {/* Resultado */}
-      {result && (
+      {entryMode === 'type' && result && (
         <div
           className="panel p-5"
           style={

@@ -5,11 +5,23 @@ import { useState } from 'react'
  * elegante al monograma/emoji si la imagen no existe (variantes, mods…).
  */
 
+/** Nombres cuyo slug en el CDN de Dododex no coincide con el de ASB */
+const CREATURE_ALIASES: Record<string, string> = {
+  Therizinosaur: 'therizinosaurus',
+  'Blood Crystal Wyvern': 'crystal-wyvern',
+  'Ember Crystal Wyvern': 'crystal-wyvern',
+  'Tropical Crystal Wyvern': 'crystal-wyvern',
+  'Ice Wyvern': 'wyvern',
+  'Fire Wyvern': 'wyvern',
+  'Lightning Wyvern': 'wyvern',
+  'Poison Wyvern': 'wyvern',
+}
+
 /** slug de criatura: "Aberrant Megalosaurus (Aberrant)" → "aberrant-megalosaurus" */
 export function creatureSlug(name: string): string {
-  return name
-    .replace(/\s*\(.*\)$/, '')
-    .trim()
+  const clean = name.replace(/\s*\(.*\)$/, '').trim()
+  if (CREATURE_ALIASES[clean]) return CREATURE_ALIASES[clean]
+  return clean
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')

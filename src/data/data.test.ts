@@ -14,8 +14,10 @@ describe('datos reales de especies ASA (criterio de salida)', () => {
     expect(new Set(names).size).toBe(names.length)
     // principio: si no es tameable, no está en la base de datos
     expect(getSpecies().every((s) => s.taming.affinityNeeded0 > 0)).toBe(true)
-    // fuera contenido no liberado en ASA y criaturas de evento
-    expect(names.some((n) => /Shadowmane|^X-|^R-|Ghost|DodoRex|Coelacanth/.test(n))).toBe(false)
+    // fuera contenido no liberado en ASA (Genesis 2) y criaturas de evento/no domables;
+    // Genesis 1 (Bloodstalker, X-…) SÍ está
+    expect(names.some((n) => /Shadowmane|^R-|Ghost|DodoRex|Coelacanth/.test(n))).toBe(false)
+    expect(names).toContain('Bloodstalker')
   })
 
   it('Rex coincide con la wiki (ark.wiki.gg/wiki/Rex)', () => {

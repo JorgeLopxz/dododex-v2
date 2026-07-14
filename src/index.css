@@ -257,6 +257,18 @@ select {
   min-width: 24px;
 }
 
+/* Los spinners nativos de number roban ~20px del campo y ocultan cifras de 2+ dígitos
+   (siempre acompañamos con botones ± propios o teclado) */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 ::selection {
   background: rgba(217, 126, 24, 0.5);
 }

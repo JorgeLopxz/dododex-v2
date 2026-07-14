@@ -53,7 +53,13 @@ export function AssistantPage() {
           body: JSON.stringify({
             system_instruction: { parts: [{ text: SYSTEM }] },
             contents: history.slice(-16).map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-            generationConfig: { temperature: 0.6, maxOutputTokens: 1200 },
+            // gemini-2.5 gasta "thinking" DENTRO de maxOutputTokens → presupuesto amplio
+            // y razonamiento apagado para que la respuesta nunca llegue cortada
+            generationConfig: {
+              temperature: 0.6,
+              maxOutputTokens: 8192,
+              thinkingConfig: { thinkingBudget: 0 },
+            },
           }),
         },
       )
@@ -61,8 +67,10 @@ export function AssistantPage() {
       if (!res.ok) {
         throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
       }
-      const reply: string = json?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? '').join('') ?? ''
+      const cand = json?.candidates?.[0]
+      let reply: string = cand?.content?.parts?.map((p: { text?: string }) => p.text ?? '').join('') ?? ''
       if (!reply) throw new Error('Respuesta vacía del modelo')
+      if (cand?.finishReason === 'MAX_TOKENS') reply += '\n\n[…respuesta recortada por límite — pídeme que continúe]'
       setMessages((m) => [...m, { role: 'model', text: reply }])
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error desconocido')

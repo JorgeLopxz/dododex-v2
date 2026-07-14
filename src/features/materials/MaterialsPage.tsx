@@ -12,11 +12,19 @@ const RESOURCES = [
   { id: 'perlas', label: 'Perlas', item: 'Silica Pearls', icon: '🦪', color: '#ffffff' },
   { id: 'perlas-negras', label: 'P. negras', item: 'Black Pearl', icon: '⚫', color: '#ff8fb6' },
   { id: 'miel', label: 'Miel', item: 'Giant Bee Honey', icon: '🍯', color: '#ffb547' },
+  { id: 'savia', label: 'Savia', item: 'Sap', icon: '🌳', color: '#d9b06a' },
   { id: 'azufre', label: 'Azufre', item: 'Sulfur', icon: '🌋', color: '#e8dc4e' },
   { id: 'sal', label: 'Sal', item: 'Raw Salt', icon: '🧂', color: '#f0e6d8' },
-  { id: 'gemas', label: 'Gemas', item: 'Blue Gem', icon: '💠', color: '#7dff9e' },
+  { id: 'gema-azul', label: 'G. azul', item: 'Blue Gem', icon: '🔷', color: '#5bb8ff' },
+  { id: 'gema-verde', label: 'G. verde', item: 'Green Gem', icon: '💚', color: '#7dff9e' },
+  { id: 'gema-roja', label: 'G. roja', item: 'Red Gem', icon: '🔻', color: '#ff6b6b' },
+  { id: 'setas', label: 'Setas', item: 'Rare Mushroom', icon: '🍄', color: '#e09fd0' },
+  { id: 'flor', label: 'Flor rara', item: 'Rare Flower', icon: '🌸', color: '#ffa3c2' },
+  { id: 'cactus', label: 'Cactus', item: 'Cactus Sap', icon: '🌵', color: '#9adf7a' },
+  { id: 'keratina', label: 'Keratina', item: 'Keratin', icon: '🦴', color: '#e6d7b8' },
   { id: 'seda', label: 'Seda', item: 'Silk', icon: '🕸️', color: '#e0c8ff' },
   { id: 'elemento', label: 'Elemento', item: 'Element', icon: '⚡', color: '#c084fc' },
+  { id: 'gas', label: 'Gas', item: 'Congealed Gas Ball', icon: '💨', color: '#a8e6cf' },
 ] as const
 
 /**

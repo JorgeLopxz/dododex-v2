@@ -41,6 +41,7 @@ const COOKING = [
   'Focal Chili', 'Lazarus Chowder', 'Enduro Stew', 'Calien Soup', 'Fria Curry',
   'Shadow Steak Saute', 'Battle Tartare', 'Sweet Vegetable Cake', 'Broth of Enlightenment',
   'Medical Brew', 'Energy Brew', 'Mindwipe Tonic',
+  'Mushroom Brew', 'Cactus Broth', 'Soap',
 ]
 
 const recipes = []

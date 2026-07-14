@@ -14,13 +14,14 @@ const DATA = recipesJson as { recipes: Recipe[]; eggs: Record<string, string[]> 
 
 export const recipeSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
+/** Colores como los del propio kibble in-game */
 const KIBBLE_COLORS: Record<string, string> = {
   'Basic Kibble': '#8d9aa5',
   'Simple Kibble': '#5fbf6e',
   'Regular Kibble': '#4d9fd6',
   'Superior Kibble': '#b28cf0',
   'Exceptional Kibble': '#e8c14e',
-  'Extraordinary Kibble': '#ef6c2e',
+  'Extraordinary Kibble': '#4dd7e8',
 }
 
 /** Lista + detalle de recetas (kibbles y cocina) con iconos reales del juego. */

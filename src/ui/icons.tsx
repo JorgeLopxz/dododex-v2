@@ -36,15 +36,6 @@ export function IconHome({ size = 22 }: { size?: number }) {
   )
 }
 
-export function IconScan({ size = 22 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...stroke}>
-      <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" />
-      <path d="M7 12h10M12 8.5v7" />
-    </svg>
-  )
-}
-
 export function IconPot({ size = 22 }: { size?: number }) {
   // olla de cocina con vapor
   return (
