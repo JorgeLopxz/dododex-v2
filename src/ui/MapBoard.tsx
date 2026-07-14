@@ -6,6 +6,8 @@ const wikiFileUrl = (file: string) =>
 
 const topoUrl = (map: string) => wikiFileUrl(`${map} Topographic Map.jpg`)
 
+const resolveMapImage = (image: string) => (image.startsWith('/') ? image : wikiFileUrl(image))
+
 export interface MapLayer {
   color: string
   points?: MapPoint[]
@@ -154,7 +156,7 @@ export function MapBoard({
     else zoomAt(px, py, 2.5)
   }
 
-  const src = imgAttempt === 0 && image ? wikiFileUrl(image) : imgAttempt <= 1 ? topoUrl(map) : null
+  const src = imgAttempt === 0 && image ? resolveMapImage(image) : imgAttempt <= 1 ? topoUrl(map) : null
 
   return (
     <div className="panel overflow-hidden p-1.5">
