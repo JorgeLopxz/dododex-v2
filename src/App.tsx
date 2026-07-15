@@ -27,14 +27,8 @@ export default function App() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
-      <header className="flex items-center justify-between gap-3 px-4 py-4">
-        <NavLink to="/" className="flex items-center gap-2.5">
-          <DinoFootprint size={30} />
-          <span className="display text-xl font-bold tracking-wide">
-            DODODEX <span className="text-amber">V2</span>
-          </span>
-        </NavLink>
-        {/* Selector de juego: ASA y ASE tienen dinos, materiales y reglas distintos */}
+      <header className="flex items-center gap-3 px-4 py-4">
+        {/* Selector de juego arriba-izquierda: ASA y ASE tienen dinos, materiales y reglas distintos */}
         <div
           role="group"
           aria-label="Versión del juego"
@@ -57,6 +51,12 @@ export default function App() {
             </button>
           ))}
         </div>
+        <NavLink to="/" className="ml-auto flex items-center gap-2.5">
+          <DinoFootprint size={30} />
+          <span className="display text-xl font-bold tracking-wide">
+            DODODEX <span className="text-amber">V2</span>
+          </span>
+        </NavLink>
       </header>
 
       <main className="flex-1 px-4 pb-28">
