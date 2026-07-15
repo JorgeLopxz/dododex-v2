@@ -153,6 +153,25 @@ export async function loadSpawnData(mapName: string, version: GameVersion = 'asa
   return maps[version]?.[mapName]?.spawns ?? null
 }
 
+/**
+ * ¿Tiene la wiki ALGÚN dato de aparición de esta criatura en cualquier mapa de
+ * la versión? Distingue "no aparece en este mapa" de "la wiki aún no la ha
+ * añadido a sus mapas de spawn" (típico de criaturas nuevas de ASA como el
+ * Maeguana o las exclusivas de Astraeos).
+ */
+export async function creatureHasAnySpawnData(creatureName: string, version: GameVersion = 'asa'): Promise<boolean> {
+  const maps = await loadWikiMaps()
+  const want = creatureName.replace(/\s*\(.*\)$/, '').trim().toLowerCase()
+  for (const entry of Object.values(maps[version] ?? {})) {
+    for (const c of entry.spawns ?? []) {
+      for (const en of c.e ?? []) {
+        if ((en.s ?? []).some((sp) => (sp.n ?? '').toLowerCase() === want)) return true
+      }
+    }
+  }
+  return false
+}
+
 /** Regiones donde aparece la criatura (por nombre mostrado, insensible a mayúsculas). */
 export function spawnRegionsForCreature(containers: SpawnContainer[], creatureName: string): SpawnRegion[] {
   const want = creatureName.replace(/\s*\(.*\)$/, '').trim().toLowerCase()

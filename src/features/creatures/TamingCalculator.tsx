@@ -8,7 +8,7 @@ import {
   type TamingServerMults,
 } from '../../engine/taming'
 import { WEAPONS, hitsToKnockout, wildTorpor } from '../../engine/knockout'
-import { getTamingFoods, type SpeciesEntry } from '../../data'
+import { getTamingFoods, hasExactDiet, type SpeciesEntry } from '../../data'
 import { tameBonusLevels } from '../../engine/statFormula'
 import { getTamingSpeed, useSettings } from '../../store/settings'
 import { recipeSlug } from '../recipes/RecipesPage'
@@ -29,6 +29,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
   const [quality, setQuality] = useState('100')
 
   const foods = useMemo(() => getTamingFoods(species.name), [species])
+  const exactDiet = useMemo(() => hasExactDiet(species.name), [species])
   const lvl = Math.max(1, Number(level) || 150)
   const tsm = getTamingSpeed({ tamingPreset: preset, customTsm })
   const mults: TamingServerMults = { tamingSpeed: tsm, foodDrain: 1, wildTorporDrain: 1 }
@@ -109,6 +110,13 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
         <div className="panel p-6 text-center text-bone-dim">Sin datos de dieta para esta especie.</div>
       ) : (
         <>
+          {!exactDiet && (
+            <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
+              ⓘ {species.taming.nonViolent ? 'Tameo pasivo' : 'Se noquea'}. Dieta estándar estimada (ARK Smart Breeding
+              aún no cataloga a esta criatura): las <strong className="text-bone">comidas y el método son correctos</strong>,
+              pero las cantidades exactas pueden variar un poco. Kibble o carne para carnívoros; cultivos/bayas para herbívoros.
+            </p>
+          )}
           {/* Resultado del plan activo */}
           {plan && (
             <div

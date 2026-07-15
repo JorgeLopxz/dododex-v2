@@ -65,6 +65,7 @@ export function MaterialsPage() {
 
   const counts: Record<string, number> = {}
   for (const r of RESOURCES) counts[r.id] = data ? resourcePoints(data, r.id).length : 0
+  const noData = status === 'ok' && Object.values(counts).every((n) => n === 0)
 
   const layers: MapLayer[] = RESOURCES.filter((r) => active.has(r.id) && counts[r.id] > 0).map((r) => ({
     color: r.color,
@@ -114,6 +115,12 @@ export function MaterialsPage() {
       </div>
 
       <MapBoard map={map} image={mapImageFile(map, gameVersion)} layers={layers} status={status} />
+      {noData && (
+        <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
+          ⓘ La wiki todavía no ha publicado los datos de recursos de <strong className="text-bone">{map}</strong>. En
+          cuanto los suban, se integran automáticamente.
+        </p>
+      )}
       <MapAttribution />
     </section>
   )

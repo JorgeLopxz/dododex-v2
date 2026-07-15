@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../store/settings'
+import { builtInGeminiKey } from '../../config/assistantKey'
 
 const MODEL = 'gemini-2.5-flash'
 function buildSystem(gameVersion: 'asa' | 'ase') {
@@ -21,6 +22,8 @@ const CHAT_KEY = 'dododex-v2-chat'
 /** Asistente IA: chat experto en ARK usando la API de Gemini con la clave del usuario. */
 export function AssistantPage() {
   const { geminiKey, setGeminiKey, gameVersion } = useSettings()
+  // la clave del usuario tiene prioridad; si no, la incrustada por defecto
+  const activeKey = geminiKey || builtInGeminiKey()
   const [keyDraft, setKeyDraft] = useState('')
   const [messages, setMessages] = useState<Msg[]>(() => {
     try {
@@ -49,7 +52,7 @@ export function AssistantPage() {
     setBusy(true)
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(geminiKey)}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(activeKey)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,27 +87,22 @@ export function AssistantPage() {
     }
   }
 
-  /* ——— Sin clave: onboarding ——— */
-  if (!geminiKey) {
+  /* ——— Sin ninguna clave disponible (no debería pasar: hay una por defecto) ——— */
+  if (!activeKey) {
     return (
       <section aria-label="Asistente IA" className="mx-auto max-w-lg space-y-4">
         <div>
           <h2 className="display text-2xl font-bold">🧠 Asistente ARK</h2>
-          <p className="text-sm text-bone-dim">Un experto en ARK que responde lo que le preguntes.</p>
+          <p className="text-sm text-bone-dim">Introduce una clave de Gemini para empezar.</p>
         </div>
         <div className="panel space-y-3 p-5 text-sm text-bone-dim">
-          <p>Funciona con la API gratuita de Google Gemini y una clave TUYA (se guarda solo en este dispositivo, nunca sale de aquí salvo hacia Google):</p>
-          <ol className="list-decimal space-y-1.5 pl-5">
-            <li>
-              Entra en{' '}
-              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="text-amber underline">
-                aistudio.google.com/apikey
-              </a>{' '}
-              con tu cuenta de Google.
-            </li>
-            <li>Pulsa «Create API key» (gratis, sin tarjeta).</li>
-            <li>Copia la clave y pégala aquí:</li>
-          </ol>
+          <p>
+            Consigue una gratis en{' '}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="text-amber underline">
+              aistudio.google.com/apikey
+            </a>{' '}
+            y pégala aquí:
+          </p>
           <div className="flex gap-2">
             <input
               type="password"
@@ -129,13 +127,17 @@ export function AssistantPage() {
       <div className="flex items-center justify-between gap-2">
         <div>
           <h2 className="display text-2xl font-bold">🧠 Asistente ARK</h2>
-          <p className="text-xs text-bone-faint">Gemini · tu clave, tu dispositivo</p>
+          <p className="text-xs text-bone-faint">
+            Gemini · {geminiKey ? 'tu clave' : 'listo para usar'}
+          </p>
         </div>
         <div className="flex gap-1.5">
           {messages.length > 0 && (
             <button onClick={() => setMessages([])} className="btn-ghost px-2.5 py-1 text-xs">Limpiar</button>
           )}
-          <button onClick={() => setGeminiKey('')} className="btn-ghost px-2.5 py-1 text-xs" title="Cambiar clave">🔑</button>
+          {geminiKey && (
+            <button onClick={() => setGeminiKey('')} className="btn-ghost px-2.5 py-1 text-xs" title="Usar clave por defecto">🔑</button>
+          )}
         </div>
       </div>
 

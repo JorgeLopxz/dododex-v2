@@ -3,6 +3,7 @@ import type { SpeciesEntry } from '../../data'
 import {
   ASA_MAPS,
   ASE_MAPS,
+  creatureHasAnySpawnData,
   loadSpawnData,
   mapImageFile,
   spawnRegionsForCreature,
@@ -35,10 +36,23 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
   const [map, setMap] = useState<string>(maps[0])
   const [regions, setRegions] = useState<SpawnRegion[] | null>(null)
   const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+  /** ¿el mapa seleccionado tiene ALGÚN dato de spawn en la wiki? (Astraeos aún no) */
+  const [mapHasData, setMapHasData] = useState(true)
+  /** null = sin comprobar; true/false = la wiki tiene datos de esta criatura en algún mapa */
+  const [hasAnyData, setHasAnyData] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (!mapSet.has(map)) setMap(maps[0])
   }, [gameVersion, map, mapSet, maps])
+
+  useEffect(() => {
+    let alive = true
+    setHasAnyData(null)
+    creatureHasAnySpawnData(species.name, gameVersion).then((v) => alive && setHasAnyData(v))
+    return () => {
+      alive = false
+    }
+  }, [species, gameVersion])
 
   useEffect(() => {
     let alive = true
@@ -50,6 +64,7 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
         setStatus('error')
         return
       }
+      setMapHasData(containers.length > 0)
       setRegions(spawnRegionsForCreature(containers, species.name))
       setStatus('ok')
     })
@@ -75,12 +90,32 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
               <>
                 <strong className="display text-danger">{regions.length}</strong> zonas de aparición
               </>
+            ) : !mapHasData ? (
+              <span className="text-bone-faint">Mapa sin datos aún</span>
+            ) : hasAnyData === false ? (
+              <span className="text-bone-faint">Sin datos de aparición en la wiki</span>
             ) : (
               <span className="text-warn">No aparece salvaje en {map}</span>
             )}
           </p>
         )}
       </div>
+
+      {/* Mapa que la wiki aún no ha mapeado (Astraeos) */}
+      {status === 'ok' && !mapHasData && (
+        <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
+          ⓘ La wiki todavía no ha publicado datos de aparición de <strong className="text-bone">{map}</strong>. En
+          cuanto los suban, se integran automáticamente.
+        </p>
+      )}
+
+      {/* Criatura que la wiki aún no ha mapeado (nuevas de ASA como el Maeguana) */}
+      {status === 'ok' && mapHasData && hasAnyData === false && (
+        <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
+          ⓘ La wiki todavía no tiene datos de aparición de <strong className="text-bone">{species.name}</strong> en
+          ningún mapa (habitual en criaturas nuevas de ASA). En cuanto los publiquen, se integran automáticamente.
+        </p>
+      )}
 
       <MapBoard
         map={map}
