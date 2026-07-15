@@ -18,6 +18,8 @@ export interface StatCandidate {
 
 export interface ExtractionInput {
   species: Species
+  /** Versión del juego (ASE permite puntos en velocidad; ASA no) */
+  version?: 'asa' | 'ase'
   /** Valores observados in-game por stat (los que quiera aportar el usuario) */
   observed: Partial<Record<PointStatKey, number>>
   ctx: CreatureContext
@@ -60,12 +62,12 @@ export interface ExtractionResult {
   statsConsidered: PointStatKey[]
 }
 
-/** ¿Puede este stat recibir puntos en esta especie? */
-export function statReceivesPoints(key: PointStatKey, species: Species): boolean {
+/** ¿Puede este stat recibir puntos en esta especie? En ASA la velocidad no es subible. */
+export function statReceivesPoints(key: PointStatKey, species: Species, version: 'asa' | 'ase' = 'asa'): boolean {
   if (species.stats[key] === null) return false
   if (species.noWildPoints?.includes(key)) return false
-  // ASA: velocidad no subible por defecto (ni salvaje ni doméstica)
-  if (key === 'speed') return false
+  // ASA: velocidad no subible por defecto (ni salvaje ni doméstica); en ASE sí
+  if (key === 'speed' && version === 'asa') return false
   return true
 }
 
@@ -128,14 +130,14 @@ export function solvePostTameStat(
  */
 export function extractPostTame(input: ExtractionInput): ExtractionResult {
   const {
-    species, observed, ctx, mult,
+    species, version = 'asa', observed, ctx, mult,
     wildPoints, domPoints,
     displayPrecision = 0.1, displayPrecisionPerStat = {}, lockedLd0 = [],
     maxLwPerStat = 254, maxLdPerStat = 88,
   } = input
 
   const statsConsidered = POINT_STATS.filter(
-    (k) => observed[k] !== undefined && statReceivesPoints(k, species),
+    (k) => observed[k] !== undefined && statReceivesPoints(k, species, version),
   )
 
   const perStat: ExtractionResult['perStat'] = {}

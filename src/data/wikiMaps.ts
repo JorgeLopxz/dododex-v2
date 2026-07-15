@@ -4,7 +4,6 @@
  * así evitamos CORS y dependencias de red en runtime.
  */
 
-import wikiMapsJson from './wiki-maps.json'
 import type { GameVersion } from '../store/settings'
 
 export interface MapPoint {
@@ -50,17 +49,32 @@ export const ASE_MAPS = [
   'Lost Island',
 ] as const
 
+/**
+ * Archivo del mapa a COLOR limpio en la wiki (coincide con las coordenadas de los datos).
+ * Hardcodeado y verificado (Special:FilePath) — no dependemos del campo `background`
+ * del bake, que se pierde cuando la wiki nos rate-limita.
+ * ASA: "<Mapa> map ASA.jpg". ASE: "<Mapa> Map.jpg". Casos especiales aparte.
+ */
+const MAP_IMAGE_OVERRIDES: Record<string, string> = {
+  'asa:Lost Colony': 'Lost Colony Map ASA.jpg',
+  'ase:Genesis: Part 1': 'Genesis Part 1 Map.jpg',
+  'ase:Genesis: Part 2': 'Genesis Part 2 Map.jpg',
+}
+
+export function mapImageFile(mapName: string, version: GameVersion): string {
+  const override = MAP_IMAGE_OVERRIDES[`${version}:${mapName}`]
+  if (override) return override
+  return version === 'asa' ? `${mapName} map ASA.jpg` : `${mapName} Map.jpg`
+}
+
 /* ——— Recursos ——— */
 
 export interface ResourceMapData {
-  /** Nombre de archivo del mapa de fondo en la wiki (coincide con las coordenadas) */
-  image: string | null
   /** id de grupo (p.ej. "metal tier-5", "oil-vein") → puntos */
   groups: Record<string, MapPoint[]>
 }
 
 interface WikiMapEntry {
-  image: string | null
   groups: Record<string, MapPoint[]>
   spawns: SpawnContainer[]
 }
@@ -70,12 +84,18 @@ interface WikiMapFile {
   ase: Record<string, WikiMapEntry>
 }
 
-const WIKI_MAPS = wikiMapsJson as WikiMapFile
+/** El JSON de mapas pesa ~3MB: carga diferida (solo en Materiales / mapa de spawn) */
+let wikiMapsPromise: Promise<WikiMapFile> | null = null
+function loadWikiMaps(): Promise<WikiMapFile> {
+  wikiMapsPromise ??= import('./wiki-maps.json').then((m) => (m.default ?? m) as WikiMapFile)
+  return wikiMapsPromise
+}
 
 export async function loadResourceMap(mapName: string, version: GameVersion = 'asa'): Promise<ResourceMapData | null> {
-  const entry = WIKI_MAPS[version]?.[mapName]
+  const maps = await loadWikiMaps()
+  const entry = maps[version]?.[mapName]
   if (!entry) return null
-  return { image: entry.image, groups: entry.groups }
+  return { groups: entry.groups }
 }
 
 /** ids base de grupo de la wiki por recurso nuestro ("metal" cubre "metal tier-5" y "metal-rich"). */
@@ -130,7 +150,8 @@ interface SpawnContainer {
 }
 
 export async function loadSpawnData(mapName: string, version: GameVersion = 'asa'): Promise<SpawnContainer[] | null> {
-  return WIKI_MAPS[version]?.[mapName]?.spawns ?? null
+  const maps = await loadWikiMaps()
+  return maps[version]?.[mapName]?.spawns ?? null
 }
 
 /** Regiones donde aparece la criatura (por nombre mostrado, insensible a mayúsculas). */

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ASA_MAPS, ASE_MAPS, loadResourceMap, resourcePoints, type ResourceMapData } from '../../data/wikiMaps'
+import { ASA_MAPS, ASE_MAPS, loadResourceMap, mapImageFile, resourcePoints, type ResourceMapData } from '../../data/wikiMaps'
 import { MapAttribution, MapBoard, type MapLayer } from '../../ui/MapBoard'
 import { ItemImage } from '../../ui/GameImage'
 import { useSettings } from '../../store/settings'
@@ -114,7 +114,7 @@ export function MaterialsPage() {
         ))}
       </div>
 
-      <MapBoard map={map} image={data?.image} layers={layers} status={status} />
+      <MapBoard map={map} image={mapImageFile(map, gameVersion)} layers={layers} status={status} />
       <MapAttribution />
     </section>
   )

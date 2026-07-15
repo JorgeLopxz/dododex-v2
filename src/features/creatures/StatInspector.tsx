@@ -38,13 +38,14 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
   const effPts = (k: PointStatKey) => manual[k] ?? avgPts
 
   const settings = useSettings()
+  const { gameVersion } = settings
   const mult = useMemo(() => getMultipliers(settings), [settings])
 
   const relevantStats = useMemo(() => {
-    const base = POINT_STATS.filter((k) => statReceivesPoints(k, species) && species.displayed[k])
+    const base = POINT_STATS.filter((k) => statReceivesPoints(k, species, gameVersion) && species.displayed[k])
     // en modo salvaje solo tienen sentido los stats con crecimiento salvaje (Iw > 0)
     return mode === 'wild' ? base.filter((k) => (species.stats[k]?.Iw ?? 0) > 0) : base
-  }, [species, mode])
+  }, [species, mode, gameVersion])
 
   const result = useMemo(() => {
     const observed: Partial<Record<PointStatKey, number>> = {}
@@ -85,6 +86,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
     const lvl = Number(level)
     return extractPostTame({
       species,
+      version: gameVersion,
       observed,
       ctx: { tamed: true, bred, TE: bred ? 1 : Number(TE) / 100, IB: Number(IB) / 100 },
       mult,
@@ -97,7 +99,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
       displayPrecisionPerStat: precisions,
       lockedLd0: fresh ? [...relevantStats] : [...locked],
     })
-  }, [species, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked, mult])
+  }, [species, gameVersion, relevantStats, values, mode, bred, TE, IB, level, postTameLevel, locked, mult])
 
   const uniqueSolution = result?.solutions.length === 1 ? result.solutions[0] : null
   const barMax = Math.max(30, ...result ? result.statsConsidered.map((k) => {
@@ -415,7 +417,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
               <p className="mt-2 rounded-lg border border-tek-dark/40 bg-surface-0/50 px-3 py-2 text-sm text-bone-dim">
                 <span className="display font-bold text-bone">{assigned}</span> puntos visibles ·{' '}
                 <span className="display font-bold text-bone-faint">{hidden}</span> en stats ocultos
-                {' (velocidad y similares — desperdiciados)'}
+                {gameVersion === 'asa' ? ' (velocidad y similares — desperdiciados)' : ' (velocidad, etc.)'}
               </p>
             )
           })()}

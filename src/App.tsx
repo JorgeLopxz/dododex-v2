@@ -28,32 +28,35 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
       <header className="flex items-center justify-between gap-3 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <NavLink to="/" className="flex items-center gap-2.5">
-            <DinoFootprint size={30} />
-            <span className="display text-xl font-bold tracking-wide">
-              DODODEX <span className="text-amber">V2</span>
-            </span>
-          </NavLink>
-          <div role="group" aria-label="Versión del juego" className="flex rounded-lg bg-surface-0/60 p-1 text-[11px] font-semibold uppercase tracking-widest">
-            {([
-              ['asa', 'ASA'],
-              ['ase', 'ASE'],
-            ] as const).map(([value, label]) => (
-              <button
-                key={value}
-                onClick={() => setGameVersion(value)}
-                aria-pressed={gameVersion === value}
-                className={`mode-tab px-2.5 py-1 ${gameVersion === value ? 'border-amber-deep text-amber' : ''}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <NavLink to="/" className="flex items-center gap-2.5">
+          <DinoFootprint size={30} />
+          <span className="display text-xl font-bold tracking-wide">
+            DODODEX <span className="text-amber">V2</span>
+          </span>
+        </NavLink>
+        {/* Selector de juego: ASA y ASE tienen dinos, materiales y reglas distintos */}
+        <div
+          role="group"
+          aria-label="Versión del juego"
+          title="Cambia entre ARK: Survival Ascended y Survival Evolved"
+          className="flex rounded-lg border border-metal-dim bg-surface-0/60 p-0.5 text-xs font-semibold"
+        >
+          {([
+            ['asa', 'ASA'],
+            ['ase', 'ASE'],
+          ] as const).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setGameVersion(value)}
+              aria-pressed={gameVersion === value}
+              className={`display rounded-md px-3 py-1.5 tracking-widest transition-colors ${
+                gameVersion === value ? 'bg-gradient-to-br from-amber to-amber-deep text-surface-0' : 'text-bone-dim hover:text-bone'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-        <span className="display text-[11px] font-semibold uppercase tracking-widest text-bone-faint">
-          {gameVersion === 'asa' ? 'ASA · Vanilla' : 'ASE · Vanilla'}
-        </span>
       </header>
 
       <main className="flex-1 px-4 pb-28">

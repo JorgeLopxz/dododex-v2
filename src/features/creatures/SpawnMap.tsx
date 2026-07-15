@@ -3,8 +3,8 @@ import type { SpeciesEntry } from '../../data'
 import {
   ASA_MAPS,
   ASE_MAPS,
-  loadResourceMap,
   loadSpawnData,
+  mapImageFile,
   spawnRegionsForCreature,
   type SpawnRegion,
 } from '../../data/wikiMaps'
@@ -34,7 +34,6 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
   const mapSet = new Set<string>(maps)
   const [map, setMap] = useState<string>(maps[0])
   const [regions, setRegions] = useState<SpawnRegion[] | null>(null)
-  const [image, setImage] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading')
 
   useEffect(() => {
@@ -45,9 +44,8 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
     let alive = true
     setStatus('loading')
     setRegions(null)
-    Promise.all([loadSpawnData(map, gameVersion), loadResourceMap(map, gameVersion)]).then(([containers, res]) => {
+    loadSpawnData(map, gameVersion).then((containers) => {
       if (!alive) return
-      setImage(res?.image ?? null)
       if (!containers) {
         setStatus('error')
         return
@@ -86,7 +84,7 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
 
       <MapBoard
         map={map}
-        image={image}
+        image={mapImageFile(map, gameVersion)}
         layers={
           regions?.length
             ? (() => {

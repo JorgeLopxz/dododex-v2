@@ -134,9 +134,10 @@ describe('solvePostTameStat / extractPostTame (inspector post-tame ⭐)', () => 
     }
   })
 
-  it('speed no entra en la extracción (regla ASA); health sí', () => {
-    expect(statReceivesPoints('speed', TESTREX)).toBe(false)
-    expect(statReceivesPoints('health', TESTREX)).toBe(true)
+  it('speed no entra en la extracción en ASA pero sí en ASE; health siempre', () => {
+    expect(statReceivesPoints('speed', TESTREX, 'asa')).toBe(false)
+    expect(statReceivesPoints('speed', TESTREX, 'ase')).toBe(true)
+    expect(statReceivesPoints('health', TESTREX, 'asa')).toBe(true)
   })
 
   it('imprint al 100%: el extractor lo descuenta correctamente', () => {
