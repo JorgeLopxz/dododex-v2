@@ -184,10 +184,13 @@ export function spawnRegionsForCreature(containers: SpawnContainer[], creatureNa
     for (const region of c.s ?? []) {
       for (const box of region.l ?? []) {
         // Formato del gadget oficial de la wiki (Gadget-CreatureDataMaps.js):
-        // l = [x1, y1, x2, y2] — LON primero, LAT segundo. No transponer.
-        const [x1, y1, x2, y2] = box
-        if ([x1, y1, x2, y2].every((v) => typeof v === 'number')) {
-          out.push({ x1, y1, x2, y2, f: region.f ?? 1 })
+        // longitud 4 = rectángulo [x1,y1,x2,y2]; longitud 2 = punto [x,y]. LON primero.
+        if (box.length === 4) {
+          const [x1, y1, x2, y2] = box
+          if ([x1, y1, x2, y2].every((v) => typeof v === 'number')) out.push({ x1, y1, x2, y2, f: region.f ?? 1 })
+        } else if (box.length === 2) {
+          const [x, y] = box
+          if (typeof x === 'number' && typeof y === 'number') out.push({ x1: x, y1: y, x2: x, y2: y, f: region.f ?? 1 })
         }
       }
     }

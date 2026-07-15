@@ -67,8 +67,9 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
   const qualityNum = Math.max(1, Number(quality) || 100)
   const tamingInfo = getTamingInfo(species.name)
 
-  /** Panel de noqueo por arma (datos reales de torpor); reutilizable con o sin dieta */
-  const knockoutPanel = torporTotal !== null && !species.taming.nonViolent && (
+  /** Panel de noqueo por arma (datos reales de torpor); solo si REALMENTE se noquea */
+  const isKnockout = !species.taming.nonViolent && tamingInfo?.method !== 'passive' && tamingInfo?.method !== 'egg' && tamingInfo?.method !== 'special'
+  const knockoutPanel = torporTotal !== null && isKnockout && (
     <div className="panel p-4">
       <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">Noqueo · torpor {Math.round(torporTotal).toLocaleString()}</p>
       <div className="mb-3 flex flex-wrap items-end gap-3">
@@ -183,6 +184,12 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
         </>
       ) : (
         <>
+          {/* Método real (agarre, pasivo…) sobre la calculadora, cuando aplica */}
+          {tamingInfo && (
+            <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
+              <strong className="text-bone">{METHOD_LABEL[tamingInfo.method]}.</strong> {tamingInfo.note}
+            </p>
+          )}
           {/* Resultado del plan activo */}
           {plan && (
             <div

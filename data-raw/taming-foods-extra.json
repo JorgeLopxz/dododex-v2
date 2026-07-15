@@ -376,5 +376,33 @@
    "Cooked Meat"
   ],
   "overrides": {}
+ },
+ "Desmodus": {
+  "eats": [
+   "Blood Pack"
+  ],
+  "overrides": {
+   "Blood Pack": {
+    "f": 20,
+    "a": 30.62
+   }
+  }
+ },
+ "Bloodstalker": {
+  "eats": [
+   "Blood Pack"
+  ],
+  "overrides": {
+   "Blood Pack": {
+    "f": 20,
+    "a": 10.04
+   }
+  }
+ },
+ "__foods": {
+  "Blood Pack": {
+   "f": 20,
+   "a": 10
+  }
  }
 }

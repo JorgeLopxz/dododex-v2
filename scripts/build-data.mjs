@@ -349,8 +349,11 @@ for (const [name, entry] of Object.entries(tfd.tamingFoodData)) {
 const extraPath = `${RAW_DIR}/taming-foods-extra.json`
 if (existsSync(extraPath)) {
   const extra = JSON.parse(readFileSync(extraPath, 'utf8'))
+  // items de comida extra (p.ej. Blood Pack para Desmodus/Bloodstalker)
+  if (extra.__foods) Object.assign(defaults, extra.__foods)
   let added = 0
   for (const [name, entry] of Object.entries(extra)) {
+    if (name === '__foods') continue
     if (!perSpecies[name]) { perSpecies[name] = entry; added++ }
   }
   console.log(`Dietas ASA extra (wiki): +${added} especies`)
