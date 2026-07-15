@@ -66,14 +66,27 @@ export function MapBoard({
     const H = cv.height
     for (const layer of layers) {
       if (layer.regions?.length) {
-        ctx.globalAlpha = 0.45
         for (const r of layer.regions) {
-          ctx.fillStyle = r.color ?? layer.color
-          const x = (Math.min(r.x1, r.x2) / 100) * W
-          const y = (Math.min(r.y1, r.y2) / 100) * H
           const w = (Math.abs(r.x2 - r.x1) / 100) * W
           const h = (Math.abs(r.y2 - r.y1) / 100) * H
-          ctx.fillRect(x, y, Math.max(w, 6), Math.max(h, 6))
+          const cx = ((r.x1 + r.x2) / 2 / 100) * W
+          const cy = ((r.y1 + r.y2) / 2 / 100) * H
+          // spawns puntuales (caja de tamaño ~0) → círculo sólido bien visible;
+          // regiones con área → rectángulo semitransparente (heatmap)
+          if (w < 3 && h < 3) {
+            ctx.globalAlpha = 1
+            ctx.fillStyle = r.color ?? layer.color
+            ctx.strokeStyle = 'rgba(0,0,0,0.85)'
+            ctx.lineWidth = 1.5
+            ctx.beginPath()
+            ctx.arc(cx, cy, 4.5, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.stroke()
+          } else {
+            ctx.globalAlpha = 0.45
+            ctx.fillStyle = r.color ?? layer.color
+            ctx.fillRect((Math.min(r.x1, r.x2) / 100) * W, (Math.min(r.y1, r.y2) / 100) * H, w, h)
+          }
         }
         ctx.globalAlpha = 1
       }
