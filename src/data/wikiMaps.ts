@@ -50,21 +50,13 @@ export const ASE_MAPS = [
 ] as const
 
 /**
- * Archivo del mapa a COLOR limpio en la wiki (coincide con las coordenadas de los datos).
- * Hardcodeado y verificado (Special:FilePath) — no dependemos del campo `background`
- * del bake, que se pierde cuando la wiki nos rate-limita.
- * ASA: "<Mapa> map ASA.jpg". ASE: "<Mapa> Map.jpg". Casos especiales aparte.
+ * Fondos de mapa a COLOR limpios, AUTO-HOSPEDADOS en public/maps/ (descargados
+ * una vez de ark.wiki.gg y optimizados). La wiki rate-limita el hotlinking
+ * (429) — servirlos nosotros es la única forma fiable de que siempre carguen.
  */
-const MAP_IMAGE_OVERRIDES: Record<string, string> = {
-  'asa:Lost Colony': 'Lost Colony Map ASA.jpg',
-  'ase:Genesis: Part 1': 'Genesis Part 1 Map.jpg',
-  'ase:Genesis: Part 2': 'Genesis Part 2 Map.jpg',
-}
-
 export function mapImageFile(mapName: string, version: GameVersion): string {
-  const override = MAP_IMAGE_OVERRIDES[`${version}:${mapName}`]
-  if (override) return override
-  return version === 'asa' ? `${mapName} map ASA.jpg` : `${mapName} Map.jpg`
+  const slug = mapName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  return `${import.meta.env.BASE_URL}maps/${version}-${slug}.jpg`
 }
 
 /* ——— Recursos ——— */
@@ -170,8 +162,10 @@ export function spawnRegionsForCreature(containers: SpawnContainer[], creatureNa
     if (!hasCreature) continue
     for (const region of c.s ?? []) {
       for (const box of region.l ?? []) {
-        const [y1, x1, y2, x2] = box
-        if ([y1, x1, y2, x2].every((v) => typeof v === 'number')) {
+        // Formato del gadget oficial de la wiki (Gadget-CreatureDataMaps.js):
+        // l = [x1, y1, x2, y2] — LON primero, LAT segundo. No transponer.
+        const [x1, y1, x2, y2] = box
+        if ([x1, y1, x2, y2].every((v) => typeof v === 'number')) {
           out.push({ x1, y1, x2, y2, f: region.f ?? 1 })
         }
       }
