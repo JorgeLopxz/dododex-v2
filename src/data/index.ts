@@ -97,59 +97,27 @@ interface TamingFoodsFile {
 }
 const foodsFile = tamingFoodsJson as TamingFoodsFile
 
-/**
- * Herbívoros entre las criaturas sin datos de dieta en ASB (para la dieta de reserva).
- * El resto se asume carnívoro. Los tames pasivos comen igual (afinidad por comida).
- */
-const FALLBACK_HERBIVORES: ReadonlySet<string> = new Set([
-  'Maeguana', 'Bison', 'Burrowbuck', 'Deinotherium', 'Amargasaurus', 'Megachelon',
-  'Archelon', 'Grand Tortugar', 'Gigantoraptor', 'Oasisaur',
-])
-
-/** Dieta estándar de reserva para especies que ASB no cataloga (nuevas de ASA, tames especiales). */
-function fallbackDiet(clean: string): TamingFood[] {
-  const herb = FALLBACK_HERBIVORES.has(clean)
-  // orden de preferencia; afinidad de la tabla por defecto (aproximada, sin multiplicador por especie)
-  const names = herb
-    ? ['Exceptional Kibble', 'Vegetables', 'Mejoberry', 'Berries']
-    : ['Exceptional Kibble', 'Raw Mutton', 'Cooked Lamb Chop', 'Raw Prime Meat', 'Cooked Prime Meat', 'Raw Prime Fish Meat', 'Raw Meat', 'Cooked Meat', 'Raw Fish Meat']
-  const out: TamingFood[] = []
-  for (const name of names) {
-    const b = foodsFile.foods[name]
-    if (b && b.a > 0) out.push({ name, f: b.f, a: b.a })
-  }
-  return out
-}
-
 function findDietEntry(speciesName: string) {
   const clean = speciesName.replace(/\s*\(.*\)$/, '').trim()
   const candidates = [
     speciesName,
     clean,
-    clean.replace(/^(Aberrant|Tek|Corrupted|Astral|Lightning|Fire|Ice|Poison|Blood|Ember|Tropical|Dire Polar|Polar|Lost|Aberrant)\s+/, ''),
+    // variantes que se doman IGUAL que su especie base (mismo bloque de dieta)
+    clean.replace(/^(Aberrant|Tek|Corrupted|Astral|Dire Polar|Polar)\s+/, ''),
     clean.replace(/^[XR]-/, ''),
   ]
   return candidates.map((n) => foodsFile.perSpecies[n]).find(Boolean)
 }
 
-/** ¿La dieta de esta especie viene de datos exactos (ASB) o es la de reserva aproximada? */
-export function hasExactDiet(speciesName: string): boolean {
-  return !!findDietEntry(speciesName)
-}
-
 /**
- * Dieta de una especie, en orden de preferencia (mejor comida primero).
- * Resuelve variantes (Aberrant/Tek/X-/R-/Astral/wyverns…) contra la especie base.
- * Si ASB no la cataloga, devuelve una dieta estándar de reserva (aproximada) según
- * carnívoro/herbívoro — así todas las criaturas domables muestran cómo tamearlas.
+ * Dieta de una especie por afinidad (comida convencional), en orden de preferencia.
+ * Resuelve variantes contra la especie base. null ⇒ no hay datos de dieta convencional
+ * (criatura nueva sin catalogar, o tame ESPECIAL — pasivo, sangre, element… — que no
+ * se representa con esta tabla; se maneja aparte con su método real).
  */
 export function getTamingFoods(speciesName: string): TamingFood[] | null {
   const entry = findDietEntry(speciesName)
-  if (!entry) {
-    const clean = speciesName.replace(/\s*\(.*\)$/, '').trim()
-    const fb = fallbackDiet(clean)
-    return fb.length > 0 ? fb : null
-  }
+  if (!entry) return null
   const foods: TamingFood[] = []
   for (const name of entry.eats) {
     // los kibbles "Augmented" son del sistema Homestead/ARK Mobile — no existen en ASA/ASE estándar

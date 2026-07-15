@@ -8,7 +8,8 @@ import {
   type TamingServerMults,
 } from '../../engine/taming'
 import { WEAPONS, hitsToKnockout, wildTorpor } from '../../engine/knockout'
-import { getTamingFoods, hasExactDiet, type SpeciesEntry } from '../../data'
+import { getTamingFoods, type SpeciesEntry } from '../../data'
+import { getTamingInfo } from '../../data/tamingInfo'
 import { tameBonusLevels } from '../../engine/statFormula'
 import { getTamingSpeed, useSettings } from '../../store/settings'
 import { recipeSlug } from '../recipes/RecipesPage'
@@ -29,7 +30,6 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
   const [quality, setQuality] = useState('100')
 
   const foods = useMemo(() => getTamingFoods(species.name), [species])
-  const exactDiet = useMemo(() => hasExactDiet(species.name), [species])
   const lvl = Math.max(1, Number(level) || 150)
   const tsm = getTamingSpeed({ tamingPreset: preset, customTsm })
   const mults: TamingServerMults = { tamingSpeed: tsm, foodDrain: 1, wildTorporDrain: 1 }
@@ -65,6 +65,59 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
   const torporTotal = torporStat ? wildTorpor(torporStat, lvl) : null
   const weapon = WEAPONS.find((w) => w.id === weaponId)!
   const qualityNum = Math.max(1, Number(quality) || 100)
+  const tamingInfo = getTamingInfo(species.name)
+
+  /** Panel de noqueo por arma (datos reales de torpor); reutilizable con o sin dieta */
+  const knockoutPanel = torporTotal !== null && !species.taming.nonViolent && (
+    <div className="panel p-4">
+      <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">Noqueo · torpor {Math.round(torporTotal).toLocaleString()}</p>
+      <div className="mb-3 flex flex-wrap items-end gap-3">
+        <label className="text-sm">
+          <span className="mb-1 block text-xs font-medium text-bone-dim">Arma</span>
+          <select value={weaponId} onChange={(e) => setWeaponId(e.target.value)} className="input-field w-56">
+            {WEAPONS.map((w) => (
+              <option key={w.id} value={w.id}>{w.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block text-xs font-medium text-bone-dim">Calidad (daño %)</span>
+          <input type="number" step="1" min="100" inputMode="numeric" value={quality} onChange={(e) => setQuality(e.target.value)} className="input-field w-24" />
+        </label>
+        <p className="flex items-center gap-2 pb-1 text-lg">
+          <ItemImage name={weapon.weaponImage} size={30} fallback="🏹" />
+          <ItemImage name={weapon.itemImage} size={26} fallback="➶" />
+          <strong className="display text-2xl text-amber">{hitsToKnockout(torporTotal, weapon, qualityNum)}</strong>{' '}
+          <span className="text-sm text-bone-dim">{weapon.ammo}</span>
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5 text-sm sm:grid-cols-3">
+        {WEAPONS.filter((w) => w.id !== weaponId).map((w) => (
+          <button
+            key={w.id}
+            onClick={() => setWeaponId(w.id)}
+            className="flex items-center justify-between gap-1.5 rounded-lg border border-surface-3/60 bg-surface-0/40 px-2.5 py-1.5 text-left hover:border-amber-dark"
+          >
+            <span className="flex min-w-0 items-center gap-1.5">
+              <ItemImage name={w.weaponImage} size={22} fallback="🏹" />
+              <span className="truncate text-xs text-bone-dim">{w.label}</span>
+            </span>
+            <span className="display ml-1 tabular-nums">{hitsToKnockout(torporTotal, w, qualityNum)}</span>
+          </button>
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] text-bone-faint">
+        Calidad 100% = arma primitiva. No incluye multiplicador de headshot ni resistencias especiales.
+      </p>
+    </div>
+  )
+
+  const METHOD_LABEL: Record<string, string> = {
+    egg: '🥚 De huevo / cría',
+    passive: '✋ Tameo pasivo',
+    special: '✨ Método especial',
+    knockout: '💥 Por noqueo',
+  }
 
   return (
     <div className="space-y-4">
@@ -107,16 +160,29 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
       </div>
 
       {!foods ? (
-        <div className="panel p-6 text-center text-bone-dim">Sin datos de dieta para esta especie.</div>
+        <>
+          {/* Método real (verificado) para criaturas que no usan dieta por afinidad estándar */}
+          <div className="panel p-5">
+            <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">
+              {tamingInfo ? METHOD_LABEL[tamingInfo.method] : species.taming.nonViolent ? METHOD_LABEL.passive : METHOD_LABEL.knockout}
+            </p>
+            <p className="text-sm text-bone-dim">
+              {tamingInfo?.note ??
+                (species.taming.nonViolent
+                  ? 'Tameo pasivo: acércate y aliméntalo sin noquearlo.'
+                  : 'Tameo por noqueo. No tenemos la dieta exacta de esta criatura en nuestros datos.')}
+            </p>
+            <p className="mt-3 border-t border-surface-3 pt-3 text-xs text-bone-faint">
+              Para las <strong className="text-bone-dim">cantidades exactas de comida</strong>, pregunta al{' '}
+              <Link to="/ia" className="text-amber underline">🧠 Asistente</Link> o mira{' '}
+              <a href={`https://ark.wiki.gg/wiki/${encodeURIComponent(species.name.replace(/\s*\(.*\)$/, '').trim().replace(/ /g, '_'))}`} target="_blank" rel="noreferrer" className="text-amber underline">la wiki</a>.
+            </p>
+          </div>
+          {/* Si es noqueo, la calculadora de armas SÍ es exacta (torpor real) */}
+          {knockoutPanel}
+        </>
       ) : (
         <>
-          {!exactDiet && (
-            <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
-              ⓘ {species.taming.nonViolent ? 'Tameo pasivo' : 'Se noquea'}. Dieta estándar estimada (ARK Smart Breeding
-              aún no cataloga a esta criatura): las <strong className="text-bone">comidas y el método son correctos</strong>,
-              pero las cantidades exactas pueden variar un poco. Kibble o carne para carnívoros; cultivos/bayas para herbívoros.
-            </p>
-          )}
           {/* Resultado del plan activo */}
           {plan && (
             <div
@@ -247,50 +313,8 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
             </div>
           </div>
 
-          {/* Noqueo por arma y calidad */}
-          {torporTotal !== null && !species.taming.nonViolent && (
-            <div className="panel p-4">
-              <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">Noqueo · torpor {Math.round(torporTotal).toLocaleString()}</p>
-              <div className="mb-3 flex flex-wrap items-end gap-3">
-                <label className="text-sm">
-                  <span className="mb-1 block text-xs font-medium text-bone-dim">Arma</span>
-                  <select value={weaponId} onChange={(e) => setWeaponId(e.target.value)} className="input-field w-56">
-                    {WEAPONS.map((w) => (
-                      <option key={w.id} value={w.id}>{w.label}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="text-sm">
-                  <span className="mb-1 block text-xs font-medium text-bone-dim">Calidad (daño %)</span>
-                  <input type="number" step="1" min="100" inputMode="numeric" value={quality} onChange={(e) => setQuality(e.target.value)} className="input-field w-24" />
-                </label>
-                <p className="flex items-center gap-2 pb-1 text-lg">
-                  <ItemImage name={weapon.weaponImage} size={30} fallback="🏹" />
-                  <ItemImage name={weapon.itemImage} size={26} fallback="➶" />
-                  <strong className="display text-2xl text-amber">{hitsToKnockout(torporTotal, weapon, qualityNum)}</strong>{' '}
-                  <span className="text-sm text-bone-dim">{weapon.ammo}</span>
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 text-sm sm:grid-cols-3">
-                {WEAPONS.filter((w) => w.id !== weaponId).map((w) => (
-                  <button
-                    key={w.id}
-                    onClick={() => setWeaponId(w.id)}
-                    className="flex items-center justify-between gap-1.5 rounded-lg border border-surface-3/60 bg-surface-0/40 px-2.5 py-1.5 text-left hover:border-amber-dark"
-                  >
-                    <span className="flex min-w-0 items-center gap-1.5">
-                      <ItemImage name={w.weaponImage} size={22} fallback="🏹" />
-                      <span className="truncate text-xs text-bone-dim">{w.label}</span>
-                    </span>
-                    <span className="display ml-1 tabular-nums">{hitsToKnockout(torporTotal, w, qualityNum)}</span>
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2 text-[11px] text-bone-faint">
-                Calidad 100% = arma primitiva. No incluye multiplicador de headshot ni resistencias especiales.
-              </p>
-            </div>
-          )}
+          {/* Noqueo por arma y calidad (torpor real) */}
+          {knockoutPanel}
 
           <p className="text-xs text-bone-faint">
             TE 100% teórica: +{tameBonusLevels(lvl, 1)} niveles → Nv {lvl + tameBonusLevels(lvl, 1)}. Tras domar,{' '}
