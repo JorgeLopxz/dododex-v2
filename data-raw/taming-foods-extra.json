@@ -1,0 +1,380 @@
+{
+ "Acrocanthosaurus": {
+  "eats": [
+   "Exceptional Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Archelon": {
+  "eats": [
+   "Superior Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Bison": {
+  "eats": [
+   "Superior Kibble",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Cat": {
+  "eats": [
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Ceratosaurus": {
+  "eats": [
+   "Extraordinary Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Cryolophosaurus": {
+  "eats": [
+   "Exceptional Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Dreadmare": {
+  "eats": [
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Deinosuchus": {
+  "eats": [
+   "Superior Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Deinotherium": {
+  "eats": [
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Dreadnoughtus": {
+  "eats": [
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Fasolasuchus": {
+  "eats": [
+   "Exceptional Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Grand Tortugar": {
+  "eats": [
+   "Superior Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Burrowbuck": {
+  "eats": [
+   "Superior Kibble",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Maeguana": {
+  "eats": [
+   "Basic Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Megaraptor": {
+  "eats": [
+   "Exceptional Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Shastasaurus": {
+  "eats": [
+   "Raw Prime Fish Meat",
+   "Cooked Prime Fish Meat",
+   "Raw Fish Meat",
+   "Cooked Fish Meat",
+   "Raw Meat",
+   "Cooked Meat"
+  ],
+  "overrides": {}
+ },
+ "Xiphactinus": {
+  "eats": [
+   "Superior Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Yi Ling": {
+  "eats": [
+   "Exceptional Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Andrewsarchus": {
+  "eats": [
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Gloon": {
+  "eats": [
+   "Basic Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Ossidon": {
+  "eats": [
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Veilwyn": {
+  "eats": [
+   "Exceptional Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Amargasaurus": {
+  "eats": [
+   "Exceptional Kibble",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Kirayli": {
+  "eats": [
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Cosmo": {
+  "eats": [
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Armadoggo": {
+  "eats": [
+   "Regular Kibble",
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Vegetables",
+   "Mejoberry",
+   "Berries"
+  ],
+  "overrides": {}
+ },
+ "Carcharodontosaurus": {
+  "eats": [
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Meganeura": {
+  "eats": [
+   "Raw Mutton",
+   "Cooked Lamb Chop",
+   "Raw Prime Meat",
+   "Cooked Prime Meat",
+   "Raw Prime Fish Meat",
+   "Raw Meat",
+   "Cooked Meat",
+   "Raw Fish Meat"
+  ],
+  "overrides": {}
+ },
+ "Leedsichthys": {
+  "eats": [
+   "Raw Prime Fish Meat",
+   "Cooked Prime Fish Meat",
+   "Raw Fish Meat",
+   "Cooked Fish Meat",
+   "Raw Meat",
+   "Cooked Meat"
+  ],
+  "overrides": {}
+ },
+ "Tropeognathus": {
+  "eats": [
+   "Raw Prime Fish Meat",
+   "Cooked Prime Fish Meat",
+   "Raw Fish Meat",
+   "Cooked Fish Meat",
+   "Raw Meat",
+   "Cooked Meat"
+  ],
+  "overrides": {}
+ }
+}

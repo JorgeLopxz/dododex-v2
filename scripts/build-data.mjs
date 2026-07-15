@@ -344,6 +344,17 @@ for (const [name, entry] of Object.entries(tfd.tamingFoodData)) {
   if (name === 'default' || !entry.eats) continue
   perSpecies[name] = { eats: entry.eats, overrides: entry.specialFoodValues ?? {} }
 }
+// Dietas de criaturas nuevas de ASA que ASB no cataloga, derivadas de la wiki
+// (diet + kibble reales) con las afinidades universales estándar. No sobrescriben ASB.
+const extraPath = `${RAW_DIR}/taming-foods-extra.json`
+if (existsSync(extraPath)) {
+  const extra = JSON.parse(readFileSync(extraPath, 'utf8'))
+  let added = 0
+  for (const [name, entry] of Object.entries(extra)) {
+    if (!perSpecies[name]) { perSpecies[name] = entry; added++ }
+  }
+  console.log(`Dietas ASA extra (wiki): +${added} especies`)
+}
 writeFileSync(
   `${OUT_DIR}/taming-foods.json`,
   JSON.stringify({ version: tfd.version, source: 'cadon/ARKStatsExtractor (MIT)', foods: defaults, perSpecies }),
