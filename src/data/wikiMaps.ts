@@ -22,15 +22,17 @@ export interface SpawnRegion {
   f: number
 }
 
-/** Mapas liberados en ASA con datos en la wiki (Astraeos aún no tiene páginas de datos). */
+/** Mapas oficiales liberados en ASA. Astraeos aún no tiene datos de recursos/spawns en la wiki (solo mapa). */
 export const ASA_MAPS = [
   'The Island',
   'Scorched Earth',
   'The Center',
   'Aberration',
   'Extinction',
+  'Genesis: Part 1',
   'Ragnarok',
   'Valguero',
+  'Astraeos',
   'Lost Colony',
 ] as const
 

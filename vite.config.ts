@@ -17,6 +17,10 @@ export default defineConfig(({ command }) => ({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // el SW nuevo toma el control YA: un F5 basta para ver la última versión
+        // (sin esto quedaba "waiting" hasta cerrar todas las pestañas — quejas de updates lentos)
+        skipWaiting: true,
+        clientsClaim: true,
       },
       manifest: {
         name: 'DODODEX V2 — companion de ARK',
