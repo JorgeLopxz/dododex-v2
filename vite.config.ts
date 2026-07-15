@@ -16,7 +16,9 @@ export default defineConfig(({ command }) => ({
       // precachea la app y los datos de especies → funciona 100% offline (lección de Dododex)
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // el chunk lazy de wiki-maps pesa ~4.2MB: si supera el límite, el plugin
+        // FALLA al generar sw.js y las actualizaciones se quedan atascadas
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         // el SW nuevo toma el control YA: un F5 basta para ver la última versión
         // (sin esto quedaba "waiting" hasta cerrar todas las pestañas — quejas de updates lentos)
         skipWaiting: true,
