@@ -98,42 +98,47 @@ export async function loadResourceMap(mapName: string, version: GameVersion = 'a
   return { groups: entry.groups }
 }
 
-/** ids base de grupo de la wiki por recurso nuestro ("metal" cubre "metal tier-5" y "metal-rich"). */
+/**
+ * Primer token del id de grupo → recurso nuestro. Los grupos vienen como
+ * "metal", "metal cave", "metal tier-5", "gem-blue cave"… el primer token
+ * (antes del espacio) es la clase; se compara EXACTO para no mezclar
+ * "metal" con "metal-rich".
+ */
 export const RESOURCE_GROUP_ALIASES: Record<string, string[]> = {
-  metal: ['metal', 'metal-rich'],
+  metal: ['metal'],
+  'metal-rico': ['metal-rich'],
   cristal: ['crystal'],
   obsidiana: ['obsidian'],
-  petroleo: ['oil', 'oil-vein', 'oil-rock'],
-  perlas: ['silica', 'silica-pearls', 'pearls', 'pearl'],
-  'perlas-negras': ['black-pearl', 'black-pearls'],
-  miel: ['beehive', 'giant-bee-hive', 'honey'],
+  petroleo: ['oil', 'oil-rock', 'oil-vein'],
+  perlas: ['silica', 'silica-pearls', 'pearls'],
+  'perlas-negras': ['black-pearl'],
   azufre: ['sulfur'],
-  sal: ['salt', 'raw-salt', 'saltpeter'],
-  savia: ['sap', 'tree-sap'],
-  'gema-azul': ['gem-blue', 'blue-gems', 'blue-crystalized-sap'],
-  'gema-verde': ['gem-green', 'green-gems', 'green-crystalized-sap'],
-  'gema-roja': ['gem-red', 'red-gems', 'red-crystalized-sap'],
-  setas: ['mushroom', 'rare-mushroom', 'mushrooms'],
-  flor: ['rare-flower', 'rare-flowers'],
-  cactus: ['cactus', 'cactus-sap'],
+  sal: ['salt'],
+  savia: ['sap'],
+  'gema-azul': ['gem-blue'],
+  'gema-verde': ['gem-green'],
+  'gema-roja': ['gem-red'],
+  setas: ['mushroom'],
+  flor: ['rare-flower'],
+  cactus: ['cactus'],
   keratina: ['keratin'],
   seda: ['silk'],
-  elemento: ['element', 'element-ore', 'element-node', 'element-vein', 'charge-node'],
-  gas: ['gas-vein', 'gas'],
-  agua: ['water-vein', 'water'],
+  elemento: ['element-ore', 'element-dust', 'element-node', 'element-vein', 'charge-node'],
+  gas: ['gas-vein'],
+  agua: ['water-vein'],
   arcilla: ['clay'],
   polimero: ['organic-polymer'],
   verduras: ['rockarrot', 'savoroot', 'longrass', 'citronal'],
-  plantas: ['plant-y', 'plant-r', 'plant-z', 'plant-x', 'plant'],
+  plantas: ['plant-y', 'plant-r', 'plant-z', 'plant-x'],
 }
 
-/** Puntos de un recurso: agrega todos los grupos cuyo id base coincide con un alias. */
+/** Puntos de un recurso: agrega todos los grupos cuyo primer token coincide con un alias. */
 export function resourcePoints(data: ResourceMapData, resId: string): MapPoint[] {
   const aliases = RESOURCE_GROUP_ALIASES[resId] ?? [resId]
+  const set = new Set(aliases)
   const out: MapPoint[] = []
   for (const [group, pts] of Object.entries(data.groups)) {
-    const base = group.split(' ')[0]
-    if (aliases.some((a) => base === a || base.startsWith(`${a}-`))) out.push(...pts)
+    if (set.has(group.split(' ')[0])) out.push(...pts)
   }
   return out
 }
