@@ -1,12 +1,11 @@
 <svg width="512" height="512" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#39e6e0"/><stop offset="1" stop-color="#14a8b8"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="7" fill="#060b10"/>
-  <ellipse cx="16" cy="21" rx="7.5" ry="6.5" fill="url(#g)"/>
-  <ellipse cx="7.5" cy="11.5" rx="2.6" ry="5" transform="rotate(-24 7.5 11.5)" fill="url(#g)"/>
-  <ellipse cx="16" cy="8.5" rx="2.7" ry="5.6" fill="url(#g)"/>
-  <ellipse cx="24.5" cy="11.5" rx="2.6" ry="5" transform="rotate(24 24.5 11.5)" fill="url(#g)"/>
+  <!-- ArkMaster: garra de 3 tajos (óxido) sobre tinta — los dos colores núcleo del expediente -->
+  <rect width="32" height="32" fill="#2c2820"/>
+  <g transform="translate(16 16) scale(0.7) translate(-16 -16)" fill="#c15a2e">
+    <g transform="rotate(-22 16 16)">
+      <path d="M6 2 L9 8 L10.2 12.5 L8.6 20 L7.2 30 L5.4 19 L4 13.5 L5.2 7 Z"/>
+      <path d="M14.5 0 L18 7 L19.4 13.5 L17.4 22 L15.8 32 L13.4 21 L11.8 14.5 L13.2 6 Z"/>
+      <path d="M23.5 3 L26.4 8.5 L27.6 13 L26 20.5 L24.8 28.5 L22.8 19.5 L21.4 14 L22.6 8 Z"/>
+    </g>
+  </g>
 </svg>

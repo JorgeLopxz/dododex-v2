@@ -1,4 +1,4 @@
-import { Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { HomePage } from './features/home/HomePage'
 import { CreatureDetailPage } from './features/creatures/CreatureDetailPage'
 import { MaterialsPage } from './features/materials/MaterialsPage'
@@ -24,6 +24,9 @@ function LegacyRedirect({ tab }: { tab: string }) {
 export default function App() {
   const { gameVersion, setGameVersion } = useSettings()
   const info = getDataInfo(gameVersion)
+  // key por pathname: al cambiar de pantalla, React remonta la vista y reinicia
+  // la animación de "pasar página" (cambiar de pestaña ?tab= no la dispara)
+  const location = useLocation()
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
@@ -60,19 +63,21 @@ export default function App() {
         </NavLink>
       </header>
 
-      <main className="flex-1 px-4 pb-28">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/criaturas" element={<Navigate to="/" replace />} />
-          <Route path="/criaturas/:speciesId" element={<CreatureDetailPage />} />
-          <Route path="/inspector/:speciesId?" element={<LegacyRedirect tab="inspector" />} />
-          <Route path="/tameo/:speciesId?" element={<LegacyRedirect tab="tameo" />} />
-          <Route path="/materiales" element={<MaterialsPage />} />
-          <Route path="/recetas/:slug?" element={<RecipesPage />} />
-          <Route path="/ia" element={<AssistantPage />} />
-          <Route path="/dinos" element={<Navigate to="/" replace />} />
-          <Route path="/ajustes" element={<Navigate to="/" replace />} />
-        </Routes>
+      <main className="page-stage flex-1 px-4 pb-28">
+        <div key={location.pathname} className="page-view">
+          <Routes location={location}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/criaturas" element={<Navigate to="/" replace />} />
+            <Route path="/criaturas/:speciesId" element={<CreatureDetailPage />} />
+            <Route path="/inspector/:speciesId?" element={<LegacyRedirect tab="inspector" />} />
+            <Route path="/tameo/:speciesId?" element={<LegacyRedirect tab="tameo" />} />
+            <Route path="/materiales" element={<MaterialsPage />} />
+            <Route path="/recetas/:slug?" element={<RecipesPage />} />
+            <Route path="/ia" element={<AssistantPage />} />
+            <Route path="/dinos" element={<Navigate to="/" replace />} />
+            <Route path="/ajustes" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
         <p className="mono mt-10 text-center text-[10px] leading-relaxed text-bone-faint">
           Registro Nº {info.version} · actualizado {new Date(info.generated).toLocaleDateString()} · datos derivados de
           ARK Smart Breeding (MIT, © cadon)
