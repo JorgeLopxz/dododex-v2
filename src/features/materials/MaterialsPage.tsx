@@ -83,20 +83,19 @@ export function MaterialsPage() {
 
   return (
     <section aria-label="Mapa de materiales" className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 className="display text-2xl font-bold">Materiales</h2>
-          <p className="text-sm text-bone-dim">Todos los puntos de spawn de cada recurso, por mapa.</p>
-        </div>
-        <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-bone-dim">Mapa</span>
-          <select value={map} onChange={(e) => setMap(e.target.value)} className="input-field w-44">
-            {maps.map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-        </label>
+      <div className="border-b-2 border-bone pb-2">
+        <p className="kicker">Cartografía · Lámina {(maps as readonly string[]).indexOf(map) + 1}</p>
+        <h2 className="display text-2xl font-semibold">Recursos</h2>
+        <p className="text-sm italic text-bone-dim">Todos los puntos de spawn de cada recurso, por mapa.</p>
       </div>
+      <label className="text-sm">
+        <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Mapa</span>
+        <select value={map} onChange={(e) => setMap(e.target.value)} className="input-field w-44">
+          {maps.map((m) => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+      </label>
 
       {/* Capas de recursos (multi-selección); solo se listan los que EXISTEN en este mapa */}
       <div role="group" aria-label="Recursos a mostrar" className="flex flex-wrap gap-1.5">
@@ -106,18 +105,18 @@ export function MaterialsPage() {
             onClick={() => toggle(r.id)}
             aria-pressed={active.has(r.id)}
             className="mode-tab flex flex-none items-center gap-1.5 px-2.5 text-xs"
-            style={active.has(r.id) && counts[r.id] > 0 ? { borderColor: r.color, color: r.color } : undefined}
+            style={active.has(r.id) && counts[r.id] > 0 ? { borderColor: r.color, color: r.color, background: 'transparent' } : undefined}
           >
-            <ItemImage name={r.item} size={18} fallback={r.icon} /> {r.label}
-            {counts[r.id] > 0 && <span className="opacity-70">({counts[r.id]})</span>}
+            <ItemImage name={r.item} size={16} fallback={r.icon} /> {r.label}
+            {counts[r.id] > 0 && <span className="mono opacity-70">({counts[r.id]})</span>}
           </button>
         ))}
       </div>
 
       <MapBoard map={map} image={mapImageFile(map, gameVersion)} layers={layers} status={status} />
       {noData && (
-        <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
-          ⓘ La wiki todavía no ha publicado los datos de recursos de <strong className="text-bone">{map}</strong>. En
+        <p className="border border-surface-3 bg-surface-1/60 px-3 py-2 text-xs italic text-bone-dim">
+          La wiki todavía no ha publicado los datos de recursos de <strong className="not-italic text-bone">{map}</strong>. En
           cuanto los suban, se integran automáticamente.
         </p>
       )}

@@ -187,7 +187,7 @@ export function MapBoard({
         }`}
         style={{
           background:
-            'repeating-linear-gradient(0deg, transparent 0 12.4%, rgba(239,228,205,0.07) 12.4% 12.5%), repeating-linear-gradient(90deg, transparent 0 12.4%, rgba(239,228,205,0.07) 12.4% 12.5%), #101a14',
+            'repeating-linear-gradient(0deg, transparent 0 12.4%, rgba(44,40,32,0.06) 12.4% 12.5%), repeating-linear-gradient(90deg, transparent 0 12.4%, rgba(44,40,32,0.06) 12.4% 12.5%), #efe6d0',
         }}
       >
         {/* contenido zoomeable: mapa + capas comparten transform */}
@@ -202,7 +202,8 @@ export function MapBoard({
               alt={`Mapa de ${map}`}
               referrerPolicy="no-referrer"
               onError={() => setImgAttempt((a) => a + 1)}
-              className="pointer-events-none absolute inset-0 size-full object-cover opacity-90"
+              className="pointer-events-none absolute inset-0 size-full object-cover"
+              style={{ filter: 'sepia(.55) saturate(.7) contrast(.95)' }}
               draggable={false}
             />
           )}
@@ -224,7 +225,7 @@ export function MapBoard({
               zoomAt(s, s, 1.6)
             }}
             aria-label="Acercar"
-            className="grid size-8 place-items-center rounded border border-metal-dim bg-surface-0/80 text-lg leading-none text-bone hover:border-amber-deep"
+            className="mono grid size-8 place-items-center border border-bone bg-surface-0/90 text-lg leading-none text-bone hover:bg-amber hover:text-surface-0"
           >＋</button>
           <button
             onClick={(e) => {
@@ -233,7 +234,7 @@ export function MapBoard({
               zoomAt(s, s, 1 / 1.6)
             }}
             aria-label="Alejar"
-            className="grid size-8 place-items-center rounded border border-metal-dim bg-surface-0/80 text-lg leading-none text-bone hover:border-amber-deep"
+            className="mono grid size-8 place-items-center border border-bone bg-surface-0/90 text-lg leading-none text-bone hover:bg-amber hover:text-surface-0"
           >−</button>
           {view.scale > 1.05 && (
             <button
@@ -242,7 +243,7 @@ export function MapBoard({
                 setView({ scale: 1, tx: 0, ty: 0 })
               }}
               aria-label="Restablecer zoom"
-              className="grid size-8 place-items-center rounded border border-metal-dim bg-surface-0/80 text-sm leading-none text-bone hover:border-amber-deep"
+              className="mono grid size-8 place-items-center border border-bone bg-surface-0/90 text-sm leading-none text-bone hover:bg-amber hover:text-surface-0"
             >⤢</button>
           )}
         </div>

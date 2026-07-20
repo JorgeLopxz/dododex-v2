@@ -1,244 +1,347 @@
 @import 'tailwindcss';
 
 /*
- * Design system "Brasa y Piedra" — supervivencia ARK, no SaaS:
- * losas de piedra oscura y cálida, acentos ámbar de antorcha/brasa,
- * bordes de metal envejecido con esquinas reforzadas, y el cian de
- * cristal Tek RESERVADO como firma del Inspector post-tame (lo high-tech).
- * Stats en paleta Okabe-Ito (segura para daltonismo).
+ * Design system "ArkMaster — Expediente" — cuaderno de expedición de un
+ * naturalista en ARK: pergamino, tinta, sellos, láminas de archivo. Modo
+ * claro único. Los nombres de token se CONSERVAN (prefijos surface-, bone-,
+ * amber-, tek-, metal-) por compatibilidad con todo el código existente;
+ * solo cambian los VALORES — así el rediseño cae en cascada sin tocar cada
+ * className. tek queda RESERVADO como acento pencil exclusivo del
+ * Inspector (mismo patrón que en el sistema anterior).
  */
 @theme {
-  --font-display: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Spectral', ui-serif, Georgia, serif;
+  --font-sans: 'IBM Plex Mono', ui-monospace, monospace;
 
-  /* Superficies: basalto y piedra cálida, de la sombra a la losa */
-  --color-surface-0: #0c0a07;
-  --color-surface-1: #151109;
-  --color-surface-2: #221a0e;
-  --color-surface-3: #382b16;
+  /* Pergamino: de la losa base a las líneas de cuaderno */
+  --color-surface-0: #efe6d0;
+  --color-surface-1: #ece2c8;
+  --color-surface-2: #e4d9bf;
+  --color-surface-3: #d8ccb2;
 
-  /* Neutros hueso/pergamino */
-  --color-bone: #efe4cd;
-  --color-bone-dim: #b5a482;
-  --color-bone-faint: #7d6c4d;
+  /* Tinta (nombres 'bone' conservados como API) */
+  --color-bone: #2c2820;
+  --color-bone-dim: #6b6250;
+  --color-bone-faint: #a89a7e;
 
-  /* Acento principal: ámbar de brasa/antorcha */
-  --color-amber: #ffb547;
-  --color-amber-deep: #d97e18;
-  --color-amber-dark: #7d4a0c;
+  /* Acento principal: óxido de sello/kicker/CTA (nombres 'amber' conservados) */
+  --color-amber: #b4552d;
+  --color-amber-deep: #9c4726;
+  --color-amber-dark: #6b3018;
 
-  /* Cristal Tek (solo Inspector y detalles "high-tech") */
-  --color-tek: #3ee6df;
-  --color-tek-deep: #14a8b8;
-  --color-tek-dark: #0b6572;
+  /* Lápiz de laboratorio — RESERVADO al Inspector post-tame (nombres 'tek' conservados) */
+  --color-tek: #3a5f8a;
+  --color-tek-deep: #2d4a6d;
+  --color-tek-dark: #1f3450;
 
-  /* Metal envejecido (bordes, remaches) */
-  --color-metal: #58513f;
-  --color-metal-dim: #38332a;
+  /* Verdigris: activo/éxito/TE alta — reutiliza el semántico 'ok' de abajo */
+  --color-verdigris: #2f6f64;
+  --color-verdigris-deep: #24564d;
 
-  /* Paleta Okabe-Ito por stat (nunca color solo: siempre con icono + etiqueta) */
-  --color-stat-health: #e69f00;
-  --color-stat-stamina: #56b4e9;
-  --color-stat-oxygen: #4d9fd6;
-  --color-stat-food: #00c98d;
-  --color-stat-weight: #e8dc4e;
-  --color-stat-melee: #ef6c2e;
-  --color-stat-speed: #cc79a7;
-  --color-stat-torpor: #9a9a9a;
+  /* Bordes de lámina (nombres 'metal' conservados) */
+  --color-metal: #a89a7e;
+  --color-metal-dim: #d8ccb2;
+
+  /* Paleta de stats entintada (Okabe-Ito adaptada a pergamino) */
+  --color-stat-health: #9c6f00;
+  --color-stat-stamina: #2f7fb8;
+  --color-stat-oxygen: #3a6f9e;
+  --color-stat-food: #1f7a5a;
+  --color-stat-weight: #8a7a1f;
+  --color-stat-melee: #b4552d;
+  --color-stat-speed: #7a4a6e;
+  --color-stat-torpor: #6b5f4a;
 
   /* Semánticos */
-  --color-ok: #00c98d;
-  --color-warn: #ffb547;
-  --color-danger: #ef6c2e;
+  --color-ok: #2f6f64;
+  --color-warn: #a8791f;
+  --color-danger: #a13a1f;
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   color: var(--color-bone);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   -webkit-font-smoothing: antialiased;
   background:
-    /* resplandor de antorcha arriba */
-    radial-gradient(90rem 42rem at 50% -22rem, rgba(217, 126, 24, 0.13), transparent 62%),
-    radial-gradient(46rem 30rem at 108% 112%, rgba(217, 126, 24, 0.06), transparent 60%),
-    /* veta de piedra sutil */
-    repeating-linear-gradient(105deg, transparent 0 3px, rgba(239, 228, 205, 0.008) 3px 6px),
-    var(--color-surface-0);
+    /* pauta de cuaderno */
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(44, 40, 32, 0.05) 27px 28px),
+    linear-gradient(180deg, #f4edda, #efe6d0);
   background-attachment: fixed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ——— Animaciones: lenguaje papel + tinta ——— */
+@keyframes cardDrop {
+  0% { opacity: 0; transform: translateY(-18px) rotate(-1.5deg); }
+  60% { opacity: 1; transform: translateY(3px) rotate(0.6deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes stampIn {
+  0% { opacity: 0; transform: rotate(-3deg) scale(2.2); }
+  60% { transform: rotate(-3deg) scale(0.92); }
+  100% { opacity: 1; transform: rotate(-3deg) scale(1); }
+}
+@keyframes inkDraw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes clawSlash {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
 }
 
 /* ——— Componentes base ——— */
 @layer components {
   .display {
     font-family: var(--font-display);
-    letter-spacing: 0.03em;
+  }
+  .mono {
+    font-family: var(--font-sans);
+  }
+  /* Kicker: etiqueta mono en mayúsculas de sección/campo (sustituye los antiguos "text-amber uppercase") */
+  .kicker {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-amber);
   }
 
-  /* Losa de piedra con marco de metal envejecido y esquinas reforzadas */
+  /* Ficha (lámina de archivo): sin radio, sombra impresa sólida, sin resplandor */
   .panel {
     position: relative;
-    background:
-      linear-gradient(165deg, rgba(239, 228, 205, 0.04), rgba(239, 228, 205, 0.008) 45%),
-      color-mix(in srgb, var(--color-surface-1) 92%, transparent);
-    border: 1px solid var(--color-metal-dim);
-    border-radius: 0.375rem;
-    box-shadow:
-      inset 0 1px 0 rgba(239, 228, 205, 0.05),
-      inset 0 -6px 14px rgba(0, 0, 0, 0.25),
-      0 8px 26px rgba(0, 0, 0, 0.5);
+    background: color-mix(in srgb, #fffcf2 60%, transparent);
+    border: 1px solid var(--color-surface-3);
+    border-radius: 0;
+    box-shadow: 2px 3px 0 rgba(44, 40, 32, 0.12);
+    animation: cardDrop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
-  /* Refuerzos metálicos en esquinas opuestas */
-  .panel::before,
-  .panel::after {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border-color: var(--color-metal);
-    border-style: solid;
-    pointer-events: none;
-  }
-  .panel::before {
-    top: -1px;
-    left: -1px;
-    border-width: 2px 0 0 2px;
-    border-top-left-radius: 0.375rem;
-  }
-  .panel::after {
-    bottom: -1px;
-    right: -1px;
-    border-width: 0 2px 2px 0;
-    border-bottom-right-radius: 0.375rem;
-  }
-
   .panel-hover {
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .panel-hover:hover {
     transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--color-amber-deep) 55%, var(--color-metal-dim));
-    box-shadow:
-      inset 0 1px 0 rgba(239, 228, 205, 0.06),
-      0 0 26px rgba(217, 126, 24, 0.14),
-      0 12px 32px rgba(0, 0, 0, 0.6);
+    border-color: var(--color-amber);
+    box-shadow: 3px 5px 0 rgba(180, 85, 45, 0.3);
   }
-  .panel-hover:hover::before,
-  .panel-hover:hover::after {
-    border-color: var(--color-amber-deep);
+
+  /* Dentro del Inspector, la ficha vira a acento pencil */
+  .inspector-scope .panel {
+    border-color: color-mix(in srgb, var(--color-tek) 40%, var(--color-surface-3));
+  }
+  .inspector-scope .panel-hover:hover {
+    border-color: var(--color-tek);
+    box-shadow: 3px 5px 0 rgba(58, 95, 138, 0.28);
+  }
+  .inspector-scope .kicker {
+    color: var(--color-tek);
   }
 
   .btn-primary {
     font-family: var(--font-display);
     font-weight: 600;
-    color: #1c1002;
-    background: linear-gradient(135deg, var(--color-amber), var(--color-amber-deep));
-    border: 1px solid rgba(255, 181, 71, 0.4);
-    border-radius: 0.375rem;
+    color: var(--color-surface-0);
+    background: var(--color-amber);
+    border: 1px solid var(--color-amber-dark);
+    border-radius: 0;
     padding: 0.625rem 1.25rem;
-    box-shadow: 0 0 16px rgba(217, 126, 24, 0.3), 0 2px 10px rgba(0, 0, 0, 0.45);
-    transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    box-shadow: 2px 3px 0 rgba(44, 40, 32, 0.22);
+    transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
   }
   .btn-primary:hover {
-    filter: brightness(1.1);
-    box-shadow: 0 0 24px rgba(255, 181, 71, 0.4), 0 2px 10px rgba(0, 0, 0, 0.45);
+    background: var(--color-amber-deep);
+    box-shadow: 3px 4px 0 rgba(44, 40, 32, 0.28);
   }
   .btn-primary:active {
-    transform: scale(0.98);
+    transform: translate(1px, 2px);
+    box-shadow: 1px 1px 0 rgba(44, 40, 32, 0.22);
   }
   .btn-primary:disabled {
-    opacity: 0.55;
-    filter: none;
+    opacity: 0.5;
+    box-shadow: none;
   }
 
   .btn-ghost {
-    border: 1px solid var(--color-metal-dim);
-    border-radius: 0.375rem;
+    border: 1px solid var(--color-surface-3);
+    border-radius: 0;
     padding: 0.5rem 1rem;
     color: var(--color-bone-dim);
-    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
   }
   .btn-ghost:hover {
-    border-color: var(--color-amber-deep);
+    border-color: var(--color-amber);
     color: var(--color-bone);
-    background: rgba(217, 126, 24, 0.08);
-    box-shadow: 0 0 14px rgba(217, 126, 24, 0.14);
+    background: rgba(180, 85, 45, 0.07);
+  }
+  .inspector-scope .btn-ghost:hover {
+    border-color: var(--color-tek);
+    background: rgba(58, 95, 138, 0.07);
   }
 
+  /* Inputs subrayados: sin caja, línea base de tinta */
   .input-field {
     width: 100%;
-    background: rgba(6, 4, 2, 0.7);
-    border: 1px solid var(--color-metal-dim);
-    border-radius: 0.375rem;
-    padding: 0.625rem 0.875rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--color-bone);
+    border-radius: 0;
+    padding: 0.5rem 0.125rem;
     color: var(--color-bone);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease;
   }
   .input-field::placeholder {
+    font-style: italic;
     color: var(--color-bone-faint);
   }
   .input-field:focus {
     outline: none;
-    border-color: var(--color-amber-deep);
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.4),
-      0 0 0 3px rgba(217, 126, 24, 0.22),
-      0 0 12px rgba(255, 181, 71, 0.15);
+    border-bottom-color: var(--color-verdigris);
+    border-bottom-width: 2px;
+  }
+  .inspector-scope .input-field:focus {
+    border-bottom-color: var(--color-tek);
   }
 
-  /* Cabecera de paso numerado del flujo del Inspector (cristal Tek) */
+  /* Sello: distintivo girado con borde de tinta */
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border: 1.5px solid var(--color-amber);
+    color: var(--color-amber);
+    border-radius: 0;
+    transform: rotate(-2.5deg);
+    animation: stampIn 0.4s ease both;
+    animation-delay: 0.15s;
+  }
+  .stamp-verdigris {
+    border-color: var(--color-verdigris);
+    color: var(--color-verdigris);
+  }
+  .stamp-ink {
+    border-color: var(--color-bone);
+    color: var(--color-bone);
+  }
+
+  /* Marco de lámina para iconos oficiales del juego (GameImage) */
+  .icon-frame {
+    border: 1px solid var(--color-surface-3);
+    background: #fffcf2;
+    filter: sepia(0.35) contrast(1.05);
+    transition: filter 0.15s ease;
+  }
+  .icon-frame-active,
+  a:hover > .icon-frame,
+  button:hover > .icon-frame,
+  .panel-hover:hover .icon-frame {
+    filter: none;
+  }
+
+  /* Insignia de paso numerado del Inspector (siempre pencil) */
   .step-badge {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
-    border-radius: 0.25rem;
-    background: linear-gradient(135deg, var(--color-tek), var(--color-tek-deep));
-    color: #04181a;
+    border-radius: 0;
+    background: var(--color-tek);
+    color: var(--color-surface-0);
     font-weight: 700;
     font-size: 0.9rem;
-    box-shadow: 0 0 12px rgba(62, 230, 223, 0.4);
+    box-shadow: 1.5px 2px 0 rgba(44, 40, 32, 0.25);
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
   }
 
-  /* Divisor de brasa: línea con pulso central ámbar */
-  .claw-divider {
+  /* Regla de tinta (inkDraw) para separadores/encabezados */
+  .ink-rule {
     height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(217, 126, 24, 0.6) 30%,
-      var(--color-amber) 50%,
-      rgba(217, 126, 24, 0.6) 70%,
-      transparent
-    );
-    box-shadow: 0 0 12px rgba(255, 181, 71, 0.45);
-    border-radius: 999px;
+    background: var(--color-bone);
+    transform-origin: left;
+    animation: inkDraw 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .claw-divider {
+    height: 1px;
+    background: var(--color-surface-3);
+    transform-origin: left;
+    animation: inkDraw 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
 
-  /* Selector de modo tipo segmented-control tallado en piedra */
+  /* Tabs de ficha (archivador): activa = tinta sólida, no verdigris */
+  .tab-archive {
+    font-family: var(--font-sans);
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--color-surface-3);
+    border-radius: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-bone-dim);
+    background: transparent;
+    transition: all 0.15s ease;
+  }
+  .tab-archive[aria-pressed='true'] {
+    background: var(--color-bone);
+    color: var(--color-surface-0);
+    border-color: var(--color-bone);
+  }
+  .inspector-scope .tab-archive[aria-pressed='true'] {
+    background: var(--color-tek);
+    border-color: var(--color-tek);
+  }
+
+  /* Selector segmentado (rates, modos): activo = relleno verdigris (pencil en Inspector) */
   .mode-tab {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     flex: 1;
     padding: 0.5rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.85rem;
+    border-radius: 0;
+    border: 1px solid transparent;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--color-bone-dim);
     transition: all 0.15s ease;
   }
   .mode-tab[aria-pressed='true'] {
-    background: linear-gradient(135deg, rgba(255, 181, 71, 0.18), rgba(217, 126, 24, 0.1));
-    color: var(--color-amber);
-    border: 1px solid rgba(217, 126, 24, 0.5);
-    box-shadow: 0 0 12px rgba(217, 126, 24, 0.16), inset 0 1px 0 rgba(255, 181, 71, 0.12);
+    background: var(--color-verdigris);
+    color: var(--color-surface-0);
+    border-color: var(--color-verdigris-deep);
+  }
+  .inspector-scope .mode-tab[aria-pressed='true'] {
+    background: var(--color-tek);
+    border-color: var(--color-tek-deep);
+  }
+
+  /* Bloque de código/comando */
+  .code-block {
+    font-family: var(--font-sans);
+    background: var(--color-surface-1);
+    border: 1px solid var(--color-surface-3);
+    border-radius: 0;
+    color: var(--color-bone-dim);
   }
 }
 
@@ -246,7 +349,7 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-amber);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 button,
@@ -270,5 +373,5 @@ input[type='number'] {
 }
 
 ::selection {
-  background: rgba(217, 126, 24, 0.5);
+  background: rgba(180, 85, 45, 0.28);
 }

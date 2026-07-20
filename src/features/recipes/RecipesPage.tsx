@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import recipesJson from '../../data/recipes.json'
 import { getSpecies, getTamingFoods } from '../../data'
 import { CreatureImage, ItemImage } from '../../ui/GameImage'
+import { SectionRule } from '../../ui/SectionRule'
 import { useSettings } from '../../store/settings'
 
 interface Recipe {
@@ -33,8 +34,8 @@ export function RecipesPage() {
     return recipe ? (
       <RecipeDetail recipe={recipe} />
     ) : (
-      <p className="panel p-6 text-center text-bone-dim">
-        Receta no encontrada. <Link to="/recetas" className="text-amber underline">Ver todas</Link>
+      <p className="panel p-6 text-center italic text-bone-dim">
+        Receta no encontrada. <Link to="/recetas" className="not-italic text-amber underline">Ver todas</Link>
       </p>
     )
   }
@@ -43,24 +44,25 @@ export function RecipesPage() {
   const cooking = DATA.recipes.filter((r) => r.kind === 'cocina')
   return (
     <section aria-label="Recetas" className="space-y-6">
-      <div>
-        <h2 className="display text-2xl font-bold">Recetas</h2>
-        <p className="text-sm text-bone-dim">Kibbles y cocina — todo lo que se hace en la olla.</p>
+      <div className="border-b-2 border-bone pb-2">
+        <p className="kicker">Recetario de campo</p>
+        <h2 className="display text-2xl font-semibold">Recetas</h2>
+        <p className="text-sm italic text-bone-dim">Kibbles y cocina — todo lo que se hace en la olla.</p>
       </div>
       {[['Kibbles', kibbles] as const, ['Cocina', cooking] as const].map(([title, list]) => (
         <div key={title}>
-          <h3 className="display mb-3 text-sm font-semibold uppercase tracking-widest text-bone-faint">{title}</h3>
+          <SectionRule label={title} />
           <ul className="grid gap-2 sm:grid-cols-2">
             {list.map((r) => (
               <li key={r.name}>
                 <Link
                   to={`/recetas/${recipeSlug(r.name)}`}
-                  className="panel panel-hover flex items-center gap-3 p-3"
-                  style={KIBBLE_COLORS[r.name] ? { borderColor: `color-mix(in srgb, ${KIBBLE_COLORS[r.name]} 45%, transparent)` } : undefined}
+                  className="panel panel-hover flex items-center gap-3 border-t-[3px] p-3"
+                  style={{ borderTopColor: KIBBLE_COLORS[r.name] ?? 'var(--color-surface-3)' }}
                 >
                   <ItemImage name={r.name} size={34} fallback="🍲" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold" style={{ color: KIBBLE_COLORS[r.name] }}>{r.name}</span>
+                    <span className="display block truncate font-semibold" style={{ color: KIBBLE_COLORS[r.name] }}>{r.name}</span>
                     <span className="block truncate text-[11px] text-bone-faint">
                       {r.ingredients.map((i) => i.n.split(',')[0]).join(' · ')}
                     </span>
@@ -71,8 +73,8 @@ export function RecipesPage() {
           </ul>
         </div>
       ))}
-      <p className="text-[11px] text-bone-faint">
-        Recetas: <a href="https://ark.wiki.gg" target="_blank" rel="noreferrer" className="underline">ark.wiki.gg</a> (CC BY-NC-SA 3.0).
+      <p className="text-[11px] italic text-bone-faint">
+        Recetas: <a href="https://ark.wiki.gg" target="_blank" rel="noreferrer" className="not-italic underline">ark.wiki.gg</a> (CC BY-NC-SA 3.0).
         Todas se cocinan en olla o cocina industrial.
       </p>
     </section>
@@ -104,16 +106,16 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
         </button>
         <ItemImage name={recipe.name} size={44} fallback="🍲" />
         <div>
-          <h2 className="display text-2xl font-bold leading-tight" style={{ color: KIBBLE_COLORS[recipe.name] }}>
+          <h2 className="display text-2xl font-semibold leading-tight" style={{ color: KIBBLE_COLORS[recipe.name] }}>
             {recipe.name}
           </h2>
-          <p className="text-xs text-bone-faint">Olla de cocina / Cocina industrial</p>
+          <p className="kicker">Olla de cocina / Cocina industrial</p>
         </div>
       </div>
 
       {/* Ingredientes */}
       <div className="panel p-4">
-        <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">Ingredientes</p>
+        <p className="kicker mb-3">Ingredientes</p>
         <ul className="grid gap-2">
           {recipe.ingredients.map((ing) => {
             const first = ing.n.split(',')[0].trim()
@@ -130,7 +132,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
             return (
               <li key={ing.n}>
                 {linked ? (
-                  <Link to={`/recetas/${recipeSlug(linked.name)}`} className="block rounded-lg px-1 py-0.5 hover:bg-surface-2/50">
+                  <Link to={`/recetas/${recipeSlug(linked.name)}`} className="block px-1 py-0.5 hover:bg-surface-1/60">
                     {row}
                   </Link>
                 ) : (
@@ -145,9 +147,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
       {/* Huevos válidos (kibbles) */}
       {eggs && eggs.length > 0 && (
         <div className="panel p-4">
-          <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">
-            Huevos válidos ({eggs.length})
-          </p>
+          <p className="kicker mb-3">Huevos válidos ({eggs.length})</p>
           <ul className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm text-bone-dim sm:grid-cols-3">
             {eggs.map((e) => (
               <li key={e} className="flex items-center gap-1.5">
@@ -162,15 +162,13 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
       {/* Preferido por */}
       {preferredBy.length > 0 && (
         <div className="panel p-4">
-          <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">
-            Preferido por ({preferredBy.length})
-          </p>
+          <p className="kicker mb-3">Preferido por ({preferredBy.length})</p>
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {preferredBy.map((s) => (
               <li key={s.id}>
                 <Link
                   to={`/criaturas/${encodeURIComponent(s.id)}?tab=tameo`}
-                  className="flex items-center gap-2 rounded-lg border border-surface-3/60 bg-surface-0/40 px-2 py-1.5 hover:border-amber-dark"
+                  className="flex items-center gap-2 border border-surface-3 bg-surface-1/40 px-2 py-1.5 hover:border-amber"
                 >
                   <CreatureImage name={s.name} size={30} />
                   <span className="truncate text-xs font-medium">{s.name}</span>

@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react'
  * miniaturas por ?width — CC BY-NC-SA, coherente con los mapas). Fallback:
  * CDN de Dododex (a veces bloqueado por su Cloudflare) y por último
  * monograma/emoji. Los nombres de ASB coinciden con los archivos de la wiki.
+ *
+ * Presentación "lámina de archivo": marco de tinta + tono sepia (.icon-frame
+ * en index.css); al pasar el ratón o en fila activa se ve a todo color.
  */
 
 const wikiFile = (name: string, width: number) =>
@@ -89,12 +92,12 @@ export function CreatureImage({ name, size = 44, className = '' }: { name: strin
     <ImageChain
       urls={urls}
       size={size}
-      className={`shrink-0 rounded-xl bg-surface-2/60 object-contain p-0.5 ${className}`}
+      className={`icon-frame shrink-0 object-contain p-0.5 ${className}`}
       fallback={
         <span
           aria-hidden="true"
           style={{ width: size, height: size }}
-          className={`display inline-grid shrink-0 place-items-center align-middle rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-sm font-bold text-amber ${className}`}
+          className={`display icon-frame inline-grid shrink-0 place-items-center align-middle text-sm font-bold text-amber ${className}`}
         >
           {initials}
         </span>
@@ -113,7 +116,7 @@ export function ItemImage({ name, size = 28, fallback = '🍖' }: { name: string
     <ImageChain
       urls={urls}
       size={size}
-      className="inline-block shrink-0 align-middle object-contain"
+      className="icon-frame inline-block shrink-0 object-contain p-px align-middle"
       fallback={
         <span aria-hidden="true" style={{ width: size, height: size }} className="inline-grid shrink-0 place-items-center align-middle text-base">
           {fallback}

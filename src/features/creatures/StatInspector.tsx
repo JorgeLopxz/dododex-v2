@@ -120,39 +120,39 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
         </div>
 
         {/* Selector de situación: el caso típico es "recién domado" */}
-        <div role="group" aria-label="Situación del dino" className="mb-4 flex gap-2 rounded-lg bg-surface-0/60 p-1.5">
+        <div role="group" aria-label="Situación del dino" className="mb-4 flex gap-2 border border-surface-3 bg-surface-1/60 p-1.5">
           <button onClick={() => setMode('fresh')} aria-pressed={mode === 'fresh'} className="mode-tab">
-            ⚡ Recién domado
+            Recién domado
           </button>
           <button onClick={() => setMode('leveled')} aria-pressed={mode === 'leveled'} className="mode-tab">
             Ya le subí niveles
           </button>
           <button onClick={() => setMode('wild')} aria-pressed={mode === 'wild'} className="mode-tab">
-            🌿 Salvaje
+            Salvaje
           </button>
         </div>
         {mode === 'fresh' && (
-          <p className="mb-4 text-xs text-bone-dim">
-            Acabas de domarlo y no has gastado ningún punto → te digo <strong className="text-tek">exactamente</strong>{' '}
+          <p className="mb-4 text-xs italic text-bone-dim">
+            Acabas de domarlo y no has gastado ningún punto → te digo <strong className="not-italic text-tek">exactamente</strong>{' '}
             dónde cayeron los puntos salvajes (los que se heredan al criar).
           </p>
         )}
         {mode === 'wild' && (
-          <p className="mb-4 text-xs text-bone-dim">
-            Aún no lo has domado → mira dónde tiene los puntos y decide si <strong className="text-tek">merece la pena</strong> el tameo.
+          <p className="mb-4 text-xs italic text-bone-dim">
+            Aún no lo has domado → mira dónde tiene los puntos y decide si <strong className="not-italic text-tek">merece la pena</strong> el tameo.
           </p>
         )}
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <label className="text-sm">
-            <span className="mb-1 block text-xs font-medium text-bone-dim">
+            <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">
               {mode === 'fresh' ? 'Nivel (tras domar)' : mode === 'wild' ? 'Nivel salvaje' : 'Nivel actual'}
             </span>
             <input type="number" inputMode="numeric" value={level} onChange={(e) => setLevel(e.target.value)} className="input-field" />
           </label>
           {mode === 'leveled' && (
             <label className="text-sm">
-              <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel tras domar</span>
+              <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Nivel tras domar</span>
               <input
                 type="number"
                 inputMode="numeric"
@@ -165,26 +165,26 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
           )}
           {!bred && mode !== 'wild' && (
             <label className="text-sm">
-              <span className="mb-1 block text-xs font-medium text-bone-dim">Efectividad %</span>
+              <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Efectividad %</span>
               <input type="number" inputMode="decimal" value={TE} onChange={(e) => setTE(e.target.value)} className="input-field" />
             </label>
           )}
           {mode !== 'wild' && (
             <label className="text-sm">
-              <span className="mb-1 block text-xs font-medium text-bone-dim">Imprint %</span>
+              <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Imprint %</span>
               <input type="number" inputMode="decimal" value={IB} onChange={(e) => setIB(e.target.value)} className="input-field" />
             </label>
           )}
         </div>
         {mode !== 'wild' && (
           <label className="mt-3 flex items-center gap-2 text-sm text-bone-dim">
-            <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-4 accent-(--color-tek-deep)" />
+            <input type="checkbox" checked={bred} onChange={(e) => setBred(e.target.checked)} className="size-4 accent-tek-deep" />
             Es un dino criado — la efectividad se asume 100%
           </label>
         )}
         {mode === 'leveled' && (
-          <p className="mt-2 text-xs text-bone-faint">
-            💡 El «nivel tras domar» (antes de gastar puntos) convierte varias posibilidades en una respuesta exacta.
+          <p className="mt-2 text-xs italic text-bone-faint">
+            El «nivel tras domar» (antes de gastar puntos) convierte varias posibilidades en una respuesta exacta.
           </p>
         )}
       </div>
@@ -198,12 +198,12 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
               {entryMode === 'points' ? 'Ajusta puntos hasta cuadrar' : 'Copia los valores que ves in-game'}
             </h3>
           </div>
-          <div role="group" aria-label="Modo de entrada" className="flex gap-1 rounded-lg bg-surface-0/60 p-1">
+          <div role="group" aria-label="Modo de entrada" className="flex gap-1 border border-surface-3 bg-surface-1/60 p-1">
             <button onClick={() => setEntryMode('points')} aria-pressed={entryMode === 'points'} className="mode-tab flex-none px-2.5 py-1 text-xs">
-              🎚 Puntos
+              Puntos
             </button>
             <button onClick={() => setEntryMode('type')} aria-pressed={entryMode === 'type'} className="mode-tab flex-none px-2.5 py-1 text-xs">
-              ⌨ Valores
+              Valores
             </button>
           </div>
         </div>
@@ -236,7 +236,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
               const shown = meta.percent ? `${(val * 100).toFixed(1)}%` : val.toFixed(1)
               const bump = (d: number) => setManual((m) => ({ ...m, [k]: Math.max(0, (m[k] ?? avgPts) + d) }))
               return (
-                <div key={k} className="grid grid-cols-[1fr_auto_5.5rem] items-center gap-2 rounded-lg px-1 py-1 odd:bg-surface-0/40">
+                <div key={k} className="grid grid-cols-[1fr_auto_5.5rem] items-center gap-2 border-b border-dashed border-surface-3 px-1 py-1.5 last:border-b-0">
                   <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
                     <span aria-hidden="true" style={{ color: meta.color }}>{meta.icon}</span>
                     <span className="truncate">{meta.label}</span>
@@ -245,7 +245,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
                     <button
                       aria-label={`Quitar punto de ${meta.label}`}
                       onClick={() => bump(-1)}
-                      className="grid size-7 place-items-center rounded bg-surface-2 text-bone-dim hover:text-bone"
+                      className="mono grid size-7 place-items-center border border-surface-3 bg-surface-1 text-bone-dim hover:text-bone"
                     >−</button>
                     <input
                       type="number"
@@ -258,7 +258,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
                     <button
                       aria-label={`Añadir punto a ${meta.label}`}
                       onClick={() => bump(1)}
-                      className="grid size-7 place-items-center rounded bg-surface-2 text-bone-dim hover:text-bone"
+                      className="mono grid size-7 place-items-center border border-surface-3 bg-surface-1 text-bone-dim hover:text-bone"
                     >+</button>
                   </span>
                   <span className="display text-right text-sm tabular-nums" style={{ color: meta.color }}>{shown}</span>
@@ -314,7 +314,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
                         return next
                       })
                     }
-                    className="size-3.5 accent-(--color-tek-deep)"
+                    className="size-3.5 accent-tek-deep"
                   />
                   nunca subí este stat
                 </label>
@@ -354,7 +354,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
           className="panel p-5"
           style={
             uniqueSolution
-              ? { borderColor: 'color-mix(in srgb, var(--color-ok) 45%, transparent)' }
+              ? { borderColor: 'color-mix(in srgb, var(--color-tek) 45%, transparent)' }
               : undefined
           }
         >
@@ -414,7 +414,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
             const hidden = Number(level) - 1 - assigned
             if (hidden < 0) return null
             return (
-              <p className="mt-2 rounded-lg border border-tek-dark/40 bg-surface-0/50 px-3 py-2 text-sm text-bone-dim">
+              <p className="mt-2 border border-tek/40 bg-surface-1/60 px-3 py-2 text-sm text-bone-dim">
                 <span className="display font-bold text-bone">{assigned}</span> puntos visibles ·{' '}
                 <span className="display font-bold text-bone-faint">{hidden}</span> en stats ocultos
                 {gameVersion === 'asa' ? ' (velocidad y similares — desperdiciados)' : ' (velocidad, etc.)'}
@@ -435,7 +435,7 @@ export function StatInspector({ species }: { species: SpeciesEntry }) {
             if (!wildLevel) return null
             const bonus = ptl - wildLevel
             return (
-              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-tek-dark/40 bg-surface-0/50 px-3 py-2 text-sm">
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border border-tek/40 bg-surface-1/60 px-3 py-2 text-sm">
                 <span className="text-bone-dim">Salvaje era</span>
                 <span className="display font-bold text-bone">Nv {wildLevel}</span>
                 <span className="text-tek" aria-hidden="true">→</span>

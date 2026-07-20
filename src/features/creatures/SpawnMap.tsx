@@ -77,7 +77,7 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-bone-dim">Mapa</span>
+          <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Mapa</span>
           <select value={map} onChange={(e) => setMap(e.target.value)} className="input-field w-44">
             {maps.map((m) => (
               <option key={m} value={m}>{m}</option>
@@ -88,12 +88,12 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
           <p className="text-sm text-bone-dim">
             {regions.length > 0 ? (
               <>
-                <strong className="display text-danger">{regions.length}</strong> zonas de aparición
+                <strong className="display text-amber">{regions.length}</strong> zonas de aparición
               </>
             ) : !mapHasData ? (
-              <span className="text-bone-faint">Mapa sin datos aún</span>
+              <span className="italic text-bone-faint">Mapa sin datos aún</span>
             ) : hasAnyData === false ? (
-              <span className="text-bone-faint">Sin datos de aparición en la wiki</span>
+              <span className="italic text-bone-faint">Sin datos de aparición en la wiki</span>
             ) : (
               <span className="text-warn">No aparece salvaje en {map}</span>
             )}
@@ -103,16 +103,16 @@ export function SpawnMap({ species }: { species: SpeciesEntry }) {
 
       {/* Mapa que la wiki aún no ha mapeado (Astraeos) */}
       {status === 'ok' && !mapHasData && (
-        <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
-          ⓘ La wiki todavía no ha publicado datos de aparición de <strong className="text-bone">{map}</strong>. En
+        <p className="border border-surface-3 bg-surface-1/60 px-3 py-2 text-xs italic text-bone-dim">
+          La wiki todavía no ha publicado datos de aparición de <strong className="not-italic text-bone">{map}</strong>. En
           cuanto los suban, se integran automáticamente.
         </p>
       )}
 
       {/* Criatura que la wiki aún no ha mapeado (nuevas de ASA como el Maeguana) */}
       {status === 'ok' && mapHasData && hasAnyData === false && (
-        <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
-          ⓘ La wiki todavía no tiene datos de aparición de <strong className="text-bone">{species.name}</strong> en
+        <p className="border border-surface-3 bg-surface-1/60 px-3 py-2 text-xs italic text-bone-dim">
+          La wiki todavía no tiene datos de aparición de <strong className="not-italic text-bone">{species.name}</strong> en
           ningún mapa (habitual en criaturas nuevas de ASA). En cuanto los publiquen, se integran automáticamente.
         </p>
       )}

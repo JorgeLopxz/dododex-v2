@@ -35,14 +35,14 @@ export function StatRadar({ values }: { values: { stat: PointStatKey; points: nu
     >
       {/* anillos de referencia */}
       {[0.25, 0.5, 0.75, 1].map((f) => (
-        <polygon key={f} points={ring(f)} fill="none" stroke="var(--color-metal-dim)" strokeWidth={f === 1 ? 1.5 : 0.7} />
+        <polygon key={f} points={ring(f)} fill="none" stroke="var(--color-surface-3)" strokeWidth={f === 1 ? 1.5 : 0.7} />
       ))}
       {/* ejes */}
       {values.map((_, i) => (
-        <line key={i} x1={cx} y1={cy} x2={px(i, R)} y2={py(i, R)} stroke="var(--color-metal-dim)" strokeWidth="0.7" />
+        <line key={i} x1={cx} y1={cy} x2={px(i, R)} y2={py(i, R)} stroke="var(--color-surface-3)" strokeWidth="0.7" />
       ))}
-      {/* silueta del dino */}
-      <polygon points={shape} fill="color-mix(in srgb, var(--color-amber) 30%, transparent)" stroke="var(--color-amber)" strokeWidth="2" strokeLinejoin="round" />
+      {/* silueta del dino (acento pencil — exclusivo del Inspector) */}
+      <polygon points={shape} fill="rgba(58,95,138,0.18)" stroke="var(--color-tek)" strokeWidth="2" strokeLinejoin="round" />
       {/* vértices + etiquetas */}
       {values.map((v, i) => {
         const meta = STAT_META[v.stat]

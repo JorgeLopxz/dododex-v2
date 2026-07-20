@@ -35,7 +35,7 @@ const POPULAR_IDS = [
   'Shastasaurus_Character_BP',
 ]
 
-/** Home = buscador. Sin búsqueda: SOLO favoritos. Al teclear: filtro en tiempo real. */
+/** Home = buscador. Sin búsqueda: SOLO favoritos + especímenes frecuentes. */
 export function HomePage() {
   const [query, setQuery] = useState('')
   const { ids: favoriteIds } = useFavorites()
@@ -60,16 +60,19 @@ export function HomePage() {
 
   return (
     <section aria-label="Buscador de criaturas" className="mx-auto max-w-xl pt-2">
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="🔎  Rex, Argentavis, Shadowmane…"
-        autoComplete="off"
-        autoFocus
-        aria-label="Buscar criatura"
-        className="input-field mb-5 py-3.5 text-lg"
-      />
+      <label className="mb-6 flex items-center gap-2 border-b-[1.5px] border-bone pb-2">
+        <span className="kicker shrink-0 text-verdigris">Rastrear:</span>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="nombre del espécimen…"
+          autoComplete="off"
+          autoFocus
+          aria-label="Buscar criatura"
+          className="display flex-1 border-none bg-transparent p-0 text-lg text-bone placeholder:italic placeholder:text-bone-faint focus:outline-none"
+        />
+      </label>
 
       {results ? (
         <>
@@ -79,11 +82,11 @@ export function HomePage() {
             ))}
           </ul>
           {results.length === 0 && (
-            <p className="panel p-6 text-center text-bone-dim">Sin resultados para «{query}»</p>
+            <p className="panel p-6 text-center italic text-bone-dim">Sin resultados para «{query}»</p>
           )}
           {results.length === MAX_RESULTS && (
-            <p className="mt-4 text-center text-xs text-bone-faint">
-              Mostrando {MAX_RESULTS} — afina la búsqueda para ver más
+            <p className="mono mt-4 text-center text-[10px] tracking-widest text-bone-faint">
+              MOSTRANDO {MAX_RESULTS} — AFINA LA BÚSQUEDA PARA VER MÁS
             </p>
           )}
         </>
@@ -91,8 +94,8 @@ export function HomePage() {
         <div className="space-y-6">
           {favorites.length > 0 ? (
             <div>
-              <h2 className="display mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-bone-faint">
-                <IconStar size={15} filled /> Favoritos
+              <h2 className="kicker mb-3 flex items-center gap-2">
+                <IconStar size={13} filled className="text-amber" /> Favoritos
               </h2>
               <ul className="grid gap-2.5">
                 {favorites.map((s) => (
@@ -101,18 +104,16 @@ export function HomePage() {
               </ul>
             </div>
           ) : (
-            <p className="px-2 text-center text-xs text-bone-faint">
-              Busca cualquiera de las <strong className="text-bone-dim">{getSpecies(gameVersion).length}</strong> criaturas domables —
-              marca tus habituales con la estrella{' '}
-              <span className="inline-flex translate-y-0.5 text-warn"><IconStar size={12} filled /></span>{' '}
+            <p className="px-1 text-center text-sm italic text-bone-dim">
+              Busca cualquiera de las <strong className="not-italic text-bone">{getSpecies(gameVersion).length}</strong> criaturas
+              domables — marca tus habituales con la estrella{' '}
+              <span className="inline-flex translate-y-0.5 text-amber"><IconStar size={12} filled /></span>{' '}
               y aparecerán aquí las primeras.
             </p>
           )}
           {popular.length > 0 && (
             <div>
-              <h2 className="display mb-3 text-sm font-semibold uppercase tracking-widest text-bone-faint">
-                🔥 Populares
-              </h2>
+              <h2 className="kicker mb-3">Especímenes frecuentes</h2>
               <ul className="grid gap-2.5">
                 {popular.map((s) => (
                   <CreatureRow key={s.id} species={s} />
@@ -137,8 +138,8 @@ function CreatureRow({ species: s }: { species: SpeciesEntry }) {
       >
         <CreatureImage name={s.name} size={44} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold">{s.name}</span>
-          <span className="mt-0.5 flex gap-3 text-[11px] text-bone-faint">
+          <span className="display block truncate font-semibold">{s.name}</span>
+          <span className="mono mt-0.5 flex gap-3 text-[10px] text-bone-faint">
             {PREVIEW_STATS.map((k) => {
               const c = s.stats[k]
               if (!c || !s.displayed[k]) return null
@@ -153,13 +154,14 @@ function CreatureRow({ species: s }: { species: SpeciesEntry }) {
             })}
           </span>
         </span>
+        <span aria-hidden="true" className="display shrink-0 text-bone-faint">›</span>
       </Link>
       <button
         onClick={() => toggle(s.id)}
         aria-label={isFav ? `Quitar ${s.name} de favoritos` : `Añadir ${s.name} a favoritos`}
         aria-pressed={isFav}
-        className={`grid size-11 shrink-0 place-items-center self-stretch transition-colors ${
-          isFav ? 'text-warn' : 'text-bone-faint hover:text-bone-dim'
+        className={`grid size-11 shrink-0 place-items-center self-stretch border-l border-surface-3 transition-colors ${
+          isFav ? 'text-amber' : 'text-bone-faint hover:text-bone-dim'
         }`}
       >
         <IconStar filled={isFav} />

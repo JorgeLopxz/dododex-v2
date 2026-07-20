@@ -91,9 +91,10 @@ export function AssistantPage() {
   if (!activeKey) {
     return (
       <section aria-label="Asistente IA" className="mx-auto max-w-lg space-y-4">
-        <div>
-          <h2 className="display text-2xl font-bold">🧠 Asistente ARK</h2>
-          <p className="text-sm text-bone-dim">Introduce una clave de Gemini para empezar.</p>
+        <div className="border-b-2 border-bone pb-2">
+          <p className="kicker">El Experto · Expedición ARK</p>
+          <h2 className="display text-2xl font-semibold">Correspondencia</h2>
+          <p className="text-sm italic text-bone-dim">Introduce una clave de Gemini para empezar.</p>
         </div>
         <div className="panel space-y-3 p-5 text-sm text-bone-dim">
           <p>
@@ -124,10 +125,11 @@ export function AssistantPage() {
   /* ——— Chat ——— */
   return (
     <section aria-label="Asistente IA" className="mx-auto flex max-w-lg flex-col space-y-3">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-end justify-between gap-2 border-b-2 border-bone pb-2">
         <div>
-          <h2 className="display text-2xl font-bold">🧠 Asistente ARK</h2>
-          <p className="text-xs text-bone-faint">
+          <p className="kicker">El Experto · Expedición ARK</p>
+          <h2 className="display text-2xl font-semibold">Correspondencia</h2>
+          <p className="text-xs italic text-bone-faint">
             Gemini · {geminiKey ? 'tu clave' : 'listo para usar'}
           </p>
         </div>
@@ -136,7 +138,7 @@ export function AssistantPage() {
             <button onClick={() => setMessages([])} className="btn-ghost px-2.5 py-1 text-xs">Limpiar</button>
           )}
           {geminiKey && (
-            <button onClick={() => setGeminiKey('')} className="btn-ghost px-2.5 py-1 text-xs" title="Usar clave por defecto">🔑</button>
+            <button onClick={() => setGeminiKey('')} className="btn-ghost px-2.5 py-1 text-xs" title="Usar clave por defecto">Clave predet.</button>
           )}
         </div>
       </div>
@@ -144,7 +146,7 @@ export function AssistantPage() {
       <div className="min-h-64 space-y-3">
         {messages.length === 0 && (
           <div className="panel p-4 text-sm text-bone-dim">
-            <p className="mb-2">Pregúntame lo que sea de ARK. Por ejemplo:</p>
+            <p className="kicker mb-2">Sugerencias</p>
             <ul className="space-y-1.5">
               {['¿Cómo consigo el artefacto del Devorador en The Island?', '¿Mejor criatura para farmear polímero orgánico?', '¿Cómo funcionan las mutaciones al criar?'].map((q) => (
                 <li key={q}>
@@ -156,18 +158,28 @@ export function AssistantPage() {
             </ul>
           </div>
         )}
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`panel max-w-[88%] whitespace-pre-wrap p-3.5 text-sm leading-relaxed ${
-              m.role === 'user' ? 'ml-auto border-amber-dark/50 text-bone' : 'mr-auto text-bone-dim'
-            }`}
-          >
-            {m.text}
-          </div>
-        ))}
-        {busy && <p className="animate-pulse text-center text-xs text-bone-faint">El experto está pensando…</p>}
-        {error && <p className="rounded-lg border border-danger/40 bg-surface-0/60 px-3 py-2 text-xs text-danger">⚠️ {error}</p>}
+        {messages.map((m, i) =>
+          m.role === 'user' ? (
+            <div
+              key={i}
+              className="ml-auto max-w-[88%] whitespace-pre-wrap border border-verdigris-deep bg-verdigris p-3.5 text-sm leading-relaxed text-surface-0"
+              style={{ boxShadow: '2px 3px 0 rgba(44,40,32,0.18)' }}
+            >
+              {m.text}
+            </div>
+          ) : (
+            <div key={i} className="panel mr-auto max-w-[88%] whitespace-pre-wrap p-3.5 text-sm leading-relaxed text-bone-dim">
+              {m.text}
+              <p className="mono mt-2.5 text-[10px] uppercase tracking-[0.14em] text-amber-deep">— El Experto, Expedición ARK</p>
+            </div>
+          ),
+        )}
+        {busy && <p className="animate-pulse text-center text-xs italic text-bone-faint">El experto está pensando…</p>}
+        {error && (
+          <p className="border border-danger/40 bg-surface-1/60 px-3 py-2 text-xs text-danger">
+            <strong className="mono uppercase tracking-wide">Error · </strong>{error}
+          </p>
+        )}
         <div ref={endRef} />
       </div>
 

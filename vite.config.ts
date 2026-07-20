@@ -25,13 +25,13 @@ export default defineConfig(({ command }) => ({
         clientsClaim: true,
       },
       manifest: {
-        name: 'DODODEX V2 — companion de ARK',
-        short_name: 'DODODEX V2',
+        name: 'ArkMaster — expediente de campo ARK',
+        short_name: 'ArkMaster',
         description:
-          'Inspector de stats post-tame, calculadora de tameo y biblioteca de dinos para ARK: Survival Ascended',
+          'Expediente de campo para ARK Survival Ascended: tameos, recursos, recetas y análisis de laboratorio post-tame',
         lang: 'es',
-        theme_color: '#0c0a07',
-        background_color: '#0c0a07',
+        theme_color: '#f4edda',
+        background_color: '#f4edda',
         display: 'standalone',
         icons: [
           { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },

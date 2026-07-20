@@ -5,14 +5,14 @@ import { MaterialsPage } from './features/materials/MaterialsPage'
 import { RecipesPage } from './features/recipes/RecipesPage'
 import { AssistantPage } from './features/assistant/AssistantPage'
 import { getDataInfo } from './data'
-import { DinoFootprint, IconBrain, IconHome, IconPick, IconPot } from './ui/icons'
+import { ClawMark, IconBrain, IconPick, IconPot } from './ui/icons'
 import { useSettings } from './store/settings'
 
 const NAV = [
-  { to: '/', icon: IconHome, label: 'Buscar', end: true },
-  { to: '/materiales', icon: IconPick, label: 'Materiales' },
+  { to: '/', icon: ClawMark, label: 'Criaturas', end: true },
+  { to: '/materiales', icon: IconPick, label: 'Recursos' },
   { to: '/recetas', icon: IconPot, label: 'Recetas' },
-  { to: '/ia', icon: IconBrain, label: 'IA' },
+  { to: '/ia', icon: IconBrain, label: 'Asistente' },
 ]
 
 /** URLs antiguas /tameo/:id e /inspector/:id → pestaña correspondiente de la súper-ficha */
@@ -28,12 +28,12 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
       <header className="flex items-center gap-3 px-4 py-4">
-        {/* Selector de juego arriba-izquierda: ASA y ASE tienen dinos, materiales y reglas distintos */}
+        {/* Selector de juego: sello de dos posiciones, ASA y ASE tienen dinos/recursos/reglas distintos */}
         <div
           role="group"
           aria-label="Versión del juego"
           title="Cambia entre ARK: Survival Ascended y Survival Evolved"
-          className="flex rounded-lg border border-metal-dim bg-surface-0/60 p-0.5 text-xs font-semibold"
+          className="mono flex border border-bone text-xs font-semibold"
         >
           {([
             ['asa', 'ASA'],
@@ -43,8 +43,8 @@ export default function App() {
               key={value}
               onClick={() => setGameVersion(value)}
               aria-pressed={gameVersion === value}
-              className={`display rounded-md px-3 py-1.5 tracking-widest transition-colors ${
-                gameVersion === value ? 'bg-gradient-to-br from-amber to-amber-deep text-surface-0' : 'text-bone-dim hover:text-bone'
+              className={`px-3 py-1.5 tracking-widest transition-colors ${
+                gameVersion === value ? 'bg-bone text-surface-0' : 'text-bone-dim hover:text-bone'
               }`}
             >
               {label}
@@ -52,9 +52,10 @@ export default function App() {
           ))}
         </div>
         <NavLink to="/" className="ml-auto flex items-center gap-2.5">
-          <DinoFootprint size={30} />
-          <span className="display text-xl font-bold tracking-wide">
-            DODODEX <span className="text-amber">V2</span>
+          <ClawMark size={26} className="text-amber" />
+          <span className="flex flex-col leading-none">
+            <span className="display text-xl font-semibold tracking-wide">ArkMaster</span>
+            <span className="kicker text-[9px]">Expedición ARK · Vol. II</span>
           </span>
         </NavLink>
       </header>
@@ -72,40 +73,33 @@ export default function App() {
           <Route path="/dinos" element={<Navigate to="/" replace />} />
           <Route path="/ajustes" element={<Navigate to="/" replace />} />
         </Routes>
-        <p className="mt-10 text-center text-[11px] leading-relaxed text-bone-faint">
-          Datos v{info.version} · {new Date(info.generated).toLocaleDateString()} · derivados de ARK Smart Breeding
-          (MIT, © cadon)
+        <p className="mono mt-10 text-center text-[10px] leading-relaxed text-bone-faint">
+          Registro Nº {info.version} · actualizado {new Date(info.generated).toLocaleDateString()} · datos derivados de
+          ARK Smart Breeding (MIT, © cadon)
           <br />
-          App no oficial para uso personal, sin afiliación con Studio Wildcard
+          Expediente no oficial de uso personal, sin afiliación con Studio Wildcard
         </p>
       </main>
 
       {/* Navegación inferior: zona de alcance del pulgar */}
       <nav
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-10 border-t border-metal-dim bg-surface-1/90 backdrop-blur-lg"
+        className="fixed inset-x-0 bottom-0 z-10 border-t-2 border-bone bg-surface-1/95 backdrop-blur-sm"
       >
         <div className="mx-auto flex max-w-3xl">
-          {NAV.map(({ to, icon: Icon, label, end }) => (
+          {NAV.map(({ to, icon: Icon, label, end }, i) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-amber' : 'text-bone-faint hover:text-bone-dim'
-                }`
+                `mono flex flex-1 flex-col items-center gap-1 py-2.5 text-[9px] font-semibold tracking-[0.16em] uppercase transition-colors ${
+                  i > 0 ? 'border-l border-surface-3' : ''
+                } ${isActive ? 'bg-verdigris text-surface-0' : 'text-bone-faint hover:text-bone-dim'}`
               }
             >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -top-px h-0.5 w-10 rounded-full bg-gradient-to-r from-amber to-amber-deep" />
-                  )}
-                  <Icon />
-                  {label}
-                </>
-              )}
+              <Icon size={20} />
+              {label}
             </NavLink>
           ))}
         </div>

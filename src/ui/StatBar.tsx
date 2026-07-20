@@ -41,22 +41,18 @@ export function StatBar({
             {ambiguous && <span className="text-warn"> ?</span>}
           </span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-surface-3/70" role="presentation">
+        <div className="h-2 overflow-hidden border border-surface-3 bg-surface-1" role="presentation">
           <div className="flex h-full">
             <div
-              className="h-full rounded-l-full"
-              style={{
-                width: `${wildPct}%`,
-                background: `linear-gradient(90deg, color-mix(in srgb, ${meta.color} 65%, #000), ${meta.color})`,
-                boxShadow: `0 0 8px color-mix(in srgb, ${meta.color} 45%, transparent)`,
-              }}
+              className="h-full transition-[width] duration-700 ease-out"
+              style={{ width: `${wildPct}%`, background: meta.color }}
             />
             {dom > 0 && (
               <div
-                className="h-full"
+                className="h-full transition-[width] duration-700 ease-out"
                 style={{
                   width: `${domPct}%`,
-                  background: `repeating-linear-gradient(-55deg, color-mix(in srgb, ${meta.color} 80%, #fff) 0 4px, color-mix(in srgb, ${meta.color} 35%, transparent) 4px 8px)`,
+                  background: `repeating-linear-gradient(-55deg, color-mix(in srgb, ${meta.color} 75%, #fff) 0 4px, color-mix(in srgb, ${meta.color} 40%, transparent) 4px 8px)`,
                 }}
               />
             )}

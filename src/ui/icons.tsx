@@ -1,23 +1,27 @@
 /** Iconografía propia en SVG (nada de emojis en la navegación/identidad). */
 
-export function DinoFootprint({ size = 28 }: { size?: number }) {
+/** Marca ArkMaster: garra de 3 tajos con quiebros irregulares ("desgarro"). */
+export function ClawMark({ size = 28, className = '' }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="embergrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="var(--color-amber)" />
-          <stop offset="1" stopColor="var(--color-amber-deep)" />
-        </linearGradient>
-      </defs>
-      {/* almohadilla */}
-      <ellipse cx="16" cy="21" rx="7.5" ry="6.5" fill="url(#embergrad)" />
-      {/* dedos */}
-      <ellipse cx="7.5" cy="11.5" rx="2.6" ry="5" transform="rotate(-24 7.5 11.5)" fill="url(#embergrad)" />
-      <ellipse cx="16" cy="8.5" rx="2.7" ry="5.6" fill="url(#embergrad)" />
-      <ellipse cx="24.5" cy="11.5" rx="2.6" ry="5" transform="rotate(24 24.5 11.5)" fill="url(#embergrad)" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="currentColor"
+      aria-hidden="true"
+      className={`claw-mark ${className}`}
+    >
+      <g transform="rotate(-22 16 16)">
+        <path d="M6 2 L9 8 L10.2 12.5 L8.6 20 L7.2 30 L5.4 19 L4 13.5 L5.2 7 Z" />
+        <path d="M14.5 0 L18 7 L19.4 13.5 L17.4 22 L15.8 32 L13.4 21 L11.8 14.5 L13.2 6 Z" />
+        <path d="M23.5 3 L26.4 8.5 L27.6 13 L26 20.5 L24.8 28.5 L22.8 19.5 L21.4 14 L22.6 8 Z" />
+      </g>
     </svg>
   )
 }
+
+/** Alias retrocompatible: la marca antigua ahora es la garra ArkMaster. */
+export const DinoFootprint = ClawMark
 
 const stroke = {
   fill: 'none',
@@ -56,7 +60,15 @@ export function IconBrain({ size = 22 }: { size?: number }) {
   )
 }
 
-export function IconStar({ size = 20, filled = false }: { size?: number; filled?: boolean }) {
+export function IconStar({
+  size = 20,
+  filled = false,
+  className = '',
+}: {
+  size?: number
+  filled?: boolean
+  className?: string
+}) {
   return (
     <svg
       width={size}
@@ -65,6 +77,7 @@ export function IconStar({ size = 20, filled = false }: { size?: number; filled?
       aria-hidden="true"
       {...stroke}
       fill={filled ? 'currentColor' : 'none'}
+      className={className}
     >
       <path d="m12 3.2 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.4l5.9-.8z" />
     </svg>

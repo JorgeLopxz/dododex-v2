@@ -14,12 +14,12 @@ export function ServerProfile() {
     <details className="panel group p-0">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-4 text-sm">
         <span className="flex items-center gap-2 font-medium text-bone-dim">
-          ⚙️ Perfil del servidor
-          <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[11px] text-bone-faint">{PRESET_LABEL[s.preset]}</span>
+          <span className="kicker">Perfil del servidor</span>
+          <span className="mono border border-surface-3 bg-surface-2 px-1.5 py-0.5 text-[10px] uppercase text-bone-faint">{PRESET_LABEL[s.preset]}</span>
         </span>
         <span className="text-bone-faint transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
       </summary>
-      <div className="space-y-4 border-t border-surface-3 p-4">
+      <div className="space-y-4 border-t border-dashed border-surface-3 p-4">
         <div role="group" aria-label="Preset de servidor" className="grid gap-2">
           {(Object.keys(PRESET_LABEL) as ServerPreset[]).map((p) => (
             <button key={p} onClick={() => s.setPreset(p)} aria-pressed={s.preset === p} className="mode-tab text-left">
@@ -73,7 +73,7 @@ export function ServerProfile() {
                 type="checkbox"
                 checked={s.customNerf}
                 onChange={(e) => s.setCustomNerf(e.target.checked)}
-                className="size-4 accent-(--color-amber-deep)"
+                className="size-4 accent-amber-deep"
               />
               Mantener nerf oficial post-tame (salud/melee)
             </label>

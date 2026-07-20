@@ -71,10 +71,10 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
   const isKnockout = !species.taming.nonViolent && tamingInfo?.method !== 'passive' && tamingInfo?.method !== 'egg' && tamingInfo?.method !== 'special'
   const knockoutPanel = torporTotal !== null && isKnockout && (
     <div className="panel p-4">
-      <p className="display mb-3 text-xs font-semibold uppercase tracking-widest text-amber">Noqueo · torpor {Math.round(torporTotal).toLocaleString()}</p>
+      <p className="kicker mb-3">Noqueo · torpor {Math.round(torporTotal).toLocaleString()}</p>
       <div className="mb-3 flex flex-wrap items-end gap-3">
         <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-bone-dim">Arma</span>
+          <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Arma</span>
           <select value={weaponId} onChange={(e) => setWeaponId(e.target.value)} className="input-field w-56">
             {WEAPONS.map((w) => (
               <option key={w.id} value={w.id}>{w.label}</option>
@@ -82,7 +82,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
           </select>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-bone-dim">Calidad (daño %)</span>
+          <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Calidad (daño %)</span>
           <input type="number" step="1" min="100" inputMode="numeric" value={quality} onChange={(e) => setQuality(e.target.value)} className="input-field w-24" />
         </label>
         <p className="flex items-center gap-2 pb-1 text-lg">
@@ -97,7 +97,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
           <button
             key={w.id}
             onClick={() => setWeaponId(w.id)}
-            className="flex items-center justify-between gap-1.5 rounded-lg border border-surface-3/60 bg-surface-0/40 px-2.5 py-1.5 text-left hover:border-amber-dark"
+            className="flex items-center justify-between gap-1.5 border border-surface-3 bg-surface-1/40 px-2.5 py-1.5 text-left hover:border-amber"
           >
             <span className="flex min-w-0 items-center gap-1.5">
               <ItemImage name={w.weaponImage} size={22} fallback="🏹" />
@@ -107,7 +107,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-bone-faint">
+      <p className="mt-2 text-[11px] italic text-bone-faint">
         Calidad 100% = arma primitiva. No incluye multiplicador de headshot ni resistencias especiales.
       </p>
     </div>
@@ -126,11 +126,11 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
       <div className="panel p-4">
         <div className="mb-3 flex flex-wrap items-end gap-3">
           <label className="text-sm">
-            <span className="mb-1 block text-xs font-medium text-bone-dim">Nivel salvaje</span>
+            <span className="mono mb-1 block text-[10px] uppercase text-bone-dim">Nivel salvaje</span>
             <input type="number" inputMode="numeric" value={level} onChange={(e) => setLevel(e.target.value)} className="input-field w-28" />
           </label>
           <label className="flex items-center gap-2 pb-2 text-sm text-bone-dim">
-            <input type="checkbox" checked={sanguine} onChange={(e) => setSanguine(e.target.checked)} className="size-4 accent-(--color-amber-deep)" />
+            <input type="checkbox" checked={sanguine} onChange={(e) => setSanguine(e.target.checked)} className="size-4 accent-verdigris" />
             Sanguine Elixir (−30%)
           </label>
         </div>
@@ -155,8 +155,8 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
             />
           )}
         </div>
-        <p className="mt-2 text-[11px] text-bone-faint">
-          ⚠️ Las rates oficiales fluctúan con eventos de Wildcard — si tu servidor va boosted, usa Evento o Custom.
+        <p className="mt-2 text-[11px] italic text-bone-faint">
+          Las rates oficiales fluctúan con eventos de Wildcard — si tu servidor va boosted, usa Evento o Custom.
         </p>
       </div>
 
@@ -164,7 +164,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
         <>
           {/* Método real (verificado) para criaturas que no usan dieta por afinidad estándar */}
           <div className="panel p-5">
-            <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">
+            <p className="kicker mb-2">
               {tamingInfo ? METHOD_LABEL[tamingInfo.method] : species.taming.nonViolent ? METHOD_LABEL.passive : METHOD_LABEL.knockout}
             </p>
             <p className="text-sm text-bone-dim">
@@ -175,7 +175,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
             </p>
             <p className="mt-3 border-t border-surface-3 pt-3 text-xs text-bone-faint">
               Para las <strong className="text-bone-dim">cantidades exactas de comida</strong>, pregunta al{' '}
-              <Link to="/ia" className="text-amber underline">🧠 Asistente</Link> o mira{' '}
+              <Link to="/ia" className="text-amber underline">Asistente</Link> o mira{' '}
               <a href={`https://ark.wiki.gg/wiki/${encodeURIComponent(species.name.replace(/\s*\(.*\)$/, '').trim().replace(/ /g, '_'))}`} target="_blank" rel="noreferrer" className="text-amber underline">la wiki</a>.
             </p>
           </div>
@@ -186,7 +186,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
         <>
           {/* Método real (agarre, pasivo…) sobre la calculadora, cuando aplica */}
           {tamingInfo && (
-            <p className="rounded-lg border border-metal-dim bg-surface-0/50 px-3 py-2 text-xs text-bone-dim">
+            <p className="border border-surface-3 bg-surface-1/60 px-3 py-2 text-xs text-bone-dim">
               <strong className="text-bone">{METHOD_LABEL[tamingInfo.method]}.</strong> {tamingInfo.note}
             </p>
           )}
@@ -194,9 +194,9 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
           {plan && (
             <div
               className="panel p-5"
-              style={{ borderColor: plan.enough ? 'color-mix(in srgb, var(--color-amber) 45%, transparent)' : 'color-mix(in srgb, var(--color-danger) 50%, transparent)' }}
+              style={{ borderColor: plan.enough ? 'var(--color-verdigris)' : 'var(--color-danger)' }}
             >
-              <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">
+              <p className="kicker mb-2">
                 {hasCustomPlan ? 'Tu plan de comida' : `Mejor opción · ${plan.used[0]?.food.name}`}
               </p>
               {hasCustomPlan && (
@@ -221,7 +221,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                       <strong className="display text-bone">{plan.used[0].pieces}</strong>
                     </span>
                   )}
-                  <span>TE <strong className="display text-ok">{(plan.te * 100).toFixed(1)}%</strong></span>
+                  <span>TE <strong className="display text-verdigris">{(plan.te * 100).toFixed(1)}%</strong></span>
                   <span>
                     → Nv <strong className="display text-amber">{lvl + plan.bonusLevels}</strong>
                     <span className="text-xs"> (+{plan.bonusLevels})</span>
@@ -245,7 +245,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
 
           {/* Tabla de comidas: top 6 + ver más; steppers para combinar */}
           <div className="panel p-2">
-            <div className="grid grid-cols-[1fr_4.5rem_3.5rem_4.5rem_5.5rem] items-center gap-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-bone-faint">
+            <div className="mono grid grid-cols-[1fr_4.5rem_3.5rem_4.5rem_5.5rem] items-center gap-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-bone-faint">
               <span>Comida</span><span className="text-right">Cant.</span><span className="text-right">TE</span><span className="text-right">Tiempo</span><span className="text-center">Tu plan</span>
             </div>
             {visibleRows.map((r) => (
@@ -253,7 +253,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                 key={r.food.name}
                 onClick={() => setQty({ [r.food.name]: r.pieces })}
                 title={`Usar solo ${r.food.name} (×${r.pieces})`}
-                className="grid cursor-pointer grid-cols-[1fr_4.5rem_3.5rem_4.5rem_5.5rem] items-center gap-1 rounded-lg px-2 py-1.5 transition-colors odd:bg-surface-0/40 hover:bg-surface-2/60"
+                className="grid cursor-pointer grid-cols-[1fr_4.5rem_3.5rem_4.5rem_5.5rem] items-center gap-1 border-b border-dashed border-surface-3 px-2 py-1.5 transition-colors last:border-b-0 hover:bg-surface-1/70"
               >
                 <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
                   {r.food.name.endsWith('Kibble') ? (
@@ -290,7 +290,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                   <button
                     aria-label={`Quitar ${r.food.name} del plan`}
                     onClick={() => setQty((q) => ({ ...q, [r.food.name]: Math.max(0, (q[r.food.name] ?? 0) - 1) }))}
-                    className="grid size-6 place-items-center rounded bg-surface-2 text-bone-dim hover:text-bone"
+                    className="mono grid size-6 place-items-center border border-surface-3 bg-surface-1 text-bone-dim hover:text-bone"
                   >−</button>
                   <input
                     type="number"
@@ -303,7 +303,7 @@ export function TamingCalculator({ species }: { species: SpeciesEntry }) {
                   <button
                     aria-label={`Añadir ${r.food.name} al plan`}
                     onClick={() => setQty((q) => ({ ...q, [r.food.name]: (q[r.food.name] ?? 0) + 1 }))}
-                    className="grid size-6 place-items-center rounded bg-surface-2 text-bone-dim hover:text-bone"
+                    className="mono grid size-6 place-items-center border border-surface-3 bg-surface-1 text-bone-dim hover:text-bone"
                   >+</button>
                 </span>
               </div>

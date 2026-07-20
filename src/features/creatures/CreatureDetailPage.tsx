@@ -12,8 +12,8 @@ import { SpawnMap } from './SpawnMap'
 
 const TABS = [
   { id: 'resumen', label: 'Resumen' },
-  { id: 'tameo', label: '🧮 Tameo' },
-  { id: 'inspector', label: '⭐ Inspector' },
+  { id: 'tameo', label: 'Tameo' },
+  { id: 'inspector', label: 'Inspector' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -31,16 +31,17 @@ export function CreatureDetailPage() {
 
   if (!species) {
     return (
-      <p className="panel p-6 text-center text-bone-dim">
-        Especie no encontrada en {gameVersion.toUpperCase()}. <Link to="/" className="text-amber underline">Volver al buscador</Link>
+      <p className="panel p-6 text-center italic text-bone-dim">
+        Especie no encontrada en el registro {gameVersion.toUpperCase()}.{' '}
+        <Link to="/" className="not-italic text-amber underline">Volver al buscador</Link>
       </p>
     )
   }
   const isFav = favoriteIds.includes(species.id)
 
   return (
-    <section aria-label={`Ficha de ${species.name}`} className="space-y-4">
-      <div className="flex items-center gap-2.5">
+    <section aria-label={`Ficha de ${species.name}`} className={`space-y-4 ${tab === 'inspector' ? 'inspector-scope' : ''}`}>
+      <div className="flex items-start gap-2.5">
         <button
           onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
           aria-label="Volver"
@@ -50,31 +51,36 @@ export function CreatureDetailPage() {
         </button>
         <CreatureImage name={species.name} size={52} />
         <div className="min-w-0 flex-1">
-          <h2 className="display truncate text-2xl font-bold leading-tight">{species.name}</h2>
-          <p className="text-xs text-bone-faint">
-            {species.taming.nonViolent ? 'Tameo pasivo' : 'Tameo por noqueo'}
-          </p>
+          <h2 className="display truncate text-2xl font-semibold leading-tight">{species.name}</h2>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <span className="stamp stamp-verdigris">Domable</span>
+            <span className="kicker text-bone-faint">
+              {species.taming.nonViolent ? 'tameo pasivo' : 'tameo por noqueo'}
+            </span>
+          </div>
         </div>
         <button
           onClick={() => toggle(species.id)}
           aria-label={isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}
           aria-pressed={isFav}
-          className={`grid size-10 shrink-0 place-items-center rounded-lg border border-surface-3 transition-colors ${
-            isFav ? 'text-warn' : 'text-bone-faint hover:text-bone-dim'
-          }`}
+          className={
+            isFav
+              ? 'stamp shrink-0'
+              : 'grid size-10 shrink-0 place-items-center border border-surface-3 text-bone-faint transition-colors hover:text-bone-dim'
+          }
         >
-          <IconStar filled={isFav} />
+          <IconStar size={isFav ? 12 : 18} filled={isFav} /> {isFav && 'Fav'}
         </button>
       </div>
 
-      {/* Pestañas de la súper-ficha */}
-      <div role="group" aria-label="Sección de la ficha" className="flex gap-2 rounded-lg bg-surface-0/60 p-1.5">
+      {/* Pestañas de la súper-ficha (archivador): activa = tinta sólida; pencil dentro del Inspector */}
+      <div role="group" aria-label="Sección de la ficha" className="flex">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setSearchParams(t.id === 'resumen' ? {} : { tab: t.id }, { replace: true })}
             aria-pressed={tab === t.id}
-            className="mode-tab"
+            className="tab-archive -ml-px first:ml-0"
           >
             {t.label}
           </button>
@@ -88,13 +94,13 @@ export function CreatureDetailPage() {
   )
 }
 
-/** Comando de consola con botón de copiar. */
-function CommandRow({ label, cmd, note }: { label: string; cmd: string; note?: string }) {
+/** Comando de consola con botón de copiar (lámina de bloque de código). */
+function CommandRow({ label, cmd }: { label: string; cmd: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <div className="flex items-center gap-2">
-      <span className="w-20 shrink-0 text-[11px] text-bone-faint">{label}</span>
-      <code className="min-w-0 flex-1 truncate rounded bg-surface-0/70 px-2 py-1.5 text-xs text-bone-dim">{cmd}</code>
+      <span className="mono w-20 shrink-0 text-[10px] uppercase tracking-wider text-bone-faint">{label}</span>
+      <code className="code-block min-w-0 flex-1 truncate px-2 py-1.5 text-xs">{cmd}</code>
       <button
         onClick={() => {
           navigator.clipboard.writeText(cmd).then(() => {
@@ -102,12 +108,11 @@ function CommandRow({ label, cmd, note }: { label: string; cmd: string; note?: s
             setTimeout(() => setCopied(false), 1200)
           })
         }}
-        className="btn-ghost shrink-0 px-2.5 py-1 text-xs"
+        className="btn-ghost mono shrink-0 px-2.5 py-1 text-xs"
         aria-label={`Copiar comando: ${label}`}
       >
-        {copied ? '✓' : '📋'}
+        {copied ? '✓' : 'copiar'}
       </button>
-      {note && <span className="sr-only">{note}</span>}
     </div>
   )
 }
@@ -142,17 +147,15 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
           onClick={() => setSearchParams({ tab: 'tameo' }, { replace: true })}
           className="panel panel-hover w-full p-4 text-left"
         >
-          <p className="display mb-1 text-xs font-semibold uppercase tracking-widest text-amber">
-            Tameo nv 150 · rates ×{tsm} — toca para ajustar
-          </p>
+          <p className="kicker mb-1">Tameo nv 150 · rates ×{tsm} — toca para ajustar</p>
           <p className="text-sm text-bone-dim">
             <strong className="text-bone">{quickTame.food.name}</strong> ×
             <strong className="display text-bone">{quickTame.pieces}</strong> · TE{' '}
-            <strong className="text-ok">{(quickTame.te * 100).toFixed(1)}%</strong> · →Nv{' '}
+            <strong className="text-verdigris">{(quickTame.te * 100).toFixed(1)}%</strong> · →Nv{' '}
             <strong className="text-amber">{150 + quickTame.bonusLevels}</strong> · ⏱{' '}
             {formatDuration(quickTame.seconds)}
             {quickTame.torpor && quickTame.torpor.narcotics > 0 && (
-              <> · 💤 {quickTame.torpor.narcotics} narcóticos</>
+              <> · {quickTame.torpor.narcotics} narcóticos</>
             )}
           </p>
         </button>
@@ -170,7 +173,7 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
         return (
           <div className="panel p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <p className="display text-xs font-semibold uppercase tracking-widest text-amber">Cría · rates ×{m}</p>
+              <p className="kicker">Cría · rates ×{m}</p>
               <div role="group" aria-label="Rates de cría del servidor" className="flex items-center gap-1">
                 {[1, 2, 3].map((v) => (
                   <button
@@ -195,31 +198,31 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-4">
               <div>
-                <span className="block text-[11px] text-bone-faint">{b.gestation > 0 ? '🤰 Gestación' : '🥚 Incubación'}</span>
+                <span className="mono block text-[10px] uppercase text-bone-faint">{b.gestation > 0 ? 'Gestación' : 'Incubación'}</span>
                 <span className="display font-semibold">{formatDuration((b.gestation > 0 ? b.gestation : b.incubation) / m)}</span>
                 {b.incubation > 0 && b.eggTempMax > 0 && (
                   <span className="block text-[11px] text-bone-dim">{b.eggTempMin}–{b.eggTempMax} °C</span>
                 )}
               </div>
               <div>
-                <span className="block text-[11px] text-bone-faint">🐣 Maduración</span>
+                <span className="mono block text-[10px] uppercase text-bone-faint">Maduración</span>
                 <span className="display font-semibold">{formatDuration(maturation)}</span>
                 <span className="block text-[11px] text-bone-dim">bebé {formatDuration(maturation * 0.1)} · juvenil hasta {formatDuration(maturation * 0.5)}</span>
               </div>
               <div>
-                <span className="block text-[11px] text-bone-faint">🤗 Imprint (cuddle cada {formatDuration(CUDDLE)})</span>
+                <span className="mono block text-[10px] uppercase text-bone-faint">Imprint (cada {formatDuration(CUDDLE)})</span>
                 <span className="display font-semibold">{cuddles > 0 ? `${cuddles} cuddles · ${perCuddle.toFixed(1)}%/ud` : '—'}</span>
                 <span className="block text-[11px] text-bone-dim">100%: +20% stats (no estamina/oxígeno)</span>
               </div>
               <div>
-                <span className="block text-[11px] text-bone-faint">🍖 Comen de crías</span>
+                <span className="mono block text-[10px] uppercase text-bone-faint">Comen de crías</span>
                 <span className="text-xs text-bone-dim">
                   {babyFoods?.length ? babyFoods.map((f) => f.name).join(', ') : 'dieta del adulto'}
                 </span>
                 <span className="block text-[11px] text-bone-faint">(sin kibble; a mano hasta juvenil)</span>
               </div>
             </div>
-            <p className="mt-2 border-t border-surface-3 pt-2 text-[11px] text-bone-faint">
+            <p className="mt-2 border-t border-surface-3 pt-2 text-[11px] italic text-bone-faint">
               ×1 = oficial · ajusta a las MatingSpeed/EggHatchSpeed/MaturationSpeed de tu servidor.
               Montado por quien lo imprintó: +30% daño y −30% daño recibido.
             </p>
@@ -230,8 +233,8 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
       {/* Comandos de spawn (un jugador / servidores con admin) */}
       <div className="panel space-y-2 p-4">
         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-          <p className="display text-xs font-semibold uppercase tracking-widest text-amber">Comandos</p>
-          <label className="flex items-center gap-2 text-xs text-bone-dim">
+          <p className="kicker">Comandos</p>
+          <label className="mono flex items-center gap-2 text-[10px] uppercase text-bone-dim">
             nivel
             <input
               type="number"
@@ -246,7 +249,7 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
         <CommandRow label="Salvaje" cmd={`cheat Summon ${cls}`} />
         <CommandRow label="Tameado" cmd={`cheat GMSummon "${cls}" ${lvl}`} />
         <CommandRow label="Montura" cmd={`cheat GFI ${saddleGfi} 1 0 0`} />
-        <p className="text-[11px] text-bone-faint">
+        <p className="text-[11px] italic text-bone-faint">
           Pégalo en la consola (un jugador o admin). La montura usa búsqueda parcial GFI — si no da
           resultado, esa criatura no tiene silla o usa otro nombre.
         </p>
@@ -254,7 +257,7 @@ function SummaryTab({ species }: { species: NonNullable<ReturnType<typeof findSp
 
       {/* Dónde aparece: mapa de spawn integrado */}
       <div>
-        <p className="display mb-2 text-xs font-semibold uppercase tracking-widest text-amber">Dónde aparece</p>
+        <p className="kicker mb-2">Dónde aparece</p>
         <SpawnMap species={species} />
       </div>
     </div>
