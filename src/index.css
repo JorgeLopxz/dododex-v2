@@ -101,11 +101,15 @@ body {
   from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }
 }
-/* Pasar página: la lámina nueva bascula sobre el lomo izquierdo y se asienta */
-@keyframes pageTurn {
-  0% { opacity: 0; transform: rotateY(-14deg) translateX(14px); }
-  55% { opacity: 1; }
-  100% { opacity: 1; transform: rotateY(0) translateX(0); }
+/* Pasar página: opacidad rápida (aparece pronto) + giro más largo sobre el lomo
+   izquierdo, para que el contenido se vea YA legible mientras se asienta el giro */
+@keyframes pageTurnFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pageTurnSpin {
+  from { transform: rotateY(-19deg) translateX(18px); }
+  to { transform: rotateY(0) translateX(0); }
 }
 
 /* ——— Componentes base ——— */
@@ -358,7 +362,9 @@ body {
   .page-view {
     transform-origin: left center;
     backface-visibility: hidden;
-    animation: pageTurn 0.42s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation:
+      pageTurnFade 0.28s ease-out both,
+      pageTurnSpin 0.52s cubic-bezier(0.33, 0.68, 0.28, 1) both;
   }
 }
 
