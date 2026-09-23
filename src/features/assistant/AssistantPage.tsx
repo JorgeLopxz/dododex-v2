@@ -1,30 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../store/settings'
-import { builtInGeminiKey } from '../../config/assistantKey'
-
-const MODEL = 'gemini-2.5-flash'
-function buildSystem(gameVersion: 'asa' | 'ase') {
-  const gameName = gameVersion === 'asa' ? 'ARK: Survival Ascended (ASA)' : 'ARK: Survival Evolved (ASE)'
-  return `Eres el asistente experto de DODODEX V2, una app companion de ${gameName}.
-Eres un jugador veterano de ARK: dominas tameos, cría y mutaciones, kibbles, mapas, cuevas, artefactos,
-jefes, estrategias PvE/PvP y comandos de consola. Contesta SIEMPRE en español, de forma directa y práctica,
-con cantidades y pasos concretos. Responde según ${gameVersion === 'asa' ? 'ASA vanilla oficial' : 'ASE vanilla oficial'}.
-Si no estás seguro de un dato exacto, dilo honestamente. Respuestas compactas: nada de relleno.`
-}
-
-interface Msg {
-  role: 'user' | 'model'
-  text: string
-}
+import { buildChatRequest, type ChatMsg as Msg } from './gemini'
 
 const CHAT_KEY = 'dododex-v2-chat'
 
-/** Asistente IA: chat experto en ARK usando la API de Gemini con la clave del usuario. */
+/**
+ * Asistente IA: chat experto en ARK con Gemini. Por defecto pregunta al worker de
+ * Cloudflare (worker/), que guarda la clave; si el usuario tiene la suya, va directo.
+ */
 export function AssistantPage() {
   const { geminiKey, setGeminiKey, gameVersion } = useSettings()
-  // la clave del usuario tiene prioridad; si no, la incrustada por defecto
-  const activeKey = geminiKey || builtInGeminiKey()
-  const [keyDraft, setKeyDraft] = useState('')
   const [messages, setMessages] = useState<Msg[]>(() => {
     try {
       return JSON.parse(localStorage.getItem(CHAT_KEY) ?? '[]')
@@ -51,24 +36,8 @@ export function AssistantPage() {
     setMessages(history)
     setBusy(true)
     try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(activeKey)}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: buildSystem(gameVersion) }] },
-            contents: history.slice(-16).map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-            // gemini-2.5 gasta "thinking" DENTRO de maxOutputTokens → presupuesto amplio
-            // y razonamiento apagado para que la respuesta nunca llegue cortada
-            generationConfig: {
-              temperature: 0.6,
-              maxOutputTokens: 8192,
-              thinkingConfig: { thinkingBudget: 0 },
-            },
-          }),
-        },
-      )
+      const { url, init } = buildChatRequest(history, gameVersion, geminiKey)
+      const res = await fetch(url, init)
       const json = await res.json()
       if (!res.ok) {
         throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
@@ -87,41 +56,6 @@ export function AssistantPage() {
     }
   }
 
-  /* ——— Sin ninguna clave disponible (no debería pasar: hay una por defecto) ——— */
-  if (!activeKey) {
-    return (
-      <section aria-label="Asistente IA" className="mx-auto max-w-lg space-y-4">
-        <div className="border-b-2 border-bone pb-2">
-          <p className="kicker">El Experto · Expedición ARK</p>
-          <h2 className="display text-2xl font-semibold">Correspondencia</h2>
-          <p className="text-sm italic text-bone-dim">Introduce una clave de Gemini para empezar.</p>
-        </div>
-        <div className="panel space-y-3 p-5 text-sm text-bone-dim">
-          <p>
-            Consigue una gratis en{' '}
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="text-amber underline">
-              aistudio.google.com/apikey
-            </a>{' '}
-            y pégala aquí:
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="password"
-              value={keyDraft}
-              onChange={(e) => setKeyDraft(e.target.value)}
-              placeholder="AIza…"
-              aria-label="Clave de API de Gemini"
-              className="input-field flex-1"
-            />
-            <button onClick={() => keyDraft.trim() && setGeminiKey(keyDraft)} className="btn-primary">
-              Guardar
-            </button>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
   /* ——— Chat ——— */
   return (
     <section aria-label="Asistente IA" className="mx-auto flex max-w-lg flex-col space-y-3">
@@ -138,7 +72,7 @@ export function AssistantPage() {
             <button onClick={() => setMessages([])} className="btn-ghost px-2.5 py-1 text-xs">Limpiar</button>
           )}
           {geminiKey && (
-            <button onClick={() => setGeminiKey('')} className="btn-ghost px-2.5 py-1 text-xs" title="Usar clave por defecto">Clave predet.</button>
+            <button onClick={() => setGeminiKey('')} className="btn-ghost px-2.5 py-1 text-xs" title="Usar el servidor de ArkMaster">Clave predet.</button>
           )}
         </div>
       </div>

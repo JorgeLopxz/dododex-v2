@@ -7,3 +7,4 @@ coverage/
 Thumbs.db
 data-raw/
 .claude/settings.local.json
+.wrangler/

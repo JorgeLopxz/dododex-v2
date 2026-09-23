@@ -1,0 +1,11 @@
+name = "arkmaster-ai"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+
+# La clave NO va aquí: se guarda como secreto con `npx wrangler secret put GEMINI_KEY`
+
+# Límite por IP para proteger la cuota gratuita de Gemini
+[[ratelimits]]
+name = "LIMITER"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
